@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ibkr-adapter"
+version = "0.1.0"
+description = "IBKR TWS ↔ NATS JetStream bridge for ibkrtrader"
+requires-python = ">=3.12"
+dependencies = [
+    "ib_insync>=0.9.86",
+    "nats-py>=2.9.0",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "asyncpg>=0.29",
+    "aiohttp>=3.9",            # health-check HTTP server
+    "structlog>=24.1",
+    "prometheus-client>=0.20",
+]
+
+[project.scripts]
+ibkr-adapter = "ibkr_adapter.main:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ibkr_adapter"]
+
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "pytest-mock>=3.14",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
