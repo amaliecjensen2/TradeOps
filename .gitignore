@@ -1,6 +1,9 @@
 # IBKR credentials — keep off version control
 *.secret.yaml
 
+# Local override files with real credentials — never commit
+*.local.yaml
+
 # Python
 __pycache__/
 *.py[cod]

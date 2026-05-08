@@ -1,0 +1,145 @@
+{{- if and (index .Values "cloudnative-pg" "enabled") .Values.timescale.cluster.enabled -}}
+{{- $pgHost := include "ibkrtrader.pgHost" . -}}
+{{- $db := .Values.timescale.cluster.bootstrap.database -}}
+{{- $owner := .Values.timescale.cluster.bootstrap.owner -}}
+---
+# ConfigMap carries the migration SQL so the Job can mount it.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ibkrtrader.fullname" . }}-db-migrations
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ibkrtrader.labels" . | nindent 4 }}
+    app.kubernetes.io/component: db-migrate
+  annotations:
+    # helm.sh/hook ensures this runs AFTER the Cluster is created.
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: before-hook-creation
+data:
+  001_initial_schema.sql: |
+    -- Extensions
+    CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+    -- fills
+    CREATE TABLE IF NOT EXISTS fills (
+        timestamp       TIMESTAMPTZ      NOT NULL,
+        account         TEXT             NOT NULL,
+        symbol          TEXT             NOT NULL,
+        sec_type        TEXT             NOT NULL DEFAULT 'STK',
+        exchange        TEXT             NOT NULL DEFAULT 'SMART',
+        side            TEXT             NOT NULL,
+        quantity        DOUBLE PRECISION NOT NULL,
+        price           DOUBLE PRECISION NOT NULL,
+        commission      DOUBLE PRECISION,
+        perm_id         BIGINT,
+        exec_id         TEXT             NOT NULL,
+        order_ref       TEXT             NOT NULL DEFAULT ''
+    );
+    SELECT create_hypertable('fills','timestamp',if_not_exists=>TRUE);
+    CREATE UNIQUE INDEX IF NOT EXISTS fills_exec_id_idx ON fills (exec_id);
+    CREATE INDEX IF NOT EXISTS fills_account_symbol_idx ON fills (account, symbol, timestamp DESC);
+
+    -- pnl_ticks
+    CREATE TABLE IF NOT EXISTS pnl_ticks (
+        timestamp         TIMESTAMPTZ      NOT NULL,
+        account           TEXT             NOT NULL,
+        daily_pnl         DOUBLE PRECISION NOT NULL DEFAULT 0,
+        unrealized_pnl    DOUBLE PRECISION NOT NULL DEFAULT 0,
+        realized_pnl      DOUBLE PRECISION NOT NULL DEFAULT 0,
+        net_liquidation   DOUBLE PRECISION
+    );
+    SELECT create_hypertable('pnl_ticks','timestamp',if_not_exists=>TRUE);
+    CREATE INDEX IF NOT EXISTS pnl_ticks_account_idx ON pnl_ticks (account, timestamp DESC);
+
+    -- positions_snapshot
+    CREATE TABLE IF NOT EXISTS positions_snapshot (
+        timestamp     TIMESTAMPTZ      NOT NULL,
+        account       TEXT             NOT NULL,
+        symbol        TEXT             NOT NULL,
+        sec_type      TEXT             NOT NULL DEFAULT 'STK',
+        avg_cost      DOUBLE PRECISION NOT NULL DEFAULT 0,
+        position      DOUBLE PRECISION NOT NULL DEFAULT 0,
+        market_price  DOUBLE PRECISION,
+        market_value  DOUBLE PRECISION
+    );
+    SELECT create_hypertable('positions_snapshot','timestamp',if_not_exists=>TRUE);
+    CREATE INDEX IF NOT EXISTS positions_account_symbol_idx ON positions_snapshot (account, symbol, timestamp DESC);
+
+    -- order_events
+    CREATE TABLE IF NOT EXISTS order_events (
+        timestamp       TIMESTAMPTZ      NOT NULL,
+        strategy        TEXT             NOT NULL,
+        symbol          TEXT             NOT NULL,
+        side            TEXT             NOT NULL,
+        quantity        DOUBLE PRECISION NOT NULL,
+        order_type      TEXT             NOT NULL DEFAULT 'MKT',
+        status          TEXT             NOT NULL,
+        reject_reason   TEXT,
+        idempotency_key TEXT,
+        tws_order_id    BIGINT
+    );
+    SELECT create_hypertable('order_events','timestamp',if_not_exists=>TRUE);
+    CREATE INDEX IF NOT EXISTS order_events_strategy_idx ON order_events (strategy, timestamp DESC);
+
+    -- marketdata_bars
+    CREATE TABLE IF NOT EXISTS marketdata_bars (
+        timestamp TIMESTAMPTZ      NOT NULL,
+        symbol    TEXT             NOT NULL,
+        feed      TEXT             NOT NULL DEFAULT 'realtime',
+        open      DOUBLE PRECISION NOT NULL,
+        high      DOUBLE PRECISION NOT NULL,
+        low       DOUBLE PRECISION NOT NULL,
+        close     DOUBLE PRECISION NOT NULL,
+        volume    BIGINT           NOT NULL DEFAULT 0
+    );
+    SELECT create_hypertable('marketdata_bars','timestamp',if_not_exists=>TRUE);
+    CREATE UNIQUE INDEX IF NOT EXISTS marketdata_symbol_ts_idx ON marketdata_bars (symbol, feed, timestamp DESC);
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "ibkrtrader.fullname" . }}-db-migrate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ibkrtrader.labels" . | nindent 4 }}
+    app.kubernetes.io/component: db-migrate
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: 5
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: postgres:17-alpine
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Postgres to be ready..."
+              until pg_isready -h {{ $pgHost }} -U {{ $owner }} -d {{ $db }}; do
+                sleep 3
+              done
+              echo "Running migrations..."
+              psql "postgresql://{{ $owner }}:$(cat /secrets/password)@{{ $pgHost }}/{{ $db }}" \
+                -f /migrations/001_initial_schema.sql
+              echo "Migrations complete."
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ibkrtrader.fullname" . }}-timescale-app
+                  key: password
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+      volumes:
+        - name: migrations
+          configMap:
+            name: {{ include "ibkrtrader.fullname" . }}-db-migrations
+{{- end }}

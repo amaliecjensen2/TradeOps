@@ -1,5 +1,7 @@
 # Override file for LIVE deployments.
-# helm install trader-live ./helm/ibkrtrader -f values.live.yaml
+# helm install trader-live ./helm/ibkrtrader \
+#   -f values.live.yaml \
+#   -f values.live.local.yaml    ← create this locally with real credentials (gitignored)
 #
 # DO NOT enable both paper and live in the same release without intent.
 # Run two separate releases (different namespace) if you need both.
@@ -13,6 +15,14 @@ ibkr:
 
 riskMonitor:
   killSwitchEnabled: true
+
+  # Telegram: strongly recommended for live trading.
+  # Create secret before helm install (see values.paper.yaml for instructions).
+  telegram:
+    enabled: true
+    existingSecret: "telegram-credentials"   # kubectl create secret ...
+    token: ""
+    chatId: ""
 
 # Tighter limits by default in live.
 riskGateway:

@@ -1,5 +1,7 @@
 # Override file for paper-trading deployments.
-# helm install trader-paper ./helm/ibkrtrader -f values.paper.yaml
+# helm install trader-paper ./helm/ibkrtrader \
+#   -f values.paper.yaml \
+#   -f values.paper.local.yaml    ← create this locally with real credentials (gitignored)
 ibkr:
   mode: paper
   gateways:
@@ -9,4 +11,20 @@ ibkr:
       enabled: false
 
 riskMonitor:
-  killSwitchEnabled: false   # safer default in paper
+  killSwitchEnabled: false   # safer default in paper — enable once tested
+
+  # Telegram: off by default in paper.
+  # To enable, either:
+  #   Option A (production):
+  #     kubectl create secret generic telegram-credentials \
+  #       --from-literal=TELEGRAM_TOKEN=<token> \
+  #       --from-literal=TELEGRAM_CHAT_ID=<chat-id>
+  #     then set existingSecret: telegram-credentials
+  #
+  #   Option B (quick dev test):
+  #     Set token + chatId directly here (never commit real values).
+  telegram:
+    enabled: false
+    existingSecret: ""
+    token: ""
+    chatId: ""

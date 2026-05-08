@@ -59,6 +59,23 @@ spec:
           env:
             - name: PORT
               value: {{ .Values.riskGateway.port | quote }}
+            - name: MAX_ACCOUNT_DRAWDOWN_PCT
+              value: {{ .Values.riskGateway.global.maxAccountDrawdownPct | quote }}
+            - name: MAX_GROSS_EXPOSURE
+              value: {{ .Values.riskGateway.global.maxGrossExposure | quote }}
+            - name: MAX_ORDERS_PER_SECOND
+              value: {{ .Values.riskGateway.global.maxOrdersPerSecond | quote }}
+            - name: RESTRICTED_SYMBOLS
+              value: {{ join "," .Values.riskGateway.global.restrictedSymbols | quote }}
+            {{- /* Build per-strategy limits JSON from strategies list */ -}}
+            {{- $limits := dict -}}
+            {{- range $s := .Values.strategies -}}
+              {{- if $s.enabled -}}
+                {{- $_ := set $limits $s.name ($s.risk | default dict) -}}
+              {{- end -}}
+            {{- end }}
+            - name: STRATEGY_LIMITS_JSON
+              value: {{ $limits | toJson | quote }}
             {{- include "ibkrtrader.commonEnv" . | nindent 12 }}
           volumeMounts:
             - name: config

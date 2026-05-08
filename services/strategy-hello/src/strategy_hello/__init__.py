@@ -1,0 +1,1 @@
+"""strategy_hello package."""

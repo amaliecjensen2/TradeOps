@@ -89,35 +89,67 @@ spec:
           image: "{{ .Values.riskMonitor.image.repository }}:{{ .Values.riskMonitor.image.tag }}"
           imagePullPolicy: {{ .Values.riskMonitor.image.pullPolicy | default "IfNotPresent" }}
           ports:
+            - name: health
+              containerPort: 8080
+              protocol: TCP
             - name: metrics
               containerPort: 9090
               protocol: TCP
           env:
             - name: KILL_SWITCH_ENABLED
               value: {{ .Values.riskMonitor.killSwitchEnabled | quote }}
-            - name: RECONCILE_INTERVAL_SECONDS
+            - name: RECONCILE_INTERVAL_S
               value: {{ .Values.riskMonitor.reconcileIntervalSeconds | quote }}
-            - name: LEADER_ELECTION_NAMESPACE
+            - name: K8S_NAMESPACE
               value: {{ .Release.Namespace | quote }}
-            - name: LEADER_ELECTION_NAME
-              value: {{ $name | quote }}
-            - name: STRATEGY_LABEL_SELECTOR
-              value: "app.kubernetes.io/component=strategy,app.kubernetes.io/instance={{ .Release.Name }}"
-            - name: GLOBAL_MAX_DRAWDOWN_PCT
-              value: {{ .Values.riskGateway.global.maxAccountDrawdownPct | quote }}
+            - name: RELEASE_NAME
+              value: {{ .Release.Name | quote }}
+            - name: LEASE_NAME
+              value: {{ printf "%s-risk-monitor-leader" (include "ibkrtrader.fullname" .) | quote }}
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MAX_DAILY_LOSS
+              value: {{ .Values.riskMonitor.thresholds.maxDailyLoss | quote }}
+            - name: MAX_DRAWDOWN_PCT
+              value: {{ .Values.riskMonitor.thresholds.maxDrawdownPct | quote }}
+            - name: MAX_GROSS_EXPOSURE
+              value: {{ .Values.riskMonitor.thresholds.maxGrossExposure | quote }}
+            - name: HEARTBEAT_TIMEOUT_S
+              value: {{ .Values.riskMonitor.thresholds.heartbeatTimeoutS | quote }}
+            - name: TELEGRAM_ENABLED
+              value: {{ .Values.riskMonitor.telegram.enabled | quote }}
+            {{- if .Values.riskMonitor.telegram.existingSecret }}
+            - name: TELEGRAM_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.riskMonitor.telegram.existingSecret }}
+                  key: TELEGRAM_TOKEN
+            - name: TELEGRAM_CHAT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.riskMonitor.telegram.existingSecret }}
+                  key: TELEGRAM_CHAT_ID
+            {{- else }}
+            - name: TELEGRAM_TOKEN
+              value: {{ .Values.riskMonitor.telegram.token | quote }}
+            - name: TELEGRAM_CHAT_ID
+              value: {{ .Values.riskMonitor.telegram.chatId | quote }}
+            {{- end }}
             {{- include "ibkrtrader.commonEnv" . | nindent 12 }}
           resources:
             {{- toYaml .Values.riskMonitor.resources | nindent 12 }}
           readinessProbe:
             httpGet:
               path: /readyz
-              port: metrics
+              port: health
             periodSeconds: 10
             failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /healthz
-              port: metrics
+              port: health
             periodSeconds: 30
             failureThreshold: 3
 {{- end }}

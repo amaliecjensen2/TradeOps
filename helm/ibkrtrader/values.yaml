@@ -177,6 +177,23 @@ riskMonitor:
   # Disable in dev to avoid accidental kills.
   killSwitchEnabled: true
 
+  # Risk thresholds — passed to the monitor as env vars.
+  # Override in values.paper.yaml / values.live.yaml as needed.
+  thresholds:
+    maxDailyLoss: -500          # halt if daily P&L drops below this (USD)
+    maxDrawdownPct: 0.05        # halt at 5% intra-day drawdown from HWM
+    maxGrossExposure: 1000000   # halt if gross exposure exceeds this (USD)
+    heartbeatTimeoutS: 60       # alert (no halt) if adapter silent > 60s
+
+  # Telegram alerts.
+  # Set telegram.enabled=true and provide token + chatId via a secret.
+  # Never commit real credentials — use existingSecret in production.
+  telegram:
+    enabled: false
+    existingSecret: ""          # Secret with keys: TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
+    token: ""                   # only for local dev; use existingSecret in prod
+    chatId: ""
+
 # ----------------------------------------------------------------------------
 # API + dashboard
 # ----------------------------------------------------------------------------
