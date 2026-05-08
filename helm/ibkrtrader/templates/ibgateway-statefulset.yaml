@@ -33,6 +33,10 @@ spec:
     spec:
       serviceAccountName: {{ include "ibkrtrader.serviceAccountName" $ }}
       terminationGracePeriodSeconds: 30
+      {{- with $.Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with $gw.nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}

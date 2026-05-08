@@ -45,6 +45,10 @@ spec:
         checksum/config: {{ printf "%s-%s" (toYaml .Values.riskGateway) (toYaml .Values.strategies) | sha256sum }}
     spec:
       serviceAccountName: {{ include "ibkrtrader.serviceAccountName" . }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: risk-gateway
           image: "{{ .Values.riskGateway.image.repository }}:{{ .Values.riskGateway.image.tag }}"

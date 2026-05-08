@@ -31,6 +31,10 @@ spec:
         app.kubernetes.io/component: ibkr-adapter
     spec:
       serviceAccountName: {{ include "ibkrtrader.serviceAccountName" . }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.ibkrAdapter.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

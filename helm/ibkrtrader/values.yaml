@@ -9,8 +9,9 @@
 # ============================================================================
 
 global:
-  imageRegistry: registry.local
-  imagePullSecrets: []
+  imageRegistry: ghcr.io/amaliecjensen
+  imagePullSecrets:
+    - name: ghcr-pull-secret
   storageClass: ""
 
 # ----------------------------------------------------------------------------
@@ -95,7 +96,7 @@ strategies:
   - name: hello
     enabled: true
     image:
-      repository: registry.local/ibkrtrader/strategy-hello
+      repository: ghcr.io/amaliecjensen/ibkrtrader/strategy-hello
       tag: v0
       pullPolicy: IfNotPresent
     clientId: 11
@@ -124,7 +125,7 @@ strategies:
 ibkrAdapter:
   enabled: true
   image:
-    repository: registry.local/ibkrtrader/ibkr-adapter
+    repository: ghcr.io/amaliecjensen/ibkrtrader/ibkr-adapter
     tag: v0
     pullPolicy: IfNotPresent
   # clientId=1 is reserved for the adapter. Do NOT use 1 in .strategies[].
@@ -144,7 +145,7 @@ ibkrAdapter:
 riskGateway:
   enabled: true
   image:
-    repository: registry.local/ibkrtrader/risk-gateway
+    repository: ghcr.io/amaliecjensen/ibkrtrader/risk-gateway
     tag: v0
     pullPolicy: IfNotPresent
   replicas: 2
@@ -164,7 +165,7 @@ riskGateway:
 riskMonitor:
   enabled: true
   image:
-    repository: registry.local/ibkrtrader/risk-monitor
+    repository: ghcr.io/amaliecjensen/ibkrtrader/risk-monitor
     tag: v0
     pullPolicy: IfNotPresent
   replicas: 2          # leader-elected via Lease
@@ -200,7 +201,7 @@ riskMonitor:
 api:
   enabled: true
   image:
-    repository: registry.local/ibkrtrader/api
+    repository: ghcr.io/amaliecjensen/ibkrtrader/api
     tag: v0
     pullPolicy: IfNotPresent
   replicas: 2
@@ -212,7 +213,7 @@ api:
 dashboard:
   enabled: true
   image:
-    repository: registry.local/ibkrtrader/dashboard
+    repository: ghcr.io/amaliecjensen/ibkrtrader/dashboard
     tag: v0
     pullPolicy: IfNotPresent
   replicas: 1
@@ -235,7 +236,9 @@ dashboard:
 # `timescale.cluster` configures the per-release Cluster CR.
 # Key name is "cloudnative-pg" because the dependency alias removed.
 cloudnative-pg:
-  enabled: true
+  enabled: false
+  crds:
+    create: false
 
 timescale:
   cluster:

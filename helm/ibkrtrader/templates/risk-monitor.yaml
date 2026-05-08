@@ -84,6 +84,10 @@ spec:
         app.kubernetes.io/component: risk-monitor
     spec:
       serviceAccountName: {{ $sa }}
+      {{- with $.Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: risk-monitor
           image: "{{ .Values.riskMonitor.image.repository }}:{{ .Values.riskMonitor.image.tag }}"

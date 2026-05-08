@@ -61,6 +61,10 @@ spec:
         checksum/config: {{ toYaml $strategy | sha256sum }}
     spec:
       serviceAccountName: {{ include "ibkrtrader.serviceAccountName" $root }}
+      {{- with $root.Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: strategy
           image: "{{ $strategy.image.repository }}:{{ $strategy.image.tag }}"

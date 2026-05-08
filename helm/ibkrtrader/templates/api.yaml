@@ -22,6 +22,10 @@ spec:
         app.kubernetes.io/component: api
     spec:
       serviceAccountName: {{ include "ibkrtrader.serviceAccountName" . }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: api
           image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
