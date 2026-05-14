@@ -1,4 +1,4 @@
-{{- if and (index .Values "cloudnative-pg" "enabled") .Values.timescale.cluster.enabled -}}
+{{- if .Values.timescale.cluster.enabled -}}
 {{- $name := printf "%s-timescale" (include "ibkrtrader.fullname" .) -}}
 {{/*
   Requires the CloudNativePG operator (installed via the chart dependency).
@@ -26,8 +26,6 @@ spec:
     initdb:
       database: {{ .Values.timescale.cluster.bootstrap.database | quote }}
       owner: {{ .Values.timescale.cluster.bootstrap.owner | quote }}
-      postInitTemplateSQL:
-        - "CREATE EXTENSION IF NOT EXISTS timescaledb;"
   storage:
     size: {{ .Values.timescale.cluster.storage.size | quote }}
     {{- if or .Values.timescale.cluster.storage.storageClass .Values.global.storageClass }}

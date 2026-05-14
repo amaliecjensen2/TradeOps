@@ -124,6 +124,16 @@ Standard env block for any pod that needs to reach IBGW + NATS + Postgres.
   value: {{ include "ibkrtrader.pgHost" . | quote }}
 - name: PG_DATABASE
   value: {{ .Values.timescale.cluster.bootstrap.database | quote }}
+- name: PG_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ printf "%s-timescale-app" (include "ibkrtrader.fullname" .) }}
+      key: username
+- name: PG_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ printf "%s-timescale-app" (include "ibkrtrader.fullname" .) }}
+      key: password
 - name: IBKR_ACCOUNT
   value: {{ .Values.ibkr.account | quote }}
 - name: IBKR_MODE

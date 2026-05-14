@@ -41,8 +41,8 @@ ibkr:
       twoFaTimeoutAction: restart
       readOnlyApi: false
       resources:
-        requests: { cpu: 500m, memory: 1500Mi }
-        limits:   { cpu: "2",  memory: 3Gi }
+        requests: { cpu: 250m, memory: 512Mi }
+        limits:   { cpu: "2",  memory: 2Gi }
       persistence:
         enabled: true
         size: 5Gi
@@ -247,13 +247,12 @@ timescale:
     image:
       # CNPG-compatible Postgres image with TimescaleDB extension preloaded.
       repository: ghcr.io/clevyr/cloudnativepg-timescale
-      tag: "17"
+      tag: "17.5-22"
     storage:
       size: 20Gi
       storageClass: ""
     postgresql:
       parameters:
-        shared_preload_libraries: "timescaledb"
         max_connections: "200"
     bootstrap:
       database: trader
