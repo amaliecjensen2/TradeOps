@@ -61,6 +61,9 @@ spec:
               else
                 echo "PVC already initialized, skipping copy."
               fi
+              echo "Patching TrustedIPs to allow all cluster traffic..."
+              sed -i 's/^TrustedIPs=.*/TrustedIPs=/' /mnt/jts/jts.ini
+              sed -i 's/^TrustedIPs=.*/TrustedIPs=/' /mnt/jts/jts.ini.tmpl
           volumeMounts:
             - name: jts
               mountPath: /mnt/jts
@@ -97,6 +100,10 @@ spec:
               value: {{ $gw.readOnlyApi | ternary "yes" "no" | quote }}
             - name: BYPASS_WARNING
               value: "yes"
+            - name: TRUSTED_IPS
+              value: {{ $gw.trustedIPs | default "10.0.0.0/8" | quote }}
+            - name: TWS_ACCEPT_INCOMING
+              value: "accept"
             - name: TZ
               value: "America/New_York"
           resources:

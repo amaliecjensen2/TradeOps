@@ -24,7 +24,7 @@ riskMonitor:
   #   Option B (quick dev test):
   #     Set token + chatId directly here (never commit real values).
   telegram:
-    enabled: false
-    existingSecret: ""
+    enabled: true
+    existingSecret: "telegram-credentials"
     token: ""
     chatId: ""

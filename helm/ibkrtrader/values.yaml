@@ -40,6 +40,7 @@ ibkr:
       autoRestartTime: "11:55 PM"
       twoFaTimeoutAction: restart
       readOnlyApi: false
+      trustedIPs: "10.0.0.0/8"   # pod CIDR — set to "" to restrict to localhost only
       resources:
         requests: { cpu: 250m, memory: 512Mi }
         limits:   { cpu: "2",  memory: 2Gi }

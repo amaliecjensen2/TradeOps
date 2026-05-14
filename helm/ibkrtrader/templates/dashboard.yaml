@@ -38,6 +38,8 @@ spec:
           env:
             - name: PORT
               value: {{ .Values.dashboard.port | quote }}
+            - name: HOSTNAME
+              value: "0.0.0.0"
             - name: NEXT_PUBLIC_API_URL
               value: {{ $apiUrl | quote }}
             - name: API_URL
