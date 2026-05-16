@@ -22,7 +22,7 @@ ibkr:
   # Both StatefulSets can be deployed simultaneously by enabling both
   # gateways below; this flag only steers default DNS resolution.
   mode: paper          # paper | live
-  account: "U25470276"  # IBKR account ID
+  account: "DUQ568769"  # IBKR account ID
 
   # Per-mode gateway configuration. Disable one to save resources.
   gateways:
@@ -32,7 +32,7 @@ ibkr:
         repository: ghcr.io/gnzsnz/ib-gateway
         tag: stable
         pullPolicy: IfNotPresent
-      apiPort: 4002
+      apiPort: 4004
       vncPort: 5900
       # IBC auto-restart time (Toronto) — gateway restarts inside the
       # existing session window so daily 2FA is not re-prompted. The
@@ -58,7 +58,7 @@ ibkr:
         repository: ghcr.io/gnzsnz/ib-gateway
         tag: stable
         pullPolicy: IfNotPresent
-      apiPort: 4001
+      apiPort: 4003
       vncPort: 5900
       autoRestartTime: "11:55 PM"
       twoFaTimeoutAction: restart
@@ -127,7 +127,7 @@ ibkrAdapter:
   enabled: true
   image:
     repository: ghcr.io/amaliecjensen/ibkrtrader/ibkr-adapter
-    tag: v0
+    tag: v0.1.1
     pullPolicy: IfNotPresent
   # clientId=1 is reserved for the adapter. Do NOT use 1 in .strategies[].
   clientId: 1
@@ -215,7 +215,7 @@ dashboard:
   enabled: true
   image:
     repository: ghcr.io/amaliecjensen/ibkrtrader/dashboard
-    tag: v0
+    tag: v0.1.1
     pullPolicy: IfNotPresent
   replicas: 1
   port: 3000

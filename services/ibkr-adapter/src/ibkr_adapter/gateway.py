@@ -138,8 +138,10 @@ class IBKRGateway:
                 self._heartbeat_task = asyncio.create_task(
                     self._heartbeat_loop())
 
-                # Block here; ib_insync drives its own event loop internally
-                await self._ib.disconnectedEvent.wait()
+                # eventkit.Event is not an asyncio.Event; keep the task alive
+                # until ib_insync reports that the socket has disconnected.
+                while self._ib.isConnected():
+                    await asyncio.sleep(1)
 
             except (ConnectionRefusedError, asyncio.TimeoutError, OSError) as exc:
                 self._connected = False

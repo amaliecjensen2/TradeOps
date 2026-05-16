@@ -17,8 +17,9 @@ build/
 .mypy_cache/
 .ruff_cache/
 
-# Docker
-.dockerignore
+# Node
+node_modules/
+.next/
 
 # IDE
 .idea/

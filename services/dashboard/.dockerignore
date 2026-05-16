@@ -1,0 +1,4 @@
+node_modules
+.next
+build-errors.txt
+npm-debug.log*

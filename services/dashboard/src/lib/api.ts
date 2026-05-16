@@ -3,7 +3,7 @@
  * Base URL is set via NEXT_PUBLIC_API_URL env var injected by Helm/Next.js.
  */
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const BASE = "/api/trader";
 
 export interface SystemStatus {
     adapter_connected: boolean;

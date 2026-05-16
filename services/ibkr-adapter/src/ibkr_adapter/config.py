@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # ------------------------------------------------------------------ IBKR
     ibgw_host: str = Field("ibkrtrader-gateway-paper", alias="IBGW_HOST")
-    ibgw_port: int = Field(4002, alias="IBGW_PORT")
+    ibgw_port: int = Field(4004, alias="IBGW_PORT")
     ibkr_client_id: int = Field(1, alias="IBKR_CLIENT_ID")
     ibkr_account: str = Field("", alias="IBKR_ACCOUNT")
 
