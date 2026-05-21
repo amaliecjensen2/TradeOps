@@ -25,6 +25,7 @@ $Services = @(
     "risk-gateway",
     "api",
     "strategy-hello",
+    "strategy-nvidia",
     "dashboard"
 )
 

@@ -114,6 +114,26 @@ strategies:
       maxDailyLoss: 100
       maxOrdersPerSecond: 1
 
+  - name: nvidia
+    enabled: true
+    image:
+      repository: ghcr.io/amaliecjensen/ibkrtrader/strategy-nvidia
+      tag: v0
+      pullPolicy: IfNotPresent
+    clientId: 12
+    replicas: 1
+    resources:
+      requests: { cpu: 100m, memory: 128Mi }
+      limits:   { cpu: 500m, memory: 512Mi }
+    config:
+      universe: ["NVDA"]
+      trade_qty: 1
+    risk:
+      maxOrderNotional: 5000
+      maxPosition: 1
+      maxDailyLoss: 500
+      maxOrdersPerSecond: 1
+
 # ----------------------------------------------------------------------------
 # IBKR Adapter
 #
