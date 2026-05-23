@@ -1,0 +1,46 @@
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "14px", "edgeLabelBackground": "#2d2d2d"}}}%%
+flowchart TD
+    IBKR[["IBKR Servers"]]
+    OPR[["Operatør"]]
+    TG[["Telegram"]]
+
+    P1(["1.0\nGenerer\nhandelssignal"])
+    P2(["2.0\nValider\nordre"])
+    P3(["3.0\nUdfør\nordre"])
+    P4(["4.0\nMonitor\nportefølje"])
+    P5(["5.0\nVis\ndata"])
+
+    NATS[("D1\nNATS JetStream")]
+    TSDB[("D2\nTimescaleDB")]
+
+    IBKR -- "kurser" --> P3
+    P3 -- "kurser" --> NATS
+    NATS -- "kurser" --> P1
+
+    P1 -- "ordre" --> P2
+    P2 -- "godkendt ordre" --> NATS
+    NATS -- "ordre" --> P3
+    P3 -- "køb / salg" --> IBKR
+
+    IBKR -- "handler" --> P3
+    P3 -- "handler" --> NATS
+
+    NATS -- "handler" --> P4
+    P4 -- "stop!" --> NATS
+    NATS -- "stop!" --> P2
+    P4 -- "alarm" --> TG
+
+    NATS -- "handler / status" --> TSDB
+    NATS -- "handler / status" --> P5
+    TSDB -- "historik" --> P5
+    P5 -- "rapporter" --> OPR
+
+    classDef external  fill:#d5e8d4,stroke:#82b366,color:#000
+    classDef process   fill:#dae8fc,stroke:#6c8ebf,color:#000
+    classDef datastore fill:#fff2cc,stroke:#d6b656,color:#000
+
+    class IBKR,OPR,TG external
+    class P1,P2,P3,P4,P5 process
+    class NATS,TSDB datastore
+
+    linkStyle default stroke:#ffffff,stroke-width:1.5px

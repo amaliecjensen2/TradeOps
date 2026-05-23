@@ -1,0 +1,52 @@
+flowchart TB
+    subgraph operators["Operators"]
+        DASH[dashboard<br/>Next.js]
+    end
+
+    subgraph strategies["Strategy layer"]
+        S1[strategy-hello<br/>MA crossover]
+        S2[strategy-N<br/>...]
+    end
+
+    subgraph control["Risk &amp; control plane"]
+        RG[risk-gateway<br/>pre-trade checks]
+        RM[risk-monitor<br/>kill switch + leader]
+    end
+
+    subgraph broker["Broker layer"]
+        ADP[ibkr-adapter<br/>ib_insync, clientId=1]
+        IBGW[(IBKR Gateway<br/>IBC auto-login)]
+    end
+
+    subgraph data["Data plane"]
+        NATS{{NATS JetStream<br/>orders / fills / pnl /<br/>positions / marketdata / risk}}
+        TS[(TimescaleDB<br/>hypertables)]
+    end
+
+    API[api<br/>FastAPI read-only]
+
+    S1 -- "POST /orders" --> RG
+    S2 -- "POST /orders" --> RG
+    RG -- "orders.&lt;strategy&gt;.&lt;sym&gt;" --> NATS
+    NATS -- "orders.&gt;" --> ADP
+    ADP <-- "TCP 4004" --> IBGW
+
+    ADP -- "fills.* positions.*<br/>pnl.* risk.adapter.*" --> NATS
+
+    NATS -- "fills/pnl/positions/<br/>risk.adapter.*" --> RM
+    RM -- "risk.halt" --> NATS
+    NATS -- "risk.halt" --> RG
+    RM -. "scale to 0 (K8s API)" .-> S1
+    RM -. "scale to 0 (K8s API)" .-> S2
+
+    NATS -- "marketdata.realtime.*" --> S1
+    NATS -- "marketdata.realtime.*" --> S2
+    ADP -- "marketdata.*" --> NATS
+
+    NATS -- "positions/pnl/risk<br/>(cache)" --> API
+    TS -- "history" --> API
+    API --> DASH
+    NATS -. "persist" .-> TS
+
+    classDef ext fill:#e8e8e8,stroke:#666,stroke-width:1px;
+    class IBGW,TS ext

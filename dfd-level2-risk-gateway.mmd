@@ -1,0 +1,44 @@
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "14px", "edgeLabelBackground": "#2d2d2d"}}}%%
+flowchart TD
+    P1(["1.0\nGenerer\nhandelssignal"])
+    P3(["3.0\nUdfør\nordre"])
+
+    P21(["2.1\nTjek\nglobal halt"])
+    P22(["2.2\nTjek\npris-band"])
+    P23(["2.3\nTjek\npositionsgrænse"])
+    P24(["2.4\nTjek\ndagligt tab"])
+    P25(["2.5\nTjek\nrate limit"])
+
+    CACHE[("D3\nIn-memory\ncache")]
+    NATS[("D1\nNATS JetStream")]
+
+    P1 -- "ordre" --> P21
+    P21 -- "ikke stoppet" --> P22
+    P22 -- "pris OK" --> P23
+    P23 -- "position OK" --> P24
+    P24 -- "tab OK" --> P25
+    P25 -- "godkendt" --> P3
+
+    P21 -- "afvist: stoppet" --> P1
+    P22 -- "afvist: fat-finger" --> P1
+    P23 -- "afvist: for stor" --> P1
+    P24 -- "afvist: tab-grænse" --> P1
+    P25 -- "afvist: for hurtigt" --> P1
+
+    NATS -- "stop-signal" --> CACHE
+    NATS -- "handler / PnL" --> CACHE
+    CACHE -- "halt-flag" --> P21
+    CACHE -- "pris-reference" --> P22
+    CACHE -- "åbne positioner" --> P23
+    CACHE -- "dagligt tab" --> P24
+    CACHE -- "ordre-tæller" --> P25
+
+    classDef external  fill:#d5e8d4,stroke:#82b366,color:#000
+    classDef process   fill:#dae8fc,stroke:#6c8ebf,color:#000
+    classDef datastore fill:#fff2cc,stroke:#d6b656,color:#000
+
+    class P1,P3 external
+    class P21,P22,P23,P24,P25 process
+    class CACHE,NATS datastore
+
+    linkStyle default stroke:#ffffff,stroke-width:1.5px

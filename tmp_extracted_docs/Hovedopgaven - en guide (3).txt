@@ -1,0 +1,338 @@
+
+
+===== PAGE 1 =====
+   
+ 
+Redaktører: paag@kea.dk og koordinator-dat-ita@kea.dk. 
+ 
+Hovedopgaven – en guide 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Denne guide er en hjælp til jer, der skal i gang med hovedopgaven 
+på KEAs datamatikeruddannelse. 
+ 
+ 
+.  
+
+
+
+===== PAGE 2 =====
+Hovedopgaven – en guide, version 2.0 (2024) 
+Side 2 
+ 
+Indhold 
+1 Indledning ................................................................................................................................................. 3 
+2 Hvad skal jeres hovedopgave handle om? ............................................................................................... 4 
+2.1 Hvad skal vi aflevere? ....................................................................................................................... 4 
+2.2 Må vi skrive hovedopgave hos vores praktikvirksomhed? .............................................................. 4 
+3 Hvad kan vi forvente af vejleder? ............................................................................................................. 5 
+4 Hvad skal vi skrive om i rapporten? .......................................................................................................... 6 
+4.1 Fagligt niveau ................................................................................................................................... 7 
+4.2 Sideantal ........................................................................................................................................... 7 
+4.3 Illustrationer ..................................................................................................................................... 7 
+4.4 Hvad er god skrivestil? ..................................................................................................................... 8 
+5 Hvordan foregår eksamen? ...................................................................................................................... 9 
+5.1 Hvad skal vores præsentation handle om? ...................................................................................... 9 
+5.2 Hvad bliver vi spurgt om? ................................................................................................................ 9 
+5.3 Hvordan bestemmer I vores karakterer? ....................................................................................... 10 
+6 Hvad siger studieordningen? .................................................................................................................. 11 
+6.1 Uddrag fra studieordningen ........................................................................................................... 11 
+ 
+ 
+  
+
+
+
+===== PAGE 3 =====
+Hovedopgaven – en guide, version 2.0 (2024) 
+Side 3 
+ 
+1 Indledning 
+Så nu skal I til at lave hovedopgave. Hvordan griber man det overhovedet an? Denne guide er ment som en 
+håndsrækning til jer, der skal starte eller er i gang med hovedopgaven på datamatikeruddannelsen. Den 
+besvarer de generelle spørgsmål om forløbet, vejleders rolle, rapporten og eksamen. 
+Den aktuelle studieordning kan være en anden for jer, hvis I fx har været på orlov undervejs i uddannelsen. 
+I finder et link til den aktuelle studieordning i denne guides afsnit 6 på side 11. 
+
+
+
+===== PAGE 4 =====
+Hovedopgaven – en guide, version 2.0 (2024) 
+Side 4 
+ 
+2 Hvad skal jeres hovedopgave handle om? 
+Hvad skal eller må hovedopgaven handle om? 
+Hovedopgaven er jeres svendestykke. Her demonstrerer I, hvad I kan som datamatikere. Det er 
+studieordningens afsnit 5.5, der præcist definerer formålet med hovedopgaven. I kan også læse KEAs egen 
+fremstilling om uddannelsens afsluttende projekt. 
+Størstedelen af hovedopgaverne er softwareudviklingsprojekter. Her samarbejder I normalt med en 
+virksomhed om at udvikle eller videreudvikle noget software, som virksomheden anvender eller sælger. Der 
+er også andre muligheder som for eksempel automatisering eller projektledelse. Man kan godt skrive 
+hovedopgave uden en virksomhed, men opgaven skal stadig være erhvervsrelevant. Relevansen for 
+erhvervet skal dokumenteres f.eks. gennem brugerresearch eller en fokusgruppe.  
+OBS: Det er vejleder, der skal godkende jeres problemstilling. 
+Opgaven skal være erhvervsrelevant for en snarlig dimittend, 
+kompleks nok til at kræve en datamatiker 
+og omfattende nok til at udgøre en hovedopgave. 
+Når vejleder godkender jeres problemstilling/problemformulering, er I sikre på at have et fornuftigt 
+udgangspunkt. Så arbejder I i den rigtige retning lige fra begyndelsen. 
+2.1 Hvad skal vi aflevere? 
+I skal aflevere en rapport, som dokumenterer jeres proces, produkt og ydelse. Mange afleverer også et 
+produkt, fx i form af et link til et GitHub-repository. Selve produktet vil blive betragtet som et ”bilag” til 
+rapporten. 
+Et produkt kan være:  
+• En kodebase til en webapplikation. 
+• En samling af diagrammer. 
+• En analyse. 
+• En undersøgelse. 
+• Etc. 
+Produktet skal have relevans til erhvervet og IT-branchen. Husk at vejleder skal godkende jeres 
+problemstilling. 
+2.2 Må vi skrive hovedopgave hos vores praktikvirksomhed? 
+Det må I gerne. Tidligere skelnede vi skarpt mellem praktik og hovedopgave, men i praksis kan der være 
+mange overlap, hvis jeres hovedopgave er en forlængelse af praktikforløbet. Det skal bare fremgå af 
+opgaven, om praktikforløbet helt eller delvist indgår i hovedopgaven. 
+
+
+
+===== PAGE 5 =====
+Hovedopgaven – en guide, version 2.0 (2024) 
+Side 5 
+ 
+3 Hvad kan vi forvente af vejleder? 
+Jeres gruppe bliver tilknyttet den samme vejleder til hovedopgaven. Og hvad kan I så forvente af jeres 
+vejleder? 
+Først og fremmest skal I selv være aktivt opsøgende, når I har brug for vejledning. Vejleder vil muligvis 
+kontakte jer, hvis der er radiotavshed fra jer i længere perioder, men som udgangspunkt skal I selv tage 
+initiativet og sætte dagsordenen for øvrige møder, når I har behov for vejledning. 
+Vejleder skal også godkende jeres problemstilling tidligt i projektet. 
+Derudover kan vejleder sparre med jer om jeres proces undervejs i forløbet og guide jer i en god retning i 
+forhold til jeres rapport (fx rapportstruktur) og jeres mundtlige forsvar af opgaven. 
+Eksaminator 
+Vejleder er jeres eksaminator til den afsluttende eksamen. Vejleder kender jer og har fulgt jeres proces, og 
+derfor kan vejleder skabe et godt grundlag for bedømmelsen baseret på jeres rapport. 
+Ud over eksaminator vil der være en ekstern censor som medbedømmer. 
+Læs mere om eksamen i afsnit 5 på side 9. 
+Hvad gør vejleder ikke? 
+Eftersom rapporten indgår i bedømmelsen til eksamen, er der visse grænser for hvad vejleder må. I kan fx 
+ikke bruge vejleder til: 
+• Fejlsøgning eller optimering i kode el.lign. 
+• Gennemlæsning af større dele af jeres rapport eller ”korrekturlæsning”. 
+• Udarbejdelse af mundtligt oplæg (men gerne sparring ift. potentielle emner). 
+• Bindende vurdering af eksaminationsforløb eller bedømmelse el.lign. 
+Jeres konkrete vejleder kan arbejde lidt forskelligt i praksis, så det er vigtigt at I spørger jer for. 
+I hovedopgaven skal gruppen i høj grad demonstrere 
+evnen til at arbejde selvstændigt. 
+
+
+
+===== PAGE 6 =====
+Hovedopgaven – en guide, version 2.0 (2024) 
+Side 6 
+ 
+4 Hvad skal vi skrive om i rapporten? 
+Det er én ting at afvikle projektet. Men hvad skal I egentlig skrive om i rapporten? 
+I kan finde inspiration i tidligere rapporter, som er blevet delt med KEA og hvor eksaminanderne har opnået 
+karakteren 10 eller 12. Husk at karakteren er en helhedsvurdering og afhænger af mange andre ting end 
+blot rapporten jf. afsnit 5.3 på side 10. I finder opgaverne på http://opgaver.kea.dk. 
+I studieordningen under ”Prøver på uddannelsen -> Afsluttende projekt” står der: 
+ 
+Rapporten skal som minimum skal indeholde: 
+ 
+Hvordan I disponerer selve hovedafsnittet i rapporten, afhænger helt af jeres konkrete opgave. 
+Hovedafsnittet indeholder typisk afsnit som: Metode, Analyse og Perspektivering. Sørg for at overholde 
+rækkefølgen og kriterierne for indhold i de enkelte afsnit. Dette er vigtigt uanset hvordan I disponerer 
+rapporten. 
+Vær opmærksom på, at stave- og formuleringsevne indgår i bedømmelsen af rapporten jf. studieordningen. 
+Endelig er der nogle yderligere formelle krav til formatet af dokumentet: 
+Kilder og citater refereres efter Harvard eller APA-style, hvilket vil sige at henvisninger er i parentesform, og 
+ikke i form af fodnoter eller slutnoter. Følg linket til KEA Bibliotek i afsnit 4.4 på side 8, hvor der er en 
+oversigt. 
+Dokumentet skal afleveres som PDF i A4 højformat. 
+Skrifttypen skal være en letlæselig font som Arial, Calibri, Helvetica eller Times New Roman. 
+Skriftstørrelsen skal være mellem 9 og 12. 
+Det er en god ide at inkludere et link eller en fil med en video, som præsenterer produktet. Gør 
+opmærksom på dette i indledningen, så vi har mulighed for at se videoen inden vi læser videre i rapporten. 
+
+
+
+===== PAGE 7 =====
+Hovedopgaven – en guide, version 2.0 (2024) 
+Side 7 
+ 
+4.1 Fagligt niveau 
+Rapporten skal skrives til fagligt kompetente læsere. I kan forvente at læseren har mindst jeres eget faglige 
+niveau og forstår almindelige faglige begreber inden for faget i forhold til datamatikeruddannelsen. I skal 
+ikke at skrive en ugebladsartikel til en bred målgruppe. 
+Kort fortalt: I behøver ikke redegøre for teori fra uddannelsen i detaljer. I skal kun beskrive hvordan I 
+anvender jeres viden, kompetencer og færdigheder i praksis. 
+I skal ikke begynde på længere forklaringer om helt grundlæggende emner som Scrum, OOP eller Java – det 
+kender læseren udmærket på forhånd, så her er en kort sætning eller to fyldestgørende. 
+Til gengæld kan selv fagfæller have brug for at få forklaret domænespecifikke begreber. Hvis jeres opgave 
+eller jeres virksomhed anvender begreber, der ikke er alment kendte i IT-branchen eller som kan have flere 
+forskellige betydninger, er det en god ide at give en kort forklaring, så læseren kan følge med. Det samme 
+gælder, hvis I anvender andre værktøjer end dem I lærte på 1.-3. semester. 
+Husk, at læserne ikke nødvendigvis læser rapportens bilag, så selve rapporten (uden bilag) skal indeholde al 
+essentiel information, herunder nødvendige forklaring til læseren om domænespecifikke begreber. 
+4.2 Sideantal 
+Rapporten må maksimalt fylde et vist antal normalsider afhængig af hvor mange I er i gruppen: 
+Antal gruppemedlemmer Maksimalt antal normalsider 
+1 40 
+2 60 
+3 80 
+4 100 
+ 
+En normalside tælles som 2.400 anslag, – så en gruppe på tre må skrive højst 80 x 2.400 anslag, i alt 
+192.000 anslag (inkl. mellemrum). Der er ikke noget minimumstal. 
+Dette står også i afsnit 6 på side 11 om studieordningens bestemmelser. 
+4.3 Illustrationer 
+Figurer og grafer m.v. tæller ikke ekstra anslag i hovedopgaverapporten. De har dog stor værdi for læser og 
+gør det lettere for dig at illustrere ting med screenshots af f.eks. skærmbilleder eller kodestumper, som du 
+gerne vil forklare nærmere. I må selvfølgelig ikke overdrive brugen af illustrationer eller lave hele rapporten 
+som en tegneserie, men så længe illustrationerne er en naturlig del af læsningen, giver det ofte indtryk af 
+en mere letlæselig og grundigt gennemarbejdet rapport. 
+Sørg for kun at vise det essentielle. Hvis der er et bestemt kodestykke på 4 linjer, der viser noget 
+interessant, behøver I ikke at fylde op med et screenshot af hele metoden på 15 linjer. 
+Det er altid en god idé at skrive, hvad illustrationen viser. Gå ikke ud fra, at læseren lægger mærke til den 
+samme detalje, som du selv finder indlysende. Beskriv pointen og illustrér visuelt. 
+
+
+
+===== PAGE 8 =====
+Hovedopgaven – en guide, version 2.0 (2024) 
+Side 8 
+ 
+4.4 Hvad er god skrivestil? 
+Genren for opgaven kan defineres som en praksisnær og formidlende fremstillingsform. 
+Lene Storgaard Brok kalder i Sprogbrug og formidlingspraksis, 2. udg. (2014) skrivningen indenfor 
+praksisfællesskabet for ”arbejdspladsspecifikt sprogbrug”. Det står i modsætning til både 
+”videnssprogbrug” (som de uddannede indenfor en profession forstår, og som bruges i de akademiske 
+genrer), og ”hverdagssprogbrug”, som anvendes af mennesker udenfor fagene. 
+Start med at spørge jer selv hvordan I ville skrive, hvis I glemte alt om eksamen og bare ville skrive denne 
+rapport for at: 
+• Dokumentere jeres arbejde 
+• Dele jeres erfaringer og refleksioner med jeres fagfæller 
+• Danne et afsæt for en overlevering til driftsgruppen 
+Så har I en god begyndelse. 
+Selv om det kan synes som en stor mundfuld at skrive så mange sider, må I ikke gå i fælden at ”fylde ud”. 
+Skriv kort og præcist. Det fylder altid mere end man forestiller sig, når man begynder processen, og 
+pludselig kan I få problemer med at skulle skære ned i materialet. Skriv kort og koncist lige fra begyndelsen 
+af. Hen imod slutningen kan I altid justere. 
+Omvendt skal I heller ikke vente til sidste øjeblik med at skrive. Det er omfanget alt for stort til. Begynd 
+skrivningen i god tid. I kan altid tilpasse hen ad vejen, når I får en fornemmelse af hvor mange anslag I 
+bruger uge for uge. 
+OBS! Husk at sætte jer grundigt ind i formelle krav til rapporten inden I skriver for meget. Se afsnit 6 (side 
+11) om studieordningens bestemmelser. Der er nogle vigtige krav til fagligt niveau og omfang, disposition, 
+sprog, stave- og formuleringsevne og meget mere. 
+Formatet for hovedafsnittet er meget åbent. Helt grundlæggende skal man følge almindelige retningslinjer 
+for skriftlige fremstillinger (se fx ”Den gode opgave” af Peter Stray Jørgensen & Lotte Rienecker1). 
+Det er vigtigt at I følger bogens format samt retningslinjer for at fremstille jeres projekt 
+på en saglig og professional måde. 
+Det er vigtigt at henvise til eksterne kilder, så læseren kan kigge jer i kortene. Hvis I bruger materiale fra 
+egne tidligere rapporter, skal I også kildehenvise efter Harvard/APA’s retningslinjer. KEAs bibliotek har 
+beskrevet reglerne for litteraturhenvisninger grundigt, så sæt jer ind i dem, så I henviser korrekt fra starten. 
+Det er verdens mest utaknemmelige opgave at gøre det som noget af det sidste op til afleveringen, så det 
+er en god idé at gøre det løbende. 
+ 
+1 https://www.saxo.com/dk/den-gode-opgave_bog_9788759339015 
+ 
+
+
+
+===== PAGE 9 =====
+Hovedopgaven – en guide, version 2.0 (2024) 
+Side 9 
+ 
+5 Hvordan foregår eksamen? 
+Til det mundtlige forsvar af hovedopgaven – jeres sidste eksamen på uddannelsen – skal I holde en 
+præsentation, hvor I giver et yderligere indblik i jeres arbejde med hovedopgaven. Derudover bliver I 
+eksamineret med henblik på en samlet karakter for hovedopgaven. Karakteren gives som en 
+helhedsbedømmelse af rapporten, jeres fremlæggelse og eksaminationen. 
+Prøven indledes med at I giver en præsentation. Præsentationen må være op til 10 minutter pr. 
+studerende, dog maksimalt 30 minutter. Derefter eksamineres gruppen i ”20 minutter pr. eksaminand inkl. 
+votering”, som det hedder – det betyder i praksis ca. 15 minutter pr. eksaminand efter præsentationen. 
+Efter eksaminationen får I en individuel karakter pr. eksaminand. Bemærk at I vurderes uafhængigt af 
+hinanden. 
+5.1 Hvad skal vores præsentation handle om? 
+Det kan være svært at bestemme sig for hvad man skal fremlægge til eksamen. Det er helt op til jer selv, 
+men hav læringsmålene for hovedopgaven jf. studieordningen i baghovedet. I bliver bedømt på hvor godt I 
+opfylder læringsmålene, og under præsentationen har I selv serveretten og bestemmer dagsordenen. Her 
+bliver I ikke afbrudt af spørgsmål. 
+Bedømmerne har allerede læst rapporten, så I får ikke point for at gentage noget I allerede har skrevet. Til 
+gengæld kan I frit vælge hvad I vil præsentere af nyt materiale. 
+Det er altid en god ide at indlede med en demonstration af produktet. Vis det ”live” eller vis en video, hvor 
+I demonstrerer programmets funktionalitet. Det sidste kan være det sikreste, da man ikke er afhængig af 
+netværk eller er påvirket af eksamensnerver. Demonstrationen skal være kort og præcis og varer næppe 
+mere end 3-6 minutter afhængig af gruppestørrelse - måske mere, hvis produktet er meget komplekst. 
+Links til video kan også med fordel vedlægges som bilag i rapporten. 
+Hvis I ikke kan præsentere produktet live, fx fordi det ligger internt på kundens system, som I ikke har 
+adgang til, så vis evt. en video eller som absolut minimum nogle screenshots, der viser produktet. 
+Ideer til den efterfølgende præsentation kan være: 
+• Et teknisk aspekt af dit produkt, som I går i dybden med 
+• Et tvivlsspørgsmål i rapporten som I er blevet klogere på efter aflevering 
+• En perspektivering af fremtidige muligheder (hvis I ikke har en perspektivering i rapporten) 
+• Refleksioner over processen, som I ikke allerede har beskrevet 
+Mulighederne er utallige. 
+5.2 Hvad bliver vi spurgt om? 
+Efter jeres samlede præsentation (inkl. demonstration) bliver der spurgt ind til jeres opgave, jeres proces og 
+jeres produkt. Spørgsmålene er ikke et forsøg på at lokke jer i en fælde. Hensigten er at dykke yderligere 
+ned i noget I har beskrevet i rapporten eller fremlagt til præsentationen. I kan også blive spurgt til 
+relaterede emner. Men I bliver ikke stillet spørgsmål i alt muligt mellem himmel og jord. Spørgsmålene 
+tager udgangspunkt i jeres opgave og rapport. 
+
+
+===== PAGE 10 =====
+Hovedopgaven – en guide, version 2.0 (2024) 
+Side 10 
+ 
+Se også næste afsnit vedr. bedømmelsen. 
+5.3 Hvordan bestemmer I vores karakterer? 
+Eksaminatorer tager som udgangspunkt noter med udgangspunkt i studieordningen, herunder læringsmål 
+for det afsluttende projekt. Jeres egen vejleder kan have en anden tilgang, så her må I spørge jer frem. 
+Censor kan også have en anden tilgang, men udgangspunktet er altid læringsmålene i studieordningen. 
+For eksempel overvejes projektets: 
+• Relevans: Projektet skal være relevant i tidens IT-branche i forhold til datamatikeruddannelsens 
+indhold. 
+• Projekt: Projektet (fx produktet eller ydelsen) skal være komplekst nok til at kræve en datamatiker 
+og omfangsrigt nok til at udgøre en hovedopgave på 15 ECTS-point. 
+• Proces: Jeres udviklingsproces (e.a.) skal være relevant og velovervejet. I må gerne tage 
+udgangspunkt i eksisterende procesmodeller eller lade jer inspirere til at udvikle jeres egen. Vi 
+vurderer også jeres evne til at håndtere eventuelle uforudsete vanskeligheder konstruktivt samt 
+tilegne jer viden, færdigheder og kompetencer. 
+• Ejerskab og refleksionsevne: I skal sandsynliggøre at I selv har lavet produktet, og I skal 
+demonstrere evne til at reflektere over jeres proces og produkt, herunder relevans for kunden eller 
+erhvervslivet generelt. 
+• Kvaliteten af indholdet af rapporten vurderes også. 
+Præsentationen indgår også i den samlede vurdering jf. det foregående afsnit, så her er det smart at 
+komme godt fra start med en overbevisende præsentation. 
+Bliv ikke forskrækket over den omfattende liste. Ingen kan dække samtlige punkter til fuldkommenhed. Det 
+kommer an på jeres opgave hvad der vægter tungest. 
+
+
+===== PAGE 11 =====
+Hovedopgaven – en guide, version 2.0 (2024) 
+Side 11 
+ 
+6 Hvad siger studieordningen? 
+I den gældende studieordning for datamatikeruddannelsen står det nedenstående. Dette er 
+udgangspunktet for jeres projekt og vores vurdering af jeres rapport og mundtlige forsvar. 
+Du kan finde den til enhver tid gældende studieordning på https://studieordninger.kea.dk. 
+6.1 Uddrag fra studieordningen 
+ 
+ 
+ 
+
+
+
+===== PAGE 12 =====
+Hovedopgaven – en guide, version 2.0 (2024) 
+Side 12 
+ 
+ 
+ 

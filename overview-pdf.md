@@ -1,4 +1,4 @@
-# AmalieTrader Codebase Overview
+﻿# AmalieTrader Codebase Overview
 
 AmalieTrader is a multi-service trading platform built around a single Interactive Brokers account and a single IBKR Gateway session. The repository contains Python backend services, a Next.js dashboard, Docker packaging for each service, and a Helm chart that deploys the full topology to Kubernetes.
 
@@ -35,24 +35,24 @@ IBKR callbacks -> ibkr-adapter -> NATS fills/positions/pnl/risk -> API, risk-mon
 
 ## Service Descriptions
 
-### `strategy-hello` — example strategy
+### `strategy-hello` â€” example strategy
 Python 3.12 service implementing a simple moving-average crossover.
 
 - **Listens to**: `marketdata.realtime.<symbol>` on NATS
 - **Sends**: `POST /orders` to risk-gateway over HTTP
 - **Config**: universe (symbols), fast/slow MA periods, trade quantity
-- **Pattern**: inherits from `BaseStrategy` — new strategies only need to implement `on_bar()`
+- **Pattern**: inherits from `BaseStrategy` â€” new strategies only need to implement `on_bar()`
 
-### `risk-gateway` — pre-trade gate
+### `risk-gateway` â€” pre-trade gate
 FastAPI service. Every strategy order must pass through here before it can reach the broker.
 
 - **HTTP**: `POST /orders` validates and returns `accepted` / `rejected` with a structured reason
 - **Publishes**: accepted orders on `orders.<strategy>.<symbol>` (NATS)
 - **Subscribes to**: `pnl.>`, `positions.>`, `marketdata.>`, `risk.halt` for state used in checks
 - **Checks**: global halt, restricted symbols, fat-finger limit-price band, per-strategy max order notional, per-strategy daily loss, position limit, rate limits (per-strategy and global), idempotency-key duplicates
-- **Limitation**: check state is in-memory — multiple replicas do not share state
+- **Limitation**: check state is in-memory â€” multiple replicas do not share state
 
-### `ibkr-adapter` — broker bridge
+### `ibkr-adapter` â€” broker bridge
 Python service that owns the broker connection. The only service that talks directly to IBKR Gateway.
 
 - **Subscribes to**: `orders.>` on NATS
@@ -60,23 +60,23 @@ Python service that owns the broker connection. The only service that talks dire
 - **Publishes**: `fills.<account>.<symbol>`, `positions.<account>.<symbol>`, `pnl.<account>`, `risk.adapter.heartbeat`, `risk.adapter.disconnected`, `risk.adapter.reconnected`
 - **Exposes**: health endpoints and Prometheus metrics
 
-### `risk-monitor` — out-of-band portfolio guard
+### `risk-monitor` â€” out-of-band portfolio guard
 Python service that watches the whole account and can trip a kill switch.
 
 - **Subscribes to**: `fills.>`, `pnl.>`, `positions.>`, `risk.adapter.*`
 - **Publishes**: `risk.halt` on threshold breach
 - **Actions**: can scale strategy Deployments to zero via Kubernetes API (RBAC), sends Telegram alerts
-- **HA**: Kubernetes Lease-based leader election — only one replica acts at a time
+- **HA**: Kubernetes Lease-based leader election â€” only one replica acts at a time
 - **Thresholds**: max daily loss, max drawdown percent, max gross exposure, adapter heartbeat timeout
 
-### `api` — read-only HTTP backend
+### `api` â€” read-only HTTP backend
 FastAPI service serving the dashboard and operators.
 
 - **Routes**: `/status`, `/positions`, `/pnl`, `/pnl/history`, `/fills`, `/orders`, `/healthz`, `/readyz`
 - **Subscribes to**: `positions.>`, `pnl.>`, `risk.>` for a low-latency in-memory cache
 - **Reads from**: TimescaleDB for history (`/pnl/history`, `/fills`)
 
-### `dashboard` — operator UI
+### `dashboard` â€” operator UI
 Next.js 14 with React, SWR, Tailwind, and Recharts.
 
 - **Calls**: the `api` service through `NEXT_PUBLIC_API_URL`
@@ -85,79 +85,21 @@ Next.js 14 with React, SWR, Tailwind, and Recharts.
 
 ### Infrastructure (deployed by Helm)
 
-- **IBKR Gateway** (`ghcr.io/gnzsnz/ib-gateway:stable`) — StatefulSet with IBC auto-login from a Kubernetes Secret. Exposes port 4004 (paper) or 4001 (live), and VNC on 5900.
-- **NATS + JetStream** — event bus between all services.
-- **TimescaleDB** (CloudNativePG) — hypertables: `fills`, `pnl_ticks`, `positions_snapshot`, `order_events`, `marketdata_bars`; continuous aggregate `pnl_1min`.
+- **IBKR Gateway** (`ghcr.io/gnzsnz/ib-gateway:stable`) â€” StatefulSet with IBC auto-login from a Kubernetes Secret. Exposes port 4004 (paper) or 4001 (live), and VNC on 5900.
+- **NATS + JetStream** â€” event bus between all services.
+- **TimescaleDB** (CloudNativePG) â€” hypertables: `fills`, `pnl_ticks`, `positions_snapshot`, `order_events`, `marketdata_bars`; continuous aggregate `pnl_1min`.
 
 ## Service Diagram
 
-```mermaid
-flowchart TB
-    subgraph operators["Operators"]
-        DASH[dashboard<br/>Next.js]
-    end
-
-    subgraph strategies["Strategy layer"]
-        S1[strategy-hello<br/>MA crossover]
-        S2[strategy-N<br/>...]
-    end
-
-    subgraph control["Risk &amp; control plane"]
-        RG[risk-gateway<br/>pre-trade checks]
-        RM[risk-monitor<br/>kill switch + leader]
-    end
-
-    subgraph broker["Broker layer"]
-        ADP[ibkr-adapter<br/>ib_insync, clientId=1]
-        IBGW[(IBKR Gateway<br/>IBC auto-login)]
-    end
-
-    subgraph data["Data plane"]
-        NATS{{NATS JetStream<br/>orders / fills / pnl /<br/>positions / marketdata / risk}}
-        TS[(TimescaleDB<br/>hypertables)]
-    end
-
-    API[api<br/>FastAPI read-only]
-
-    %% Order flow
-    S1 -- "POST /orders" --> RG
-    S2 -- "POST /orders" --> RG
-    RG -- "orders.&lt;strategy&gt;.&lt;sym&gt;" --> NATS
-    NATS -- "orders.&gt;" --> ADP
-    ADP <-- "TCP 4004" --> IBGW
-
-    %% Broker callbacks
-    ADP -- "fills.* positions.*<br/>pnl.* risk.adapter.*" --> NATS
-
-    %% Risk monitoring
-    NATS -- "fills/pnl/positions/<br/>risk.adapter.*" --> RM
-    RM -- "risk.halt" --> NATS
-    NATS -- "risk.halt" --> RG
-    RM -. "scale to 0 (K8s API)" .-> S1
-    RM -. "scale to 0 (K8s API)" .-> S2
-
-    %% Market data into strategies
-    NATS -- "marketdata.realtime.*" --> S1
-    NATS -- "marketdata.realtime.*" --> S2
-    ADP -- "marketdata.*" --> NATS
-
-    %% Read path
-    NATS -- "positions/pnl/risk<br/>(cache)" --> API
-    TS -- "history" --> API
-    API --> DASH
-    NATS -. "persist" .-> TS
-
-    classDef ext fill:#e8e8e8,stroke:#666,stroke-width:1px;
-    class IBGW,TS ext
-```
+![Service Diagram](overview-diagram.png)
 
 ### How to read the diagram
 
 - **Solid arrows** = primary message flow (orders out, callbacks in)
 - **Dashed arrows** = infrequent or asynchronous paths (halt, persistence, scale-to-zero)
-- **NATS is the hub** — almost all inter-service communication goes through it; only strategy → risk-gateway and dashboard → api are HTTP
-- **`ibkr-adapter` is the only pod that talks to IBKR** — one clean broker boundary; strategies don't need to know about `ib_insync`
-- **`risk-gateway` and `risk-monitor` are two defence layers** — gateway stops bad single orders before they leave; monitor halts the whole system if aggregate risk is breached
+- **NATS is the hub** â€” almost all inter-service communication goes through it; only strategy â†’ risk-gateway and dashboard â†’ api are HTTP
+- **`ibkr-adapter` is the only pod that talks to IBKR** â€” one clean broker boundary; strategies don't need to know about `ib_insync`
+- **`risk-gateway` and `risk-monitor` are two defence layers** â€” gateway stops bad single orders before they leave; monitor halts the whole system if aggregate risk is breached
 
 ## Data Plane
 
@@ -165,14 +107,14 @@ flowchart TB
 
 | Subject | Direction |
 |---|---|
-| `orders.<strategy>.<symbol>` | risk-gateway → adapter |
-| `fills.<account>.<symbol>` | adapter → risk-monitor, api |
-| `positions.<account>.<symbol>` | adapter → risk-monitor, api |
-| `pnl.<account>` | adapter → risk-monitor, api |
-| `marketdata.realtime.<symbol>` | (adapter →) strategies |
-| `risk.adapter.heartbeat` | adapter → risk-monitor |
-| `risk.adapter.disconnected` / `.reconnected` | adapter → risk-monitor |
-| `risk.halt` | risk-monitor → all |
+| `orders.<strategy>.<symbol>` | risk-gateway â†’ adapter |
+| `fills.<account>.<symbol>` | adapter â†’ risk-monitor, api |
+| `positions.<account>.<symbol>` | adapter â†’ risk-monitor, api |
+| `pnl.<account>` | adapter â†’ risk-monitor, api |
+| `marketdata.realtime.<symbol>` | (adapter â†’) strategies |
+| `risk.adapter.heartbeat` | adapter â†’ risk-monitor |
+| `risk.adapter.disconnected` / `.reconnected` | adapter â†’ risk-monitor |
+| `risk.halt` | risk-monitor â†’ all |
 
 JetStream stream templates are bundled in the chart and disabled by default via `jetstreamStreams.enabled`.
 
@@ -291,3 +233,4 @@ npm run build
 ## High-Level Mental Model
 
 Strategies generate intent, the risk gateway decides whether that intent may enter the system, NATS carries accepted commands and broker events, the IBKR adapter owns broker I/O, the risk monitor watches the whole account for emergent breaches, TimescaleDB stores history, and the API/dashboard expose read-only operational visibility.
+

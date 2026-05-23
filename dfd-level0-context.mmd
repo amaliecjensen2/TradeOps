@@ -1,0 +1,21 @@
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "14px", "edgeLabelBackground": "#2d2d2d"}}}%%
+flowchart TD
+    IBKR[["IBKR Servers"]]
+    OPR[["Operatør"]]
+    TG[["Telegram"]]
+
+    SYS(["0.0\nAmalieTrader"])
+
+    IBKR -- "kurser" --> SYS
+    SYS -- "køb / salg" --> IBKR
+    IBKR -- "handler" --> SYS
+    SYS -- "status / rapporter" --> OPR
+    SYS -- "alarmer" --> TG
+
+    classDef external fill:#d5e8d4,stroke:#82b366,color:#000
+    classDef process  fill:#dae8fc,stroke:#6c8ebf,color:#000
+
+    class IBKR,OPR,TG external
+    class SYS process
+
+    linkStyle default stroke:#ffffff,stroke-width:1.5px

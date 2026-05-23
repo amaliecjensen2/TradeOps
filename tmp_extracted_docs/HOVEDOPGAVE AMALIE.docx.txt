@@ -1,0 +1,1369 @@
+Noter til hovedopgaveskrivning:
+
+* Det er os, der bestemmer, hvad der er fedt at arbejde med.
+
+* Projektet kan godt laves uden en virksomhed, hvis man kan vise, at der er et reelt behov.
+
+* En virksomhed kan også komme med en case, som projektet tager udgangspunkt i.
+
+* Projektet skal godkendes og skal have noget med uddannelsen at gøre samt vurderes ud fra, om det er fagligt udfordrende.
+
+* Der afleveres en rapport og eventuelt et produkt.
+
+* Produktet kan være en analyse af noget, der skal blive til et system (fx QA), og man bør tale med vejleder, hvis man er i tvivl om, hvilket produkt man vil producere.
+
+* Produktet kan også tage udgangspunkt i noget, der allerede eksisterer, som videreudvikles.
+
+* Man skal se vejledning og eksamensinformation i studieordningen.
+
+* Information om hovedopgaven findes under “Opgavetype i prøve” i studieordningen, herunder krav til rapporten, og billeder og figurer tælles ikke med i sidetallet.
+
+* Rapporten skal beskrive de valg, vi har truffet undervejs, og der skal ikke medtages unødvendigt indhold.
+
+* Bilag skal kun medtages, hvis der refereres til dem i rapporten, og rapporten skal skrives på dansk.
+
+* Det anbefales at være flere i projektet.
+
+* Hans erfaring er, at studerende, der arbejder flere sammen, ofte får en bedre karakter, fordi man kan bruge peer programming, dele arbejdet op og give hinanden feedback.
+
+* Det er en fordel, da projekter kan strække sig over lang tid, selv med vejledning, og fordi den ene ofte er god til noget, den anden er dårligere til.
+
+* Man skal altid tjekke studieordningen og spørge studievejleder ved tvivl om formalia, og man skal huske at overholde sidetallet.
+
+* Rapporten skal afleveres som en PDF.
+
+* Programmer, der indlæser Excel-bilag, er acceptable, og mærkelig eller teknisk kodeformatering er fint i bilag.
+
+* Husk at linke til GitHub og hvis der er behov så vedlæg et zip-arkiv med kodebiblioteket, så censor nemt kan browse i koden.
+
+* Regler om plagiat findes i Studieviden
+
+* målgruppen for rapporten er jeres medstuderende (fra 3. semester). Rapporten skal skrives, så medstuderende kan læse og forstå den, uden at man går ud fra viden fra praktik, valgfag eller erfaring uden for uddannelsen.
+
+* Det, vi kender fra uddannelsen, behøver ikke forklares i detaljer. Og hvis man skriver om noget vi ikke lære i datamatiker uddannelse (eks valgfag eller fra praktik), skal der forklares.
+
+* Ift kilde referering: hvis man fx skriver om Node.js, er det nok at linke til Node.js-dokumentationen.
+
+* Selvplagiat tæller også som plagiat.
+
+* Information om litteraturliste findes i Studieviden.
+
+* Man skal være konsistent i den måde, man bruger og henviser til kilder på.
+
+* Hvis der er tavshedspligt i forhold til virksomheder: husk at for eksaminator og censor skal give karakter, skal de kunne se projektets indhold.
+
+* Et projekt, der er helt hemmeligt, er derfor ikke en god case.
+
+* På itslearning under dat praktik og hovedopgave findes der ressourcer om hovedopgaven.
+
+* Praktikrapport-guiden skal læses, før man skriver rapporten.
+
+* Under ressourcer findes der også links til studieordningen og hovedopgavepræsentationen.
+
+* Der findes desuden en separat guide til hovedopgaven.
+
+Efter aflevering
+
+* Eksamen består af en præsentation på maks. 30 minutter.
+
+* Det er en stor fordel at have en live demo undervejs, da det er bedre at vise end at fortælle.
+
+* Man bør undgå at fortælle om alle de fejl, man har lavet undervejs.
+
+* Man skal tale sit projekt op og undgå en negativ spiral.
+
+* Kun alvorlige fejl bør nævnes, og helst med fokus på læring.
+
+* Rapporten vægter en stor del af karakteren, så det er vigtigt, at det arbejde, man har lavet, tydeligt fremgår i rapporten.
+
+* Karakteren er næsten fastlagt, når man går ind til eksamen, og den kan sjældent afvige meget.
+
+* Karakteren afhænger i høj grad af rapportens kvalitet.
+
+* Der deltager både ekstern censor og vejleder i eksamen.
+
+Hovedopgave 2026
+
+Erhvervsakedemi København, EK - Datamatiker
+
+Amalie Colstrup Jensen
+
+Vejleder - Bjørn
+
+Dato for aflevering
+
+Antal anslag:
+
+Udvikling af en containerbaseret trading-platform til sikker test af handelsalgoritmer via Interactive Brokers API
+
+Hovedopgave – Datamatiker
+Projekt: AmalieTrader
+GitHub: https://github.com/amaliecjensen/AmalieTrader
+Studerende: [Indsæt navn]
+Vejleder: [Indsæt vejleder]
+Uddannelsesinstitution: [Indsæt institution]
+Afleveringsdato: [Indsæt dato]
+Antal anslag: [Indsæt antal anslag]
+
+Problemformulering
+
+Interactive Brokers er en international broker med et omfattende API-lag, som gør det muligt at tilgå markedsdata, overvåge kontoinformation og afgive ordrer programmatisk. Denne adgang gør det teknisk muligt for private investorer og udviklere at eksperimentere med algoritmisk handel, men det skaber samtidig væsentlige tekniske risici. Et trading-system, der er dårligt designet, kan placere utilsigtede ordrer, sende gentagne handler, miste overblik over positioner eller træffe beslutninger på baggrund af forældede eller inkonsistente data.
+
+Projektet tager udgangspunkt i udviklingen af AmalieTrader, en containerbaseret trading-platform, som skal gøre det muligt at teste handelsalgoritmer på en sikker, billig og reproducerbar måde via Interactive Brokers API. Fokus er ikke at udvikle en profitabel handelsstrategi, men at udvikle en teknisk platform, hvor strategier kan afprøves under kontrollerede forhold.
+
+Projektets hovedspørgsmål er:
+
+Hvordan kan Interactive Brokers’ API-lag anvendes til at udvikle en containerbaseret trading-platform, hvor en retail-investor kan teste flere handelsalgoritmer på en sikker, billig og reproducerbar måde?
+
+For at besvare problemformuleringen undersøges følgende underspørgsmål:
+
+Hvordan kan Interactive Brokers integreres i en containerbaseret arkitektur, når brokerens gateway-model, sessioner og kontoniveau-positioner sætter tekniske begrænsninger?
+
+Hvordan kan flere handelsstrategier afvikles mod én Interactive Brokers-konto uden at miste overblik over strategi-ejerskab, positioner og samlet risiko?
+
+Hvordan kan et risikolag anvendes som teknisk kontrolpunkt mellem handelsstrategier og broker-API’et?
+
+Hvordan kan eventbaseret kommunikation, audit logging og broker-reconciliation anvendes til at sikre sporbarhed og konsistent systemtilstand?
+
+Hvordan kan Docker, Kubernetes og Helm anvendes til at gøre platformen reproducerbar, deploybar og realistisk at videreudvikle?
+
+Hvordan kan systemet testes gennem unit tests, integrationstests og scenariebaserede tests, så de centrale sikkerhedsmekanismer dokumenteres?
+
+Resumé
+
+Denne hovedopgave undersøger udviklingen af AmalieTrader, en containerbaseret trading-platform til sikker test af handelsalgoritmer via Interactive Brokers API. Projektet tager udgangspunkt i et praksisnært problem: private investorer og udviklere kan i dag få adgang til avancerede broker-API’er, men mangler ofte en sikker og reproducerbar teknisk ramme til at eksperimentere med automatiseret handel.
+
+Formålet med projektet er ikke at udvikle en profitabel handelsstrategi, men at designe og implementere et teknisk miljø, hvor strategier kan testes under kontrollerede forhold. Opgaven fokuserer derfor på softwarearkitektur, broker-integration, risikostyring, containerisering, eventbaseret kommunikation, logging, deployment og test.
+
+Løsningen bygger på en containerbaseret arkitektur med Docker, Kubernetes og Helm. Centrale komponenter i platformen er IBKR Gateway, en Python-baseret IBKR-adapter, strategy services, Risk Gateway, eventbus, database, API og observability-komponenter. Platformens centrale designprincip er, at handelsstrategier ikke bør have direkte adgang til brokerens API. I stedet skal strategier sende ordreintentioner gennem et risikolag, som kan validere ordrer, afvise risikable handlinger og sikre audit logging.
+
+Projektet evalueres ud fra, om arkitekturen understøtter sikker, billig og reproducerbar test af handelsalgoritmer. Der lægges særligt vægt på separation of concerns, fail-safe design, idempotency, auditability, broker-reconciliation, containerisering og testbarhed.
+
+Indholdsfortegnelse
+
+Indledning
+
+Formål
+
+Målgruppe og interessenter
+
+Afgrænsning
+
+Metode og arbejdsproces
+5.1 Valg af arbejdsmetode
+5.2 Rampedrevet udvikling
+5.3 Kanban-inspireret opgavestyring
+5.4 Versionsstyring og projektorganisering
+5.5 Dokumentation og løbende refleksion
+
+Domæneanalyse
+6.1 Automatiseret handel
+6.2 Interactive Brokers som teknisk domæne
+6.3 Paper trading og live trading
+6.4 Flere strategier på én broker-konto
+6.5 Centrale risici i automatiseret handel
+
+Kravspecifikation
+7.1 Funktionelle krav
+7.2 Ikke-funktionelle krav
+7.3 MoSCoW-prioritering
+7.4 Acceptkriterier
+
+Teknologivalg
+8.1 Python
+8.2 Docker
+8.3 Kubernetes
+8.4 Helm
+8.5 NATS JetStream
+8.6 TimescaleDB og PostgreSQL
+8.7 Observability
+
+Arkitektur og systemdesign
+9.1 Overordnet arkitektur
+9.2 Separation of concerns
+9.3 Ordreflow
+9.4 Risk Gateway
+9.5 Broker-reconciliation
+9.6 Eventbaseret arkitektur
+9.7 Deployment-arkitektur
+
+Implementering
+10.1 Repository-struktur
+10.2 IBKR-adapter
+10.3 Datamodeller og validering
+10.4 Containerisering
+10.5 Helm chart
+10.6 Fejlhåndtering
+
+Test og validering
+11.1 Teststrategi
+11.2 Unit tests
+11.3 Integrationstests
+11.4 Scenariebaserede tests
+11.5 Validering af problemformulering
+
+Sikkerhed, risiko og etik
+12.1 Teknisk sikkerhed
+12.2 Trading-risiko
+12.3 Etiske overvejelser
+
+Diskussion
+
+Perspektivering
+
+Konklusion
+
+Litteraturliste
+
+Bilag
+
+1. Indledning
+
+Automatiseret handel er i dag ikke kun forbeholdt banker, hedgefonde og professionelle handelsmiljøer. Private investorer har i stigende grad adgang til broker-platforme, API’er, cloud-infrastruktur og open source-værktøjer, som gør det muligt at udvikle egne systemer til markedsdata, signalgenerering og ordreafgivelse. Det betyder, at en retail-investor teknisk set kan eksperimentere med algoritmisk handel fra en almindelig udviklingsmaskine eller en mindre cloud-server.
+
+Denne adgang skaber dog også en væsentlig risiko. Et trading-system, der er dårligt designet, kan placere forkerte ordrer, sende gentagne handler, miste overblik over åbne positioner eller handle videre på et forkert datagrundlag. I modsætning til mange andre softwareprojekter kan fejl i et trading-system få direkte økonomiske konsekvenser. Derfor er det ikke tilstrækkeligt kun at fokusere på, om systemet kan afgive en ordre. Det centrale spørgsmål er, hvordan systemet kan designes, så ordreafgivelse sker kontrolleret, sporbar og med tydelige sikkerhedsbegrænsninger.
+
+Denne hovedopgave tager udgangspunkt i udviklingen af AmalieTrader, som er en containerbaseret trading-platform med integration til Interactive Brokers. Projektet har til formål at skabe et teknisk miljø, hvor flere handelsstrategier kan afvikles og testes under fælles risikostyring. Platformen skal understøtte adskillelse mellem strategier, ordreintentioner, risikovalidering, broker-integration, logging og overvågning.
+
+Projektets centrale idé er, at handelsstrategier ikke bør have direkte adgang til Interactive Brokers’ API. I stedet bør strategierne afgive ordreintentioner, som først valideres af et risikolag, før de eventuelt sendes videre til brokerens system. Denne opdeling reducerer risikoen for, at en fejl i en enkelt strategi automatisk medfører utilsigtede handler. Samtidig giver det bedre mulighed for at logge, overvåge og efterfølgende analysere systemets beslutninger.
+
+Interactive Brokers er valgt som broker, fordi IBKR tilbyder API-adgang og paper trading, hvilket gør det muligt at teste handelsfunktionalitet uden at handle med rigtige penge. Paper trading er velegnet til dette projekt, fordi formålet er at eksperimentere med handelsalgoritmer i et kontrolleret testmiljø frem for at gennemføre live trading fra starten.
+
+Projektet er relevant i en datamatikerfaglig sammenhæng, fordi det kombinerer flere centrale fagområder fra uddannelsen. Det omfatter blandt andet backendudvikling, API-integration, containerisering, Kubernetes, databasedesign, asynkron kommunikation, test, deployment, sikkerhed og systemarkitektur. Opgaven er samtidig praksisnær, fordi den tager udgangspunkt i et konkret produkt og en konkret teknisk udfordring: hvordan man bygger en softwareplatform, hvor automatiseret handel kan testes forsvarligt.
+
+AmalieTrader skal derfor ikke forstås som en simpel trading-bot. En bot kan i sin simpleste form være et script, der læser data og sender ordrer. AmalieTrader har et bredere formål. Platformen skal skabe en ramme omkring strategierne, så de ikke kører ukontrolleret, men i stedet indgår i et system med risikogrænser, audit logging, broker-reconciliation og reproducerbar deployment. Dette gør projektet egnet som hovedopgave, fordi det kræver både praktisk programmering og arkitektonisk argumentation.
+
+2. Formål
+
+Formålet med projektet er at udvikle og dokumentere en teknisk platform, der gør det muligt at teste handelsalgoritmer i et kontrolleret miljø. Platformen skal ikke vurderes ud fra, om en strategi skaber økonomisk gevinst, men ud fra om systemet understøtter sikker test, kontrolleret ordreflow, sporbarhed og reproducerbar deployment.
+
+Det er en vigtig afgrænsning, fordi en profitabel handelsstrategi ikke nødvendigvis er et godt datamatikerprojekt. Profitabilitet afhænger af markedsforhold, datakvalitet, strategi, likviditet, spreads, gebyrer og risiko. Et softwareprojekt kan derimod vurderes ud fra arkitektur, kodekvalitet, testbarhed, sikkerhed, integration og vedligeholdelse. Derfor er projektets primære produkt en platform og ikke en investeringsstrategi.
+
+AmalieTrader skal give mulighed for, at handelsstrategier kan eksperimentere med markedsdata og generere ordreintentioner uden direkte adgang til brokerens API. Det betyder, at strategierne ikke selv skal beslutte, om en ordre faktisk må sendes til Interactive Brokers. Denne beslutning skal i stedet placeres i et risikolag, som kan kontrollere ordreparametre, miljø, strategi, symbol og kontoeksponering.
+
+Projektets konkrete formål kan opdeles i følgende punkter:
+
+at analysere Interactive Brokers’ tekniske model og de begrænsninger, den skaber for et retail trading setup
+
+at designe en containerbaseret arkitektur, hvor strategier, risikovalidering og broker-integration er adskilt
+
+at implementere centrale platformskomponenter, herunder en IBKR-adapter og deployment-struktur
+
+at anvende eventbaseret kommunikation til logging, sporbarhed og senere analyse
+
+at etablere en teststrategi, som kan dokumentere centrale sikkerhedsmekanismer
+
+at vurdere, om løsningen er egnet som fundament for videreudvikling mod et mere komplet trading-system
+
+Projektets faglige formål er at demonstrere praktisk anvendelse af datamatikerkompetencer i et komplekst teknisk domæne. Trading-domænet er velegnet til dette, fordi det stiller høje krav til korrekthed, robusthed og sporbarhed. I et almindeligt system kan en fejl måske føre til forkert visning af data. I et trading-system kan en fejl føre til reel økonomisk eksponering. Det skærper kravene til designet.
+
+Et sekundært formål er at undersøge, hvordan moderne DevOps-principper kan anvendes i et mindre retail-projekt. Mange professionelle systemer anvender containerisering, Infrastructure as Code, observability og automatiseret deployment. AmalieTrader undersøger, hvordan disse principper kan anvendes i mindre skala uden at kræve enterprise-infrastruktur.
+
+3. Målgruppe og interessenter
+
+Den primære målgruppe for AmalieTrader er teknisk kompetente retail-investorer, udviklere og datamatikere, der ønsker at eksperimentere med algoritmisk handel uden at bygge et uforsvarligt trading setup fra bunden. Målgruppen forventes at have en vis teknisk forståelse, men ikke nødvendigvis erfaring med broker-integration, Kubernetes eller eventbaseret arkitektur.
+
+Målgruppen har typisk følgende behov:
+
+et reproducerbart udviklings- og testmiljø
+
+mulighed for at anvende paper trading før eventuel live trading
+
+tydelig adskillelse mellem strategi og broker
+
+risikoregler før ordreafgivelse
+
+logging og audit trail
+
+mulighed for at teste flere strategier
+
+lav driftsomkostning
+
+teknisk dokumentation, der gør systemet forståeligt og videreudviklingsbart
+
+Den primære bruger af første version er udvikleren selv. Det skyldes, at projektet er et enkeltmandsprojekt, hvor platformen først og fremmest skal dokumentere teknisk gennemførlighed. På længere sigt kan målgruppen udvides til andre udviklere eller private investorer, men det kræver yderligere dokumentation, brugergrænseflade, sikkerhedsgennemgang og driftstest.
+
+Der er flere interessenter i projektet. Den første interessent er udvikleren, som har behov for et sikkert miljø til at eksperimentere med strategier. Den anden interessent er vejleder og censor, som skal vurdere projektets faglige niveau, metode, produkt og refleksion. Den tredje interessent er potentielle fremtidige brugere, som kan have interesse i en platform, hvor trading-eksperimenter kan gennemføres mere kontrolleret end gennem enkelte scripts.
+
+Interactive Brokers kan også betragtes som en indirekte interessent, fordi platformen afhænger af IBKR’s API-model, gateway og paper trading-miljø. Projektet skal derfor respektere brokerens tekniske begrænsninger frem for at antage, at IBKR fungerer som en almindelig REST-service.
+
+Endelig er projektet relevant for IT-branchen generelt, fordi det berører problemstillinger, der går igen i mange systemer: integration med eksterne API’er, drift af distribuerede services, fejlhåndtering, audit logging, containerisering, sikker konfiguration og observability. Selvom trading-domænet er specifikt, er de tekniske problemstillinger bredt anvendelige.
+
+4. Afgrænsning
+
+Projektet afgrænses til udvikling og analyse af en teknisk trading-platform. Formålet er ikke at dokumentere, at en bestemt handelsstrategi er profitabel. Handelsstrategier kan indgå som testobjekter, men opgavens faglige tyngde ligger i platformens arkitektur, sikkerhed, drift og testbarhed.
+
+Projektet afgrænses også fra high-frequency trading. AmalieTrader skal ikke optimere på mikrosekunder, co-location eller direkte børsforbindelser. Systemets praktiske begrænsninger vil i høj grad være bestemt af Interactive Brokers’ gateway og brokerens svartider. Dette passer til projektets retail-fokus, hvor målet er et realistisk setup for en privat udvikler eller mindre investor.
+
+Live trading behandles som en mulig fremtidig udvidelse, men ikke som projektets primære testmiljø. Udgangspunktet er paper trading og simuleret test, fordi dette reducerer risikoen for økonomiske tab under udvikling. Det betyder dog ikke, at systemet kan designes uansvarligt. Tværtimod skal systemet bygges, som om det senere kunne udvides til live trading. Derfor er risikostyring, logging og tydelig adskillelse mellem test- og live-miljø centrale dele af projektet.
+
+Projektet afgrænses desuden til Interactive Brokers som broker. Det kan være relevant på sigt at understøtte andre brokers gennem en generisk broker-adapter, men første version fokuserer på IBKR. Sammenligning med andre brokers behandles derfor ikke som en central del af opgaven.
+
+Derudover afgrænses projektet fra udvikling af en fuldt færdig brugergrænseflade. Et dashboard kan være relevant til overvågning og drift, men hovedproduktet er ikke et visuelt trading-interface. Det centrale er backend-arkitektur, broker-integration, containerisering og risikostyring.
+
+Endelig afgrænses projektet fra dyb finansiel teori. Rapporten forklarer de domænebegreber, der er nødvendige for at forstå systemet, eksempelvis ordre, position, fill, PnL, paper trading, markedsdata og broker-reconciliation. Rapporten er dog ikke en finansiel analyseopgave. Fokus er på den softwaretekniske løsning.
+
+5. Metode og arbejdsproces
+
+5.1 Valg af arbejdsmetode
+
+Projektet er gennemført som et enkeltmandsprojekt. Derfor er der ikke anvendt Scrum i klassisk forstand. Scrum forudsætter roller som Product Owner, Scrum Master og Development Team, hvilket ikke passer naturligt til et individuelt hovedopgaveprojekt. I stedet er der anvendt en iterativ og risikodrevet arbejdsform, hvor de teknisk mest usikre dele af projektet blev undersøgt tidligt.
+
+Projektets største usikkerheder var broker-integration, containerisering af gateway-komponenter, eventbaseret kommunikation, risikovalidering og reproducerbar deployment. Derfor blev arbejdet ikke planlagt som en lineær vandfaldsproces, men som en række tekniske iterationer, hvor hver iteration havde til formål at reducere en konkret risiko.
+
+Denne metode passer bedre til projektet end en traditionel sprintstruktur, fordi arbejdet i høj grad bestod af tekniske undersøgelser og arkitektoniske beslutninger. Eksempelvis giver det ikke mening at planlægge et komplet risikolag, før det er undersøgt, hvordan IBKR Gateway kan indgå i systemet. På samme måde giver det ikke mening at bygge et dashboard, før de underliggende events, adaptere og datamodeller er forstået.
+
+5.2 Rampedrevet udvikling
+
+Den primære arbejdsform kan beskrives som risikodrevet udvikling. Det betyder, at de dele af projektet, som havde størst usikkerhed eller størst konsekvens ved fejl, blev prioriteret først. I AmalieTrader var det ikke frontend, layout eller strategioptimering, der udgjorde den største risiko. Den største risiko var, om platformen kunne designes på en måde, hvor broker-integration, risikokontrol og deployment kunne fungere sammen.
+
+De vigtigste tekniske risici blev identificeret som:
+
+Kan Interactive Brokers integreres på en måde, der passer ind i en containerbaseret arkitektur?
+
+Kan broker-gatewayen håndteres uden at starte flere konkurrerende sessioner?
+
+Kan strategier adskilles fra direkte ordreafgivelse?
+
+Kan ordreintentioner valideres gennem et fælles risikolag?
+
+Kan events anvendes som audit trail og datagrundlag for senere reconciliation?
+
+Kan systemet deployes reproducerbart via Helm?
+
+Kan centrale fejltilstande testes uden at placere rigtige handler?
+
+Denne prioritering betød, at arbejdet først fokuserede på arkitektur, adapter og deployment frem for brugerflade. Det var et bevidst valg, fordi platformens værdi afhænger af sikkerhed og korrekthed i de tekniske flows.
+
+5.3 Kanban-inspireret opgavestyring
+
+Til den praktiske opgavestyring blev der anvendt en Kanban-inspireret tilgang. Opgaver blev opdelt i mindre arbejdsenheder og placeret i kategorier som “To do”, “In progress”, “Blocked” og “Done”. Denne tilgang passede til et enkeltmandsprojekt, fordi den gav overblik uden at kræve ceremonier som daily scrum, sprint review eller retrospective.
+
+Kanban-tilgangen gjorde det muligt løbende at omprioritere opgaver ud fra nye tekniske erkendelser. Hvis arbejdet med IBKR-adapteren viste, at en datamodel manglede et felt til correlation ID, kunne dette tilføjes til backloggen og prioriteres uden at bryde en fast sprintplan. På samme måde kunne deployment-relaterede problemer håndteres, når de opstod, frem for at vente til et bestemt sprint.
+
+Arbejdsprocessen var opdelt i følgende hovedfaser:
+
+foranalyse af Interactive Brokers og trading-domænet
+
+design af overordnet arkitektur
+
+opsætning af repository-struktur
+
+implementering af adapter- og datamodeller
+
+containerisering af services
+
+Helm-baseret deploymentstruktur
+
+test og scenariebaseret validering
+
+dokumentation og rapportskrivning
+
+5.4 Versionsstyring og projektorganisering
+
+Projektet er versionsstyret med Git og hostet på GitHub. Versionsstyring er vigtig i dette projekt, fordi det gør udviklingen sporbar og giver mulighed for at vende tilbage til tidligere versioner, hvis en ændring skaber fejl. Det er særligt relevant i et projekt med mange konfigurationsfiler, Dockerfiles, Helm templates og servicekode.
+
+Der blev anvendt en struktur, hvor main branch betragtes som den stabile branch. Nye funktioner og større ændringer kan udvikles i separate branches, før de merges tilbage. Selvom projektet er udviklet alene, giver denne arbejdsgang en mere professionel struktur og reducerer risikoen for, at ufærdig kode blandes sammen med den stabile version.
+
+Repository’et er organiseret omkring en tydelig adskillelse mellem infrastruktur og services. Helm chartet placeres separat fra applikationskode, hvilket understøtter separation of concerns. Servicekode, eksempelvis IBKR-adapteren, placeres under services. Denne opdeling gør det lettere at forstå, hvilke dele af repository’et der vedrører deployment, og hvilke der vedrører applikationslogik.
+
+5.5 Dokumentation og løbende refleksion
+
+Dokumentation har været en central del af arbejdsprocessen. I et system som AmalieTrader er dokumentation ikke kun en afsluttende rapportaktivitet. Arkitekturbeslutninger, risikogrænser, deploymentvalg og antagelser om brokerens opførsel skal dokumenteres, fordi de påvirker, hvordan systemet kan videreudvikles.
+
+Derfor er det relevant at dokumentere beslutninger som:
+
+hvorfor IBKR Gateway ikke bør skaleres som en almindelig stateless service
+
+hvorfor strategier ikke må have direkte adgang til broker-API’et
+
+hvorfor ordreflowet skal gå gennem et risikolag
+
+hvorfor events skal gemmes som audit trail
+
+hvorfor paper trading skal være standardmiljø
+
+hvorfor live trading kræver yderligere validering
+
+Denne type dokumentation fungerer som teknisk begrundelse og som overlevering til en fremtidig udvikler. Det viser også, at produktet ikke kun er et resultat af tilfældige implementeringsvalg, men af bevidste arkitektoniske beslutninger.
+
+6. Domæneanalyse
+
+6.1 Automatiseret handel
+
+Automatiseret handel betyder, at software anvendes til at understøtte eller udføre handelsbeslutninger. En simpel handelsalgoritme kan eksempelvis modtage prisdata, beregne en indikator og generere et købssignal. Hvis systemet derefter automatisk sender en ordre til en broker, er der tale om algoritmisk ordreafgivelse.
+
+I AmalieTrader skelnes der mellem et signal, en ordreintention og en faktisk broker-ordre. Et signal er strategiens interne vurdering, eksempelvis at et instrument bør købes. En ordreintention er en struktureret besked fra strategien til platformen, hvor strategien beskriver, hvad den ønsker at gøre. En broker-ordre er den faktiske ordre, der sendes til Interactive Brokers.
+
+Denne opdeling er central. Hvis strategien direkte opretter broker-ordrer, bliver det vanskeligt at kontrollere risikoen centralt. Hvis strategien derimod kun opretter ordreintentioner, kan platformen validere intentionen, før den bliver til en rigtig ordre.
+
+Centrale trading-begreber i projektet er:
+
+Broker: den handelsplatform, der modtager og eksekverer ordrer
+
+Instrument: det aktiv der handles, eksempelvis en aktie eller ETF
+
+Symbol: den tekniske identifikation af et instrument
+
+Order: en instruktion til broker om køb eller salg
+
+Fill/execution: den faktiske eksekvering af en ordre
+
+Position: den aktuelle beholdning af et instrument
+
+PnL: profit and loss, altså gevinst eller tab
+
+Exposure: samlet markedsrisiko eller økonomisk eksponering
+
+Paper trading: simuleret handel uden rigtige penge
+
+Live trading: handel med reel kapital
+
+6.2 Interactive Brokers som teknisk domæne
+
+Interactive Brokers adskiller sig fra en simpel REST-baseret broker-integration. Ved brug af TWS API skal klienten typisk forbinde gennem enten Trader Workstation eller IB Gateway. Det betyder, at AmalieTrader ikke kun skal kommunikere med et API endpoint, men også håndtere en broker-gateway, som har sine egne sessioner, tilstande og driftsbegrænsninger.
+
+IBKR Gateway fungerer som et mellemled mellem AmalieTrader og Interactive Brokers. Gatewayen håndterer forbindelsen til brokerens system, mens adapteren i AmalieTrader kommunikerer med gatewayen. Denne model betyder, at gatewayen bliver en kritisk komponent i arkitekturen.
+
+En almindelig cloud-native service kan ofte skaleres ved at starte flere replikaer bag en load balancer. Det gælder ikke nødvendigvis for IBKR Gateway. Hvis flere gateway-instanser forsøger at logge ind med samme IBKR-konto, kan det skabe session-konflikter. Derfor skal gatewayen behandles som en stateful komponent, og systemet bør undgå at starte flere konkurrerende instanser med samme login.
+
+Det betyder, at deployment-arkitekturen skal tage højde for brokerens model. Platformen kan ikke blot anvende generelle Kubernetes-principper ukritisk. Der skal skelnes mellem services, som kan være stateless og replikerbare, og services, som skal håndteres som stateful eller singleton-lignende komponenter.
+
+6.3 Paper trading og live trading
+
+Paper trading er et simuleret handelsmiljø, hvor brugeren kan teste strategier uden at risikere reel kapital. Det er det naturlige udgangspunkt for AmalieTrader, fordi projektets formål er sikker eksperimentering.
+
+Paper trading reducerer dog ikke behovet for sikkerhed. En platform, der fungerer i paper trading, kan senere blive udvidet til live trading. Derfor skal systemet designes med fail-safe defaults og tydelig miljøadskillelse. Det bør ikke være muligt ved en tilfældig konfigurationsfejl at skifte fra paper trading til live trading uden bevidst handling.
+
+I AmalieTrader bør paper trading derfor være standardmiljøet. Live trading skal behandles som en eksplicit og fremtidig mulighed, som kræver ekstra sikkerhed, længere testperiode og manuel godkendelse. Dette er et eksempel på fail-safe design: når systemet er i tvivl, skal det vælge den mindst farlige tilstand.
+
+6.4 Flere strategier på én broker-konto
+
+En af de centrale udfordringer i projektet er, at Interactive Brokers håndterer positioner på kontoniveau. Hvis strategi A køber 100 aktier i SPY, og strategi B sælger 30 aktier i SPY, vil brokerkontoen kun vise en samlet position på +70. Brokerens system ved ikke nødvendigvis, at +100 tilhører strategi A, og -30 tilhører strategi B.
+
+Hvis AmalieTrader skal kunne afvikle flere strategier mod én konto, skal platformen derfor selv holde styr på strategi-ejerskab. Dette kan gøres gennem en intern ledger, hvor alle ordreintentioner, ordrer, fills og positionændringer gemmes som events med strategy ID, correlation ID og timestamp.
+
+Denne tilgang minder om event sourcing, hvor systemets tilstand kan genopbygges ud fra en historik af events. I stedet for kun at gemme den aktuelle position gemmes hændelserne, der førte til positionen. Det giver bedre auditability og gør det muligt at analysere, hvorfor systemet endte i en bestemt tilstand.
+
+Der er dog også en udfordring. Hvis systemets interne ledger afviger fra brokerens faktiske positioner, skal brokerens data betragtes som source of truth. Derfor er broker-reconciliation nødvendig. Systemet skal løbende kunne sammenligne egne projektioner med brokerens snapshots og reagere, hvis der opstår mismatch.
+
+6.5 Centrale risici i automatiseret handel
+
+Automatiseret handel indeholder flere tekniske risici. Tabellen nedenfor viser udvalgte risici og mulige tekniske modforanstaltninger.
+
+Disse risici viser, hvorfor projektet ikke kun handler om at forbinde til Interactive Brokers. Det handler om at designe et system, hvor fejl forventes og håndteres. Robusthed opnås ikke ved at antage, at fejl ikke sker, men ved at bygge systemet, så fejl ikke automatisk udvikler sig til ukontrollerede handler.
+
+7. Kravspecifikation
+
+7.1 Funktionelle krav
+
+De funktionelle krav beskriver, hvad systemet skal kunne gøre. Kravene er prioriteret ud fra projektets formål om sikker og reproducerbar test af handelsalgoritmer.
+
+7.2 Ikke-funktionelle krav
+
+De ikke-funktionelle krav beskriver kvalitetsegenskaber. I dette projekt er de mindst lige så vigtige som de funktionelle krav, fordi platformen håndterer et risikofyldt domæne.
+
+7.3 MoSCoW-prioritering
+
+Kravene er prioriteret med MoSCoW-metoden.
+
+Must have:
+
+IBKR-adapter
+
+containerisering
+
+Helm deployment
+
+paper trading som standard
+
+logging af centrale events
+
+adskillelse mellem strategi og broker
+
+Should have:
+
+Risk Gateway
+
+broker-reconciliation
+
+metrics
+
+database til historik
+
+scenariebaserede tests
+
+Could have:
+
+dashboard
+
+alerting
+
+flere samtidige strategier
+
+grafisk visning af PnL og positioner
+
+Won’t have i første version:
+
+high-frequency trading
+
+live trading som standard
+
+multi-broker support
+
+avanceret frontend
+
+garanteret profitabel strategi
+
+7.4 Acceptkriterier
+
+For at projektet kan vurderes som vellykket, opstilles følgende acceptkriterier:
+
+Platformens arkitektur skal tydeligt adskille strategi, risikovurdering og broker-integration.
+
+Systemet skal kunne beskrives og startes gennem containerbaseret deployment.
+
+Ordreflowet skal være designet, så strategier ikke har direkte adgang til broker-API’et.
+
+Centrale events skal kunne logges og spores.
+
+Systemet skal have en dokumenteret teststrategi.
+
+Rapporten skal forklare centrale designvalg og deres konsekvenser.
+
+Systemets begrænsninger skal beskrives ærligt.
+
+8. Teknologivalg
+
+8.1 Python
+
+Python er valgt til IBKR-adapteren, fordi Python har et stærkt økosystem til API-integration, databehandling og automatisering. Der findes desuden relevante biblioteker til Interactive Brokers-integration, hvilket gør Python velegnet til hurtig udvikling af en adapterservice.
+
+Python egner sig også til asynkrone integrationsservices. En broker-adapter skal kunne håndtere netværkskommunikation, events, callbacks og statusopdateringer. Ved at anvende async IO kan adapteren håndtere flere samtidige operationer uden at blokere unødvendigt.
+
+Til datavalidering er Pydantic relevant, fordi ordreintentioner, events og brokerbeskeder bør have tydelige schemas. Schema validation reducerer risikoen for, at ugyldige beskeder bevæger sig gennem systemet. Det understøtter også serialization og deserialization mellem interne Python-objekter og JSON-baserede events.
+
+Til test er pytest velegnet, fordi det understøtter unit tests, fixtures, mocks og async tests. Det gør det muligt at teste adapterlogik uden nødvendigvis at forbinde til en rigtig broker hver gang.
+
+8.2 Docker
+
+Docker anvendes til at pakke platformens services i containere. En container indeholder applikationen og dens afhængigheder i et isoleret runtime environment. Dette gør systemet mere reproducerbart, fordi servicen kan køre ensartet på forskellige maskiner.
+
+Containerisering er relevant i AmalieTrader, fordi systemet består af flere komponenter med forskellige ansvarsområder. IBKR-adapteren, database, eventbus og eventuelle API- og dashboard-services kan hver især køre som separate containere. Dette understøtter separation of concerns og gør det lettere at starte, stoppe og teste dele af systemet.
+
+Docker giver også mulighed for multi-stage builds. Det betyder, at build-afhængigheder kan anvendes i et builder-stage, mens runtime-imaget kan holdes mindre og renere. Et mindre image reducerer attack surface og gør deployment mere effektivt. Derudover kan en container køres som non-root user, hvilket er en vigtig sikkerhedsforanstaltning.
+
+8.3 Kubernetes
+
+Kubernetes anvendes som platform til at orkestrere containere. Hvor Docker kan køre en enkelt container, giver Kubernetes mulighed for at definere pods, services, deployments, configmaps, secrets, probes og ressourcestyring.
+
+Kubernetes er relevant, fordi AmalieTrader består af flere komponenter, som skal køre sammen. Stateless services kan beskrives som Deployments, mens mere stateful komponenter kan beskrives som StatefulSets. IBKR Gateway er et eksempel på en komponent, der ikke bør behandles som en almindelig stateless service, fordi flere samtidige instanser med samme login kan skabe konflikter.
+
+Kubernetes giver også mulighed for liveness probes og readiness probes. En liveness probe kan bruges til at opdage, om en container er gået i en fejltilstand. En readiness probe kan bruges til at afgøre, om en service er klar til at modtage trafik. I et trading-system er dette relevant, fordi en service ikke bør modtage ordreintentioner, hvis den ikke har forbindelse til de nødvendige afhængigheder.
+
+8.4 Helm
+
+Helm anvendes til at pakke Kubernetes-ressourcer som charts. Et Helm chart gør det muligt at beskrive en samlet deployment-struktur med templates og konfigurationsværdier. Dette gør deployment mere reproducerbar og lettere at tilpasse til forskellige miljøer.
+
+I AmalieTrader kan Helm anvendes til at definere platformens komponenter i ét samlet chart. Det betyder, at database, eventbus, adapter, gateway og andre services kan deployes som en samlet release. Konfiguration kan adskilles i values.yaml, så miljøspecifikke værdier ikke hardcodes i templates.
+
+Helm understøtter også Infrastructure as Code-princippet. Deployment-strukturen bliver en del af repository’et og kan versionsstyres sammen med applikationskoden. Det gør det lettere at dokumentere, genskabe og videreudvikle systemet.
+
+8.5 NATS JetStream
+
+NATS JetStream anvendes som eventbus og persistent messaging-lag. Eventbaseret kommunikation er relevant i AmalieTrader, fordi systemet har behov for at distribuere hændelser mellem komponenter uden at skabe stærk kobling.
+
+Når en strategi opretter en ordreintention, eller når en ordre ændrer status, kan dette publiceres som en event. Andre komponenter kan abonnere på relevante events uden at kende afsenderens interne implementation. Dette understøtter loose coupling og gør systemet mere modulært.
+
+JetStream giver persistent messaging, hvilket betyder, at beskeder kan gemmes og genafspilles. Det er vigtigt i et trading-system, fordi ordre- og fill-events er en del af systemets historik. De skal kunne bruges til debugging, audit logging og eventuel genopbygning af intern state.
+
+Begreber som durable consumers, at-least-once delivery og idempotent consumers er relevante. Hvis en besked leveres mere end én gang, må systemet ikke nødvendigvis udføre den samme handling flere gange. Derfor skal eventbehandlere designes idempotent.
+
+8.6 TimescaleDB og PostgreSQL
+
+Trading-data er ofte tidsseriebaserede. Markedsdata, fills, PnL, positionssnapshots og events har alle en tidsdimension. Derfor er TimescaleDB relevant, fordi det bygger oven på PostgreSQL og er optimeret til tidsseriedata.
+
+PostgreSQL giver samtidig relationelle databaseegenskaber som ACID, transaktioner, indexes og stærk dataintegritet. Dette er relevant for audit logs og ordredata, hvor korrekthed er vigtigere end blot hurtig lagring.
+
+I AmalieTrader kan databasen anvendes til at lagre:
+
+order events
+
+fills
+
+position snapshots
+
+PnL ticks
+
+market data bars
+
+risk decisions
+
+strategy metadata
+
+En kombination af relationelle tabeller og tidsserieoptimering passer godt til systemet, fordi platformen både skal kunne dokumentere hændelser og analysere udvikling over tid.
+
+8.7 Observability
+
+Observability handler om at kunne forstå systemets tilstand ud fra logs, metrics og eventuelle traces. I et trading-system er observability kritisk, fordi fejl hurtigt kan få økonomiske konsekvenser. Det er ikke nok, at systemet fejler; det skal være tydeligt, hvad der fejlede, hvornår det fejlede, og hvilken komponent der var årsagen.
+
+Structured logging gør logs lettere at søge og analysere. I stedet for fritekst kan logs indeholde felter som strategy_id, order_id, correlation_id, symbol, environment og severity. Det gør debugging mere effektivt.
+
+Metrics kan bruges til at overvåge systemets sundhed. Eksempler på relevante metrics er antal ordreintentioner, antal afviste ordrer, broker connection status, event queue length, latency og antal reconciliation mismatches.
+
+Alerting kan anvendes til at reagere på kritiske hændelser. Eksempelvis bør systemet kunne advare, hvis broker-forbindelsen mistes, hvis der opstår position mismatch, eller hvis HALT flag aktiveres.
+
+9. Arkitektur og systemdesign
+
+9.1 Overordnet arkitektur
+
+AmalieTrader er designet som en platform frem for en enkeltstående applikation. Det betyder, at systemet ikke kun skal løse én funktion, men etablere et samlet miljø for strategier, risiko, dataflow, overvågning og deployment.
+
+Den overordnede arkitektur består af følgende komponenter:
+
+Strategy services: genererer handelsbeslutninger og ordreintentioner
+
+Risk Gateway: validerer ordreintentioner, før de sendes videre
+
+IBKR Adapter: oversætter mellem platformens interne events og IBKR Gateway
+
+IBKR Gateway: brokerens gateway-komponent
+
+NATS JetStream: eventbus og persistent messaging
+
+TimescaleDB/PostgreSQL: lagring af events, fills, positioner og tidsseriedata
+
+API service: eksponerer interne funktioner til dashboard eller andre klienter
+
+Dashboard: giver operatøren overblik over systemets tilstand
+
+Observability-komponenter: logs, metrics og alerts
+
+[INDSÆT FIGUR 1: Overordnet arkitekturdiagram]
+
+Arkitekturen er valgt for at sikre tydelig ansvarsfordeling. Strategier skal ikke kende detaljerne i Interactive Brokers’ API. Risk Gateway skal ikke håndtere markedsanalyse. IBKR-adapteren skal ikke beslutte, om en strategi er god eller dårlig. Hver komponent har et afgrænset ansvar.
+
+9.2 Separation of concerns
+
+Separation of concerns er et centralt arkitekturprincip i projektet. Princippet betyder, at forskellige ansvarsområder adskilles, så systemet bliver lettere at forstå, teste og vedligeholde.
+
+I AmalieTrader adskilles følgende ansvarsområder:
+
+strategi og beslutningslogik
+
+risikovurdering
+
+broker-kommunikation
+
+eventdistribution
+
+datalagring
+
+overvågning
+
+deployment
+
+Denne opdeling giver high cohesion internt i komponenterne og loose coupling mellem komponenterne. Strategy services har høj cohesion, fordi de fokuserer på strategi. IBKR-adapteren har høj cohesion, fordi den fokuserer på broker-kommunikation. Komponenterne er løst koblede, fordi de kommunikerer gennem tydelige interfaces og events.
+
+En alternativ løsning kunne være en monolitisk trading-bot, hvor strategi, risikoregler og broker-kald ligger i samme script. Det ville være hurtigere at bygge, men vanskeligere at teste og udvide. I et sikkerhedskritisk domæne er den ekstra arkitektoniske struktur derfor begrundet.
+
+9.3 Ordreflow
+
+Ordreflowet er et af de vigtigste designområder i AmalieTrader. Målet er at sikre, at ingen strategi kan sende ordrer direkte til Interactive Brokers uden kontrol.
+
+Det ønskede ordreflow er:
+
+En strategy service analyserer data.
+
+Strategien opretter en OrderIntent.
+
+OrderIntent sendes til Risk Gateway.
+
+Risk Gateway udfører pre-trade checks.
+
+Hvis ordren afvises, publiceres en rejection event.
+
+Hvis ordren godkendes, sendes den videre til IBKR-adapteren.
+
+IBKR-adapteren kommunikerer med IBKR Gateway.
+
+Brokerens svar omsættes til interne events.
+
+Events publiceres til NATS JetStream.
+
+Events lagres i database og vises eventuelt i dashboard.
+
+[INDSÆT FIGUR 2: Sekvensdiagram for ordreflow]
+
+Dette flow bygger på command/event-tænkning. En ordreintention fungerer som en command: en komponent ønsker, at systemet udfører en handling. Når noget er sket, publiceres en event: ordren blev afvist, godkendt, sendt, fyldt eller fejlede.
+
+For at sikre sporbarhed bør alle ordreintentioner og efterfølgende events have en correlation ID. Correlation ID gør det muligt at følge én ordre gennem hele systemet. Causation ID kan også anvendes til at vise, hvilken tidligere event eller command der forårsagede en ny event.
+
+9.4 Risk Gateway
+
+Risk Gateway er platformens centrale sikkerhedskomponent i ordreflowet. Den fungerer som et synkront kontrolpunkt mellem strategi og broker. Formålet er at sikre, at ordrer ikke sendes videre, før de er valideret mod definerede risikoregler.
+
+Eksempler på pre-trade checks:
+
+maksimal ordrestørrelse
+
+maksimal notional value
+
+maksimal position pr. strategi
+
+maksimal samlet kontoeksponering
+
+symbol allowlist eller blocklist
+
+duplicate order detection
+
+reduce-only enforcement
+
+dagligt tabsloft
+
+paper/live environment check
+
+global kill switch eller HALT flag
+
+Risk Gateway reducerer risikoen for, at fejl i en strategi fører direkte til broker-ordrer. Hvis en strategi eksempelvis beregner quantity forkert og forsøger at købe 10.000 aktier i stedet for 10, skal Risk Gateway kunne afvise ordren på baggrund af max notional eller max quantity.
+
+Risk Gateway er også et godt eksempel på defense in depth. Den erstatter ikke test, logging eller broker-reconciliation, men fungerer som et ekstra sikkerhedslag. Hvis strategien fejler, skal risikolaget kunne stoppe handlingen. Hvis risikolaget fejler, skal observability og efterfølgende reconciliation kunne opdage problemet.
+
+9.5 Broker-reconciliation
+
+Broker-reconciliation er processen, hvor systemets interne tilstand sammenlignes med brokerens faktiske tilstand. Dette er nødvendigt, fordi systemets interne data kan blive forældede eller ufuldstændige.
+
+Eksempler på interne data:
+
+forventede åbne ordrer
+
+beregnede positioner
+
+strategi-ejerskab
+
+realiseret og urealiseret PnL
+
+historiske fills
+
+Eksempler på brokerdata:
+
+faktiske åbne ordrer
+
+faktiske positioner
+
+broker-rapporterede executions
+
+kontostatus
+
+Brokerens data skal betragtes som source of truth for kontoens faktiske tilstand. Hvis AmalieTrader mener, at positionen er +100, men brokerens snapshot viser +70, skal systemet ikke blot fortsætte ukritisk. Afvigelsen skal logges, og afhængigt af alvorlighed kan systemet sætte trading på pause.
+
+Reconciliation er især vigtigt ved flere strategier på én konto. Platformen kan internt fordele positioner på strategier, men brokerens konto viser den samlede position. Derfor skal systemet både kunne vedligeholde interne projektioner og afstemme dem mod brokerens faktiske data.
+
+9.6 Eventbaseret arkitektur
+
+AmalieTrader anvender en eventbaseret arkitektur for at reducere kobling mellem komponenter og forbedre sporbarhed. I stedet for at alle services kalder hinanden direkte, publiceres centrale hændelser på en eventbus.
+
+Fordele ved eventbaseret arkitektur i dette projekt:
+
+komponenter bliver løst koblede
+
+events kan gemmes som audit log
+
+hændelser kan genafspilles ved debugging
+
+flere consumers kan reagere på samme event
+
+systemet kan udvides med nye services uden at ændre afsenderen
+
+historik kan bruges til broker-reconciliation og analyse
+
+Ulempen er, at eventbaserede systemer ofte bliver sværere at debugge end simple request/response-systemer. Der kan opstå eventual consistency, hvor forskellige dele af systemet kortvarigt har forskellige opfattelser af state. Derfor kræver arkitekturen disciplin omkring schemas, correlation IDs og idempotency.
+
+I AmalieTrader opvejes denne kompleksitet af behovet for auditability. I et trading-system er det vigtigt at kunne dokumentere, hvad der skete. Eventbaseret arkitektur understøtter dette bedre end en løsning, hvor tilstand kun findes i hukommelsen i enkelte services.
+
+9.7 Deployment-arkitektur
+
+Deployment-arkitekturen bygger på Docker, Kubernetes og Helm. Docker bruges til at pakke services som images. Kubernetes bruges til at køre og orkestrere containerne. Helm bruges til at beskrive den samlede deployment som et chart.
+
+Et centralt designvalg er, at IBKR Gateway ikke skal behandles som en almindelig skalerbar Deployment. Gatewayen har stateful karakter, fordi den er bundet til broker-sessioner og login. Derfor er en StatefulSet-lignende tilgang mere passende.
+
+Andre services, såsom API eller event consumers, kan være mere stateless og dermed lettere at skalere. Dette viser, at arkitekturen skelner mellem komponenttyper i stedet for at anvende én generisk deploymentmodel overalt.
+
+Konfiguration håndteres gennem Helm values, ConfigMaps og Secrets. Secrets som loginoplysninger og tokens må ikke hardcodes i kildekoden. Dette understøtter secure configuration management og gør det lettere at adskille udviklings-, test- og eventuelle produktionsmiljøer.
+
+10. Implementering
+
+10.1 Repository-struktur
+
+AmalieTrader-repository’et er organiseret med en tydelig adskillelse mellem infrastruktur og services. En forenklet struktur kan beskrives sådan:
+
+AmalieTrader/
+
+helm/
+
+ibkrtrader/
+
+Chart.yaml
+
+values.yaml
+
+templates/
+
+ARCHITECTURE.md
+
+services/
+
+ibkr-adapter/
+
+Dockerfile
+
+pyproject.toml
+
+src/
+
+tests/
+
+[INDSÆT FIGUR 3: Screenshot af repository-struktur]
+
+Denne struktur understøtter separation of concerns. Helm chartet indeholder deployment-beskrivelser, mens servicekode placeres under services. Det gør repository’et lettere at navigere i og gør det tydeligt, hvilke filer der vedrører infrastruktur, og hvilke der vedrører applikationslogik.
+
+En alternativ struktur kunne have blandet deployment-filer og applikationskode i samme mapper. Det ville være mindre overskueligt, især efterhånden som antallet af services vokser. Den valgte struktur er derfor mere egnet til et platformprojekt.
+
+10.2 IBKR-adapter
+
+IBKR-adapteren er en central komponent i systemet. Adapterens ansvar er at fungere som bindeled mellem AmalieTraders interne platform og Interactive Brokers’ gateway. Den skal oversætte interne beskeder og ordreintentioner til broker-kompatible kald og oversætte brokerens svar tilbage til interne events.
+
+Adapteren kan forstås gennem adapter pattern. Adapter pattern anvendes, når et system skal kommunikere med en ekstern komponent, hvis interface ikke passer direkte til systemets interne model. I AmalieTrader betyder det, at resten af platformen ikke bør være afhængig af IBKR’s konkrete API-detaljer. I stedet kommunikerer platformen med sin egen interne broker-adapter.
+
+Fordele ved denne tilgang:
+
+IBKR-specifik logik isoleres ét sted
+
+resten af platformen kan arbejde med egne datamodeller
+
+adapteren kan testes med mocks eller test doubles
+
+en fremtidig broker kan potentielt understøttes gennem samme interface
+
+ændringer i IBKR-integration påvirker ikke nødvendigvis strategierne
+
+Adapteren bør håndtere:
+
+forbindelse til IBKR Gateway
+
+modtagelse af ordrekommandoer
+
+oversættelse af ordreintention til broker-ordre
+
+publicering af order events
+
+håndtering af fills/executions
+
+logging af fejl
+
+health checks
+
+metrics
+
+10.3 Datamodeller og validering
+
+Datamodeller er centrale i et trading-system, fordi små fejl i felter kan få store konsekvenser. Eksempelvis kan en forkert quantity, forkert side eller forkert symbol føre til utilsigtede handler. Derfor skal ordreintentioner og events valideres struktureret.
+
+Et eksempel på en forenklet OrderIntent kan være:
+
+{
+
+"intent_id": "uuid",
+
+"strategy_id": "mean_reversion_01",
+
+"symbol": "SPY",
+
+"side": "BUY",
+
+"quantity": 10,
+
+"order_type": "MARKET",
+
+"environment": "PAPER",
+
+"correlation_id": "uuid",
+
+"created_at": "2026-05-14T12:00:00Z"
+
+}
+
+Vigtige felter:
+
+intent_id identificerer ordreintentionen
+
+strategy_id angiver hvilken strategi der oprettede intentionen
+
+symbol angiver instrumentet
+
+side angiver køb eller salg
+
+quantity angiver antal
+
+environment sikrer adskillelse mellem paper og live
+
+correlation_id gør flowet sporbart
+
+created_at giver audit trail
+
+Validering bør sikre, at quantity er positiv, at side kun kan være BUY eller SELL, at environment er eksplicit, og at symbol opfylder systemets regler. Denne type validering er input validation og er en vigtig del af systemets sikkerhed.
+
+10.4 Containerisering
+
+IBKR-adapteren pakkes som en Docker-container. Containerisering gør det muligt at køre adapteren i et ensartet miljø og reducerer risikoen for, at lokale forskelle i Python-versioner eller afhængigheder skaber fejl.
+
+En god Dockerfile til dette projekt bør anvende multi-stage build. I builder-staget installeres build-afhængigheder og applikationen bygges. I runtime-staget installeres kun det nødvendige for at køre applikationen. Det giver et mindre og mere sikkert image.
+
+Derudover bør containeren køre som non-root user. Hvis en angriber kompromitterer applikationen, reducerer non-root execution skadepotentialet. Det er et eksempel på principle of least privilege.
+
+Vigtige containerprincipper i projektet:
+
+små images
+
+eksplicitte afhængigheder
+
+non-root user
+
+miljøvariabler frem for hardcoded konfiguration
+
+health endpoint
+
+logning til stdout/stderr
+
+ingen secrets i image
+
+10.5 Helm chart
+
+Helm chartet beskriver, hvordan platformen deployes til Kubernetes. Chartet indeholder templates for de ressourcer, systemet skal bruge, eksempelvis Deployments, StatefulSets, Services, ConfigMaps og Secrets.
+
+values.yaml bruges til konfiguration. Det betyder, at samme chart kan anvendes i forskellige miljøer med forskellige værdier. Eksempelvis kan paper trading være standard i development, mens live trading kun kan aktiveres gennem en eksplicit konfigurationsændring.
+
+Helm chartet bør dokumentere:
+
+hvilke services der deployes
+
+hvilke ports de eksponerer
+
+hvilke miljøvariabler de kræver
+
+hvilke secrets der skal oprettes
+
+hvilke probes der anvendes
+
+hvordan persistence håndteres
+
+hvordan eventbus og database konfigureres
+
+Helm gør deployment mere reproducerbar. I stedet for at oprette Kubernetes-ressourcer manuelt kan hele systemet beskrives som kode og deployes med en kommando. Det er særligt relevant i et hovedopgaveprojekt, fordi censor og vejleder lettere kan forstå, hvordan produktet er tænkt deployet.
+
+10.6 Fejlhåndtering
+
+Fejlhåndtering er en central del af implementeringen. I et trading-system skal fejl ikke ignoreres, og de må ikke føre til ukontrolleret ordreafgivelse.
+
+Relevante fejltyper:
+
+broker gateway er utilgængelig
+
+eventbus er utilgængelig
+
+databaseforbindelse fejler
+
+ordreintention er ugyldig
+
+broker afviser ordre
+
+timeout ved ordreafgivelse
+
+duplicate order opdages
+
+reconciliation mismatch opdages
+
+Fejl bør håndteres med klare strategier:
+
+inputfejl skal afvises tidligt
+
+brokerfejl skal logges og publiceres som events
+
+netværksfejl kan håndteres med retry og exponential backoff
+
+gentagne fejl kan udløse circuit breaker
+
+alvorlige fejl kan aktivere HALT flag
+
+systemet skal lukke kontrolleret ved shutdown
+
+Graceful shutdown er også vigtig. Hvis en container stoppes, bør den afslutte igangværende behandling korrekt, lukke forbindelser og undgå at efterlade systemet i en uklar tilstand.
+
+11. Test og validering
+
+11.1 Teststrategi
+
+Teststrategien i AmalieTrader skal dokumentere, at systemets centrale mekanismer fungerer efter hensigten. Da projektet handler om sikker test af handelsalgoritmer, er testdelen ikke sekundær. Den er en del af produktets kvalitet.
+
+Teststrategien kan opdeles i flere niveauer:
+
+unit tests
+
+integrationstests
+
+contract tests
+
+scenariebaserede tests
+
+smoke tests
+
+manuelle valideringer
+
+Unit tests anvendes til små, isolerede funktioner. Integrationstests anvendes til samspil mellem komponenter. Scenariebaserede tests anvendes til at efterligne realistiske fejltilstande. Smoke tests anvendes til at kontrollere, at systemet starter og centrale endpoints svarer.
+
+En klassisk testpyramide er relevant. Mange små unit tests bør danne fundamentet, færre integrationstests bør teste samspil, og et mindre antal scenarietests bør validere kritiske flows.
+
+11.2 Unit tests
+
+Unit tests bør anvendes til at teste logik, der ikke kræver rigtig brokerforbindelse. Det gælder især validering, datamodeller og risikoregler.
+
+Eksempler på unit tests:
+
+Unit tests giver hurtig feedback og kan køres ofte. De er derfor velegnede under udviklingen, hvor mange små ændringer kan påvirke systemets logik.
+
+11.3 Integrationstests
+
+Integrationstests skal kontrollere, at komponenter kan arbejde sammen. I AmalieTrader kan integrationstests eksempelvis kontrollere samspillet mellem adapter og eventbus eller mellem service og database.
+
+Eksempler:
+
+IBKR-adapter kan publicere en order event til NATS
+
+en consumer kan læse eventen fra NATS
+
+en event kan gemmes i database
+
+API-service kan sende ordreintention til Risk Gateway
+
+Helm deployment kan starte centrale services i et testmiljø
+
+Integrationstests er mere komplekse end unit tests, fordi de kræver afhængigheder. Til gengæld giver de mere realistisk feedback om systemets samlede funktion.
+
+11.4 Scenariebaserede tests
+
+Scenariebaserede tests er særligt relevante i dette projekt, fordi de viser, hvordan systemet håndterer realistiske fejltilstande.
+
+Disse tests skal ikke nødvendigvis alle være fuldt automatiserede i første version, men de skal dokumenteres. En 12-tals opgave bør vise, at der er tænkt i failure modes og ikke kun happy path.
+
+11.5 Validering af problemformulering
+
+Problemformuleringen spørger, hvordan IBKR’s API-lag kan anvendes til at udvikle en containerbaseret trading-platform, hvor en retail-investor kan teste handelsalgoritmer sikkert, billigt og reproducerbart.
+
+Sikkerhed:
+Sikkerheden understøttes gennem adskillelse mellem strategi og broker, Risk Gateway, paper trading som default, input validation, audit logging og fail-safe design.
+
+Billighed:
+Billighed understøttes ved at anvende open source-teknologier som Python, Docker, Kubernetes, Helm, NATS og PostgreSQL/TimescaleDB. Projektet kræver ikke co-location eller professionel handelsinfrastruktur.
+
+Reproducerbarhed:
+Reproducerbarhed understøttes gennem container images, Helm charts, versionsstyret konfiguration og Infrastructure as Code.
+
+Flere strategier:
+Flere strategier understøttes arkitektonisk gennem strategy_id, intern ledger, eventbaseret logging og broker-reconciliation. Brokerens kontoniveau-positioner betyder dog, at strategi-isolation ikke kommer gratis fra IBKR, men skal håndteres af platformen.
+
+12. Sikkerhed, risiko og etik
+
+12.1 Teknisk sikkerhed
+
+Teknisk sikkerhed er vigtig i AmalieTrader, fordi platformen potentielt kan forbindes til en broker-konto. Selv hvis projektet i første version fokuserer på paper trading, bør sikkerheden designes, som om systemet senere kan udvides til live trading.
+
+Centrale sikkerhedsprincipper:
+
+Least privilege: services skal kun have de rettigheder, de behøver
+
+Non-root containers: containere bør ikke køre som root
+
+Secrets management: credentials må ikke hardcodes i kode eller images
+
+Environment isolation: paper og live skal være tydeligt adskilt
+
+Input validation: ordreintentioner skal valideres før behandling
+
+Defense in depth: flere sikkerhedslag frem for én enkelt kontrol
+
+Audit logging: kritiske handlinger skal kunne spores
+
+Secrets som broker-login, tokens og passwords skal håndteres gennem Kubernetes Secrets eller tilsvarende mekanismer. De må ikke ligge i GitHub-repository’et.
+
+12.2 Trading-risiko
+
+Trading-risiko handler om risikoen for økonomisk tab eller ukontrolleret markedsadfærd. I AmalieTrader håndteres denne risiko primært gennem arkitektur og risikoregler.
+
+Centrale mekanismer:
+
+paper trading som standard
+
+max order notional
+
+max quantity
+
+position limits
+
+daily loss limit
+
+kill switch
+
+HALT flag
+
+duplicate detection
+
+broker-reconciliation
+
+manuel godkendelse som mulig fremtidig funktion
+
+En vigtig pointe er, at risikostyring ikke kan tilføjes som pynt til sidst. Den skal være en del af ordreflowet. Hvis strategier har direkte adgang til broker-API’et, kan risikostyringen omgås. Derfor skal risikolaget placeres in-path.
+
+12.3 Etiske overvejelser
+
+AmalieTrader bør ikke præsenteres som investeringsrådgivning. Platformen er et teknisk eksperimentmiljø og ikke en garanti for økonomisk gevinst. Det skal være tydeligt, at algoritmisk handel indebærer risiko, og at resultater fra paper trading ikke nødvendigvis kan overføres til live trading.
+
+Der er også et etisk aspekt i at gøre automatiseret handel mere tilgængelig. Teknologien kan give private udviklere bedre muligheder for at eksperimentere, men den kan også give falsk tryghed. Derfor bør systemet tydeligt vise begrænsninger, risici og miljøstatus.
+
+Et ansvarligt design bør derfor prioritere gennemsigtighed. Brugeren skal kunne se, om systemet kører i paper eller live mode, hvilke risikoregler der er aktive, hvilke ordrer der er blevet afvist, og hvorfor de blev afvist.
+
+13. Diskussion
+
+Projektet viser, at det er teknisk muligt at designe en containerbaseret trading-platform omkring Interactive Brokers, men det viser også, at kompleksiteten hurtigt bliver høj. Det er derfor relevant at diskutere nogle af de væsentligste designvalg.
+
+Kubernetes: relevant eller overkill?
+
+Kubernetes giver reproducerbar deployment, service isolation, health checks, secrets management og mulighed for at beskrive infrastrukturen som kode. Det passer godt til et projekt, hvor flere services skal køre sammen.
+
+Samtidig kan Kubernetes være overkill for en første version. Docker Compose kunne have været tilstrækkeligt til lokal udvikling og ville være enklere. Kubernetes introducerer kompleksitet i form af pods, services, configmaps, secrets, Helm templates og cluster-drift.
+
+Valget kan derfor forsvares, hvis målet er at undersøge en cloud-native platformarkitektur. Hvis målet kun var at bygge en simpel trading-bot, ville Kubernetes være unødvendigt. I AmalieTrader er Kubernetes relevant, fordi projektet handler om platform, deployment og reproducerbarhed.
+
+Eventbaseret arkitektur: styrke eller kompleksitet?
+
+Eventbaseret arkitektur giver auditability, replay, løs kobling og mulighed for at tilføje nye consumers uden at ændre afsenderen. Det passer godt til trading-domænet, hvor historik og sporbarhed er vigtigt.
+
+Ulempen er, at eventbaserede systemer kan være sværere at debugge. Der kan opstå eventual consistency, duplicate messages og kompleksitet omkring schema evolution. Derfor kræver løsningen disciplin omkring idempotency, correlation IDs og logging.
+
+I AmalieTrader er eventbaseret arkitektur en styrke, fordi behovet for audit trail er centralt. Men det bør ikke overimplementeres. Første version bør fokusere på få, veldefinerede events frem for et stort og uoverskueligt eventlandskab.
+
+Interactive Brokers: stærk broker, men kompleks integration
+
+Interactive Brokers er relevant, fordi brokerens API-lag er omfattende og realistisk. Paper trading gør det muligt at teste uden reel kapital. Samtidig er IBKR ikke en simpel API-service. Gateway-model, sessioner, client IDs og kontoniveau-positioner skaber tekniske begrænsninger.
+
+Dette betyder, at projektet ikke kan nøjes med generelle API-principper. Det skal tage højde for brokerens konkrete driftsmodel. Denne kompleksitet gør projektet mere krævende, men også mere fagligt interessant.
+
+Scope og realisme
+
+AmalieTrader har et ambitiøst scope. Kombinationen af IBKR, Kubernetes, Helm, NATS, database, Risk Gateway og observability er omfattende for et enkeltmandsprojekt. Derfor er det afgørende at skelne mellem implementeret funktionalitet, arkitektonisk design og fremtidig roadmap.
+
+En stærk hovedopgave behøver ikke at have et fuldt produktionsklart trading-system. Den skal derimod dokumentere, at centrale designvalg er forstået, implementeret i relevant omfang og kritisk vurderet. Derfor skal rapporten være ærlig omkring begrænsninger.
+
+14. Perspektivering
+
+AmalieTrader kan videreudvikles på flere områder.
+
+For det første kan Risk Gateway implementeres mere komplet med policy-as-code. Det vil gøre det muligt at definere risikoregler deklarativt frem for at hardcode dem. Eksempelvis kan regler for max notional, symbol allowlist og daily loss limit beskrives i konfiguration.
+
+For det andet kan dashboardet udbygges, så operatøren får real-time overblik over broker-forbindelse, aktive strategier, afviste ordreintentioner, åbne positioner, PnL og alerts. Dette vil forbedre operator visibility.
+
+For det tredje kan broker-reconciliation udvides. Første version kan nøjes med simple snapshots, men en mere moden version bør kunne identificere mismatch, klassificere alvorlighed og automatisk sætte systemet i HALT ved kritiske afvigelser.
+
+For det fjerde kan systemet udvides med en backtesting engine. Backtesting bør dog holdes adskilt fra paper trading, fordi de tester forskellige ting. Backtesting tester strategi på historiske data, mens paper trading tester systemets adfærd i et simuleret live-flow.
+
+For det femte kan observability forbedres med OpenTelemetry tracing, mere detaljerede metrics og alerting. Dette vil gøre det lettere at finde årsagen til fejl i et distribueret system.
+
+Endelig kan projektet på længere sigt udvides med et generisk broker-adapter interface. Det vil gøre det muligt at understøtte flere brokers. Dette bør dog først gøres, når IBKR-integrationens kerne er stabil, da for tidlig abstraktion kan gøre systemet unødvendigt komplekst.
+
+15. Konklusion
+
+Projektet har undersøgt, hvordan Interactive Brokers’ API-lag kan anvendes til at udvikle en containerbaseret trading-platform, hvor en retail-investor kan teste handelsalgoritmer på en sikker, billig og reproducerbar måde. Gennem arbejdet med AmalieTrader er det blevet tydeligt, at et forsvarligt trading setup kræver mere end adgang til et broker-API. Det kræver en arkitektur, hvor strategi, risikovalidering, broker-integration, logging, dataopbevaring og overvågning er tydeligt adskilt.
+
+Den foreslåede løsning anvender containerisering, Kubernetes og Helm til at gøre platformen reproducerbar og lettere at deploye. Interactive Brokers integreres gennem en gateway-baseret model, hvor brokerens tekniske begrænsninger indgår som centrale arkitekturkrav. Særligt kontoniveau-positioner og gateway-sessioner har betydning for designet, fordi platformen selv må håndtere strategi-ejerskab og broker-reconciliation.
+
+Projektet viser desuden, at sikker test af handelsalgoritmer bør baseres på paper trading, risikoregler, audit logging og fail-safe design. Strategier bør ikke have direkte adgang til brokerens API, men bør i stedet sende ordreintentioner gennem et risikolag. Dermed kan systemet validere ordrer, afvise risikable handlinger og dokumentere, hvad der sker i ordreflowet.
+
+Samlet set viser projektet, at det er muligt at designe et retail trading setup, som er teknisk realistisk, økonomisk overkommeligt og egnet til videreudvikling. Den nuværende løsning bør dog betragtes som et fundament og ikke som et færdigt produktionssystem til live trading. Før live trading kan forsvares, kræves yderligere test, forbedret observability, stærkere risikostyring og længerevarende validering i paper trading.
+
+16. Litteraturliste
+
+Bemærk: Ret litteraturlisten til, så den matcher de konkrete kilder, du faktisk bruger i rapporten. Brug Harvard eller APA konsekvent.
+
+Docker. (2025). Docker Documentation. Docker Inc. Tilgået [indsæt dato].
+
+Helm. (2025). Helm Documentation. The Helm Authors. Tilgået [indsæt dato].
+
+Interactive Brokers. (2025). IBKR API Documentation. Interactive Brokers. Tilgået [indsæt dato].
+
+Kubernetes. (2025). Kubernetes Documentation. Cloud Native Computing Foundation. Tilgået [indsæt dato].
+
+NATS. (2025). NATS JetStream Documentation. Synadia Communications. Tilgået [indsæt dato].
+
+PostgreSQL Global Development Group. (2025). PostgreSQL Documentation. Tilgået [indsæt dato].
+
+Python Software Foundation. (2025). Python Documentation. Tilgået [indsæt dato].
+
+Timescale. (2025). TimescaleDB Documentation. Timescale Inc. Tilgået [indsæt dato].
+
+OWASP. (2025). OWASP Cheat Sheet Series. OWASP Foundation. Tilgået [indsæt dato].
+
+[Dit navn]. (2026). AmalieTrader GitHub repository. GitHub. Tilgået [indsæt dato].
+
+KEA. (2024). Hovedopgaven – en guide. Københavns Erhvervsakademi.
+
+17. Bilag
+
+Bilag A – Arkitekturdiagram
+
+[Indsæt overordnet arkitekturdiagram med strategy services, Risk Gateway, IBKR Adapter, IBKR Gateway, NATS JetStream, database og dashboard.]
+
+Bilag B – Sekvensdiagram for ordreflow
+
+[Indsæt diagram der viser flowet fra OrderIntent til broker response.]
+
+Bilag C – Deployment-diagram
+
+[Indsæt Kubernetes/Helm deployment-diagram.]
+
+Bilag D – Repository-struktur
+
+[Indsæt screenshot af repository-struktur fra GitHub.]
+
+Bilag E – Dockerfile for IBKR-adapter
+
+[Indsæt relevant udsnit af Dockerfile.]
+
+Bilag F – Helm values eksempel
+
+[Indsæt relevant udsnit af values.yaml.]
+
+Bilag G – Eksempel på OrderIntent schema
+
+[Indsæt JSON eller Pydantic-model.]
+
+Bilag H – Testresultater
+
+[Indsæt tabel eller screenshots fra testkørsel.]
+
+Bilag I – Risk matrix
+
+[Indsæt tabel over risici, sandsynlighed, konsekvens og modforanstaltning.]
+
+Bilag J – Demo-link
+
+[Indsæt link til video eller instruktion til at køre projektet.]
+
+
+[TABLE 1]
+
+Risiko || Eksempel || Teknisk modforanstaltning
+
+Duplicate order || samme ordre sendes to gange || idempotency key og duplicate detection
+
+For stor ordre || strategi beregner forkert quantity || max notional og max quantity check
+
+Forkert symbol || ugyldigt eller uønsket instrument handles || allowlist/blocklist
+
+Broker-afvigelse || intern position matcher ikke broker || reconciliation loop
+
+Netværksfejl || gateway mister forbindelse || timeout, retry og circuit breaker
+
+Ukontrolleret live trading || forkert miljøkonfiguration || paper mode som default og explicit live flag
+
+Manglende observability || fejl opdages for sent || structured logging, metrics og alerts
+
+Inkonsistent eventbehandling || event behandles flere gange || idempotent consumers
+
+
+[TABLE 2]
+
+ID || Krav || Prioritet
+
+F1 || Systemet skal kunne deployes via Helm || Must
+
+F2 || Systemet skal kunne køre centrale services som containere || Must
+
+F3 || Systemet skal kunne forbinde til IBKR Gateway gennem en adapter || Must
+
+F4 || Strategier skal sende ordreintentioner frem for direkte broker-ordrer || Must
+
+F5 || Ordreintentioner skal kunne valideres af et risikolag || Must
+
+F6 || Systemet skal kunne logge ordre-events || Must
+
+F7 || Systemet skal understøtte paper trading som standardmiljø || Must
+
+F8 || Systemet skal kunne afvise ordrer, der bryder definerede risikoregler || Should
+
+F9 || Systemet skal kunne publicere events til en eventbus || Should
+
+F10 || Systemet skal kunne lagre historiske events i en database || Should
+
+F11 || Systemet skal kunne sammenligne interne positioner med brokerens positioner || Should
+
+F12 || Systemet skal eksponere health checks og metrics || Could
+
+F13 || Systemet skal kunne vise systemstatus i et dashboard || Could
+
+
+[TABLE 3]
+
+Kategori || Krav
+
+Sikkerhed || Systemet skal anvende least privilege, non-root containers og adskilt secrets management
+
+Pålidelighed || Systemet skal anvende fail-safe defaults og håndtere fejl uden ukontrolleret ordreafgivelse
+
+Vedligeholdelse || Koden skal være modulær med separation of concerns og loose coupling
+
+Testbarhed || Broker-integration skal kunne isoleres gennem adapter pattern og test doubles
+
+Observability || Systemet skal understøtte structured logging, metrics og health endpoints
+
+Reproducerbarhed || Systemet skal kunne startes i et ensartet miljø gennem container images og Helm charts
+
+Dataintegritet || Ordre-events skal kunne spores gennem correlation ID og audit log
+
+Performance || Systemet skal have acceptabel latency til retail trading, men ikke HFT-niveau
+
+Skalerbarhed || Stateless services skal kunne skaleres, mens gatewayen behandles som stateful
+
+
+[TABLE 4]
+
+Testområde || Test
+
+OrderIntent validation || quantity må ikke være 0 eller negativ
+
+Symbol validation || symbol skal være på allowlist
+
+Environment validation || environment skal være PAPER eller LIVE
+
+Risk rule || ordre over max notional afvises
+
+Duplicate detection || samme idempotency key må ikke behandles to gange
+
+Serialization || event kan serialiseres og deserialiseres uden datatab
+
+
+[TABLE 5]
+
+Testcase || Input || Forventet resultat || Status
+
+For stor ordre || OrderIntent med for høj notional || Afvises af Risk Gateway || [Indsæt resultat]
+
+Forkert symbol || Symbol ikke allowlisted || Afvises || [Indsæt resultat]
+
+Duplicate order || Samme idempotency key sendes to gange || Anden ordre ignoreres eller afvises || [Indsæt resultat]
+
+Gateway nede || IBKR Gateway utilgængelig || Fejl logges, ingen ordre sendes || [Indsæt resultat]
+
+Eventbus nede || NATS utilgængelig || System fejler kontrolleret || [Indsæt resultat]
+
+Broker mismatch || Intern position matcher ikke broker || Alert eller HALT flag || [Indsæt resultat]
+
+Forkert miljø || Live flag mangler || System vælger paper eller afviser || [Indsæt resultat]
