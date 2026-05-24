@@ -7,8 +7,10 @@ Et algoritmisk handelssystem jeg har bygget til at handle aktier automatisk via 
 Systemet forbinder til Interactive Brokers Gateway, henter markedsdata i realtid, og sender ordrer igennem automatisk baseret på de strategier jeg har defineret. Alt kører i containere og deployes med Helm.
 
 Der er lige nu to strategier:
-- **strategy-hello** — en simpel moving average crossover strategi der handler AAPL
-- **strategy-nvidia** — køber én NVDA-aktie og holder den
+- **strategy-hello**
+  En simpel moving average crossover strategi der handler AAPL
+- **strategy-nvidia**
+  Køber én NVDA-aktie og holder den
 
 ## Hvordan er det bygget?
 
