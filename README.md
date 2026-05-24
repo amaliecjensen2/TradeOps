@@ -7,8 +7,10 @@ Et algoritmisk handelssystem jeg har bygget til at handle aktier automatisk via 
 Systemet forbinder til Interactive Brokers Gateway, henter markedsdata i realtid, og sender ordrer igennem automatisk baseret på de strategier jeg har defineret. Alt kører i containere og deployes med Helm.
 
 Der er lige nu to strategier:
-- **strategy-hello** — en simpel moving average crossover strategi der handler AAPL
-- **strategy-nvidia** — køber én NVDA-aktie og holder den
+- **strategy-hello**
+  En simpel moving average crossover strategi der handler AAPL
+- **strategy-nvidia**
+  Køber én NVDA-aktie og holder den
 
 ## Hvordan er det bygget?
 
@@ -41,6 +43,6 @@ helm install trader ./helm/ibkrtrader `
   -n trading
 ```
 
-## Tilføj en ny strategi
+## For at tilføje en ny strategi
 
 Kopier `services/strategy-hello/` til en ny mappe, ret logikken i `strategy.py`, og tilføj en ny entry i `helm/ibkrtrader/values.yaml` under `strategies:`. Husk at give den et unikt `clientId`.
