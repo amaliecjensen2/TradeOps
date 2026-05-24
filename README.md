@@ -43,6 +43,6 @@ helm install trader ./helm/ibkrtrader `
   -n trading
 ```
 
-## Tilføj en ny strategi
+## For at tilføje en ny strategi
 
 Kopier `services/strategy-hello/` til en ny mappe, ret logikken i `strategy.py`, og tilføj en ny entry i `helm/ibkrtrader/values.yaml` under `strategies:`. Husk at give den et unikt `clientId`.
