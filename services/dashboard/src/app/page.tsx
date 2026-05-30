@@ -16,9 +16,9 @@ const REFRESH = 10_000;
 export default function Dashboard() {
     const { data: status } = useSWR("status", api.status, { refreshInterval: REFRESH });
     const { data: pnl } = useSWR("pnl", api.pnl, { refreshInterval: REFRESH });
-    const { data: history } = useSWR("history", api.pnlHistory, { refreshInterval: REFRESH });
+    const { data: history } = useSWR("history", () => api.pnlHistory(), { refreshInterval: REFRESH });
     const { data: positions } = useSWR("positions", api.positions, { refreshInterval: REFRESH });
-    const { data: fills } = useSWR("fills", api.fills, { refreshInterval: REFRESH });
+    const { data: fills } = useSWR("fills", () => api.fills(), { refreshInterval: REFRESH });
 
     return (
         <main className="p-6 space-y-6 max-w-7xl mx-auto">
