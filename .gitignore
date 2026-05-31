@@ -27,3 +27,4 @@ node_modules/
 *.swp
 
 .claude/
+.claude/settings.local.json
