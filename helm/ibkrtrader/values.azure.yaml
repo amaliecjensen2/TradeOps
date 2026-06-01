@@ -5,6 +5,12 @@ global:
   # AKS can pull from ACR when the cluster is attached to the registry.
   imagePullSecrets: []
 
+ibkr:
+  gateways:
+    paper:
+      persistence:
+        enabled: false
+
 # On AKS, install the CloudNativePG operator separately before this chart.
 cloudnative-pg:
   enabled: false
