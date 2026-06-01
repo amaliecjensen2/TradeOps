@@ -139,11 +139,25 @@ jobs:
             --create-namespace \
             -f ./helm/ibkrtrader/values.paper.yaml \
             -f ./helm/ibkrtrader/values.azure.yaml \
-            -f /tmp/image-overrides.yaml
+            -f /tmp/image-overrides.yaml \
+            --wait \
+            --timeout 20m
 
       - name: Verify rollout
+        shell: bash
         run: |
           kubectl -n "${AKS_NAMESPACE}" get pods
-          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-ibkr-adapter --timeout=300s
-          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-api --timeout=300s
-          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-dashboard --timeout=300s
+          kubectl -n "${AKS_NAMESPACE}" rollout status statefulset/${RELEASE_NAME}-ibkrtrader-ibgw-paper --timeout=10m
+          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-ibkr-adapter --timeout=10m
+          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-api --timeout=10m
+          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-dashboard --timeout=10m
+
+      - name: Dump diagnostics on failure
+        if: failure()
+        shell: bash
+        run: |
+          kubectl -n "${AKS_NAMESPACE}" get pods -o wide
+          kubectl -n "${AKS_NAMESPACE}" get events --sort-by=.metadata.creationTimestamp | tail -n 200
+          kubectl -n "${AKS_NAMESPACE}" describe pod ${RELEASE_NAME}-ibkrtrader-ibgw-paper-0 || true
+          kubectl -n "${AKS_NAMESPACE}" describe deployment ${RELEASE_NAME}-ibkrtrader-ibkr-adapter || true
+          kubectl -n "${AKS_NAMESPACE}" logs deploy/${RELEASE_NAME}-ibkrtrader-ibkr-adapter --tail=200 || true
