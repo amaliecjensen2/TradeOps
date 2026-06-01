@@ -62,8 +62,12 @@ spec:
                 echo "PVC already initialized, skipping copy."
               fi
               echo "Patching TrustedIPs to allow all cluster traffic..."
-              sed -i 's/^TrustedIPs=.*/TrustedIPs=/' /mnt/jts/jts.ini
-              sed -i 's/^TrustedIPs=.*/TrustedIPs=/' /mnt/jts/jts.ini.tmpl
+              if [ -f /mnt/jts/jts.ini ]; then
+                sed -i 's/^TrustedIPs=.*/TrustedIPs=/' /mnt/jts/jts.ini
+              fi
+              if [ -f /mnt/jts/jts.ini.tmpl ]; then
+                sed -i 's/^TrustedIPs=.*/TrustedIPs=/' /mnt/jts/jts.ini.tmpl
+              fi
           volumeMounts:
             - name: jts
               mountPath: /mnt/jts
