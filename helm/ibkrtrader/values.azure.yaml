@@ -5,11 +5,9 @@ global:
   # AKS can pull from ACR when the cluster is attached to the registry.
   imagePullSecrets: []
 
-# Ensure CloudNativePG operator/CRDs are present on a fresh AKS cluster.
+# On AKS, install the CloudNativePG operator separately before this chart.
 cloudnative-pg:
-  enabled: true
-  crds:
-    create: true
+  enabled: false
 
 # Enable ingress only when you have an ingress controller + DNS ready.
 dashboard:

@@ -80,6 +80,20 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
+      - name: Install CloudNativePG operator
+        shell: bash
+        run: |
+          helm repo add cnpg https://cloudnative-pg.github.io/charts
+          helm repo update
+          helm upgrade --install cnpg cnpg/cloudnative-pg \
+            --namespace cnpg-system \
+            --create-namespace \
+            --set crds.create=true
+          kubectl wait --for=condition=Established crd/clusters.postgresql.cnpg.io --timeout=300s
+          kubectl wait --namespace cnpg-system \
+            --for=condition=Available deployment/cnpg-cloudnative-pg \
+            --timeout=300s
+
       - name: Generate image override values
         shell: bash
         run: |
