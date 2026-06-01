@@ -55,12 +55,9 @@ spec:
             - sh
             - -c
             - |
-              if [ -z "$(ls -A /mnt/jts)" ]; then
-                echo "PVC is empty, copying Jts defaults from image..."
-                cp -r /home/ibgateway/Jts/. /mnt/jts/
-              else
-                echo "PVC already initialized, skipping copy."
-              fi
+              echo "Backfilling missing Jts defaults from image into PVC..."
+              mkdir -p /mnt/jts
+              cp -an /home/ibgateway/Jts/. /mnt/jts/
               echo "Patching TrustedIPs to allow all cluster traffic..."
               if [ -f /mnt/jts/jts.ini ]; then
                 sed -i 's/^TrustedIPs=.*/TrustedIPs=/' /mnt/jts/jts.ini
