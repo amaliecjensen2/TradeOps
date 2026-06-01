@@ -80,6 +80,43 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
+      - name: Generate image override values
+        shell: bash
+        run: |
+          cat > /tmp/image-overrides.yaml <<EOF
+          ibkrAdapter:
+            image:
+              repository: ${ACR_LOGIN_SERVER}/ibkrtrader/ibkr-adapter
+              tag: ${IMAGE_TAG}
+          riskGateway:
+            image:
+              repository: ${ACR_LOGIN_SERVER}/ibkrtrader/risk-gateway
+              tag: ${IMAGE_TAG}
+          riskMonitor:
+            image:
+              repository: ${ACR_LOGIN_SERVER}/ibkrtrader/risk-monitor
+              tag: ${IMAGE_TAG}
+          api:
+            image:
+              repository: ${ACR_LOGIN_SERVER}/ibkrtrader/api
+              tag: ${IMAGE_TAG}
+          dashboard:
+            image:
+              repository: ${ACR_LOGIN_SERVER}/ibkrtrader/dashboard
+              tag: ${IMAGE_TAG}
+          strategies:
+            - name: hello
+              clientId: 11
+              image:
+                repository: ${ACR_LOGIN_SERVER}/ibkrtrader/strategy-hello
+                tag: ${IMAGE_TAG}
+            - name: nvidia
+              clientId: 12
+              image:
+                repository: ${ACR_LOGIN_SERVER}/ibkrtrader/strategy-nvidia
+                tag: ${IMAGE_TAG}
+          EOF
+
       - name: Deploy with Helm
         run: |
           helm dependency update ./helm/ibkrtrader
@@ -88,20 +125,7 @@ jobs:
             --create-namespace \
             -f ./helm/ibkrtrader/values.paper.yaml \
             -f ./helm/ibkrtrader/values.azure.yaml \
-            --set-string ibkrAdapter.image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/ibkr-adapter" \
-            --set-string ibkrAdapter.image.tag="${IMAGE_TAG}" \
-            --set-string riskGateway.image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/risk-gateway" \
-            --set-string riskGateway.image.tag="${IMAGE_TAG}" \
-            --set-string riskMonitor.image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/risk-monitor" \
-            --set-string riskMonitor.image.tag="${IMAGE_TAG}" \
-            --set-string api.image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/api" \
-            --set-string api.image.tag="${IMAGE_TAG}" \
-            --set-string dashboard.image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/dashboard" \
-            --set-string dashboard.image.tag="${IMAGE_TAG}" \
-            --set-string strategies[0].image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/strategy-hello" \
-            --set-string strategies[0].image.tag="${IMAGE_TAG}" \
-            --set-string strategies[1].image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/strategy-nvidia" \
-            --set-string strategies[1].image.tag="${IMAGE_TAG}"
+            -f /tmp/image-overrides.yaml
 
       - name: Verify rollout
         run: |
