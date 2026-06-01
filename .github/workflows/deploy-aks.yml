@@ -139,18 +139,24 @@ jobs:
             --create-namespace \
             -f ./helm/ibkrtrader/values.paper.yaml \
             -f ./helm/ibkrtrader/values.azure.yaml \
-            -f /tmp/image-overrides.yaml \
-            --wait \
-            --timeout 20m
+            -f /tmp/image-overrides.yaml
 
       - name: Verify rollout
         shell: bash
         run: |
           kubectl -n "${AKS_NAMESPACE}" get pods
-          kubectl -n "${AKS_NAMESPACE}" rollout status statefulset/${RELEASE_NAME}-ibkrtrader-ibgw-paper --timeout=10m
-          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-ibkr-adapter --timeout=10m
           kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-api --timeout=10m
           kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-dashboard --timeout=10m
+          kubectl -n "${AKS_NAMESPACE}" rollout status statefulset/${RELEASE_NAME}-ibkrtrader-ibgw-paper --timeout=5m || echo "::warning::IB Gateway is still starting or waiting for manual IB auth/2FA. Use VNC or inspect gateway logs."
+          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-ibkr-adapter --timeout=5m || echo "::warning::IBKR adapter is not ready yet because it waits for both NATS and IB Gateway."
+          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-risk-monitor --timeout=5m || echo "::warning::Risk monitor is not ready yet; inspect pod logs once NATS and the adapter are online."
+
+      - name: Post-deploy guidance
+        shell: bash
+        run: |
+          echo "Dashboard port-forward: kubectl -n ${AKS_NAMESPACE} port-forward svc/${RELEASE_NAME}-ibkrtrader-dashboard 3000:3000"
+          echo "Gateway VNC port-forward: kubectl -n ${AKS_NAMESPACE} port-forward sts/${RELEASE_NAME}-ibkrtrader-ibgw-paper 5900:5900"
+          echo "Gateway logs: kubectl -n ${AKS_NAMESPACE} logs sts/${RELEASE_NAME}-ibkrtrader-ibgw-paper -f"
 
       - name: Dump diagnostics on failure
         if: failure()
