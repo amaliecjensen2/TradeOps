@@ -43,6 +43,17 @@ helm install trader ./helm/ibkrtrader `
   -n trading
 ```
 
+## Azure AKS + GitHub Actions
+
+Repoet er nu klargjort til Azure-deploy med CI/CD:
+
+- GitHub Actions workflow: `.github/workflows/deploy-aks.yml`
+- Azure override values: `helm/ibkrtrader/values.azure.yaml`
+- Lokal deploy helper: `deploy-aks.ps1`
+- Detaljeret step-by-step guide: `docs/azure-aks-github-actions.md`
+
+Workflowet bygger alle service-images, pusher dem til ACR og deployer chartet til AKS via Helm ved push til `main`.
+
 ## For at tilføje en ny strategi
 
 Kopier `services/strategy-hello/` til en ny mappe, ret logikken i `strategy.py`, og tilføj en ny entry i `helm/ibkrtrader/values.yaml` under `strategies:`. Husk at give den et unikt `clientId`.

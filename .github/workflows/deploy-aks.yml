@@ -1,0 +1,107 @@
+name: Build and Deploy to AKS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  IMAGE_TAG: ${{ github.sha }}
+  ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+  AKS_NAMESPACE: ${{ vars.AKS_NAMESPACE || 'trading' }}
+  RELEASE_NAME: ${{ vars.HELM_RELEASE_NAME || 'trader' }}
+
+jobs:
+  build-and-push:
+    name: Build and push images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - ibkr-adapter
+          - risk-monitor
+          - risk-gateway
+          - api
+          - strategy-hello
+          - strategy-nvidia
+          - dashboard
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push ${{ matrix.service }}
+        run: |
+          IMAGE="${ACR_LOGIN_SERVER}/ibkrtrader/${{ matrix.service }}:${IMAGE_TAG}"
+          docker build \
+            -f "services/${{ matrix.service }}/Dockerfile" \
+            -t "${IMAGE}" \
+            "services/${{ matrix.service }}"
+          docker push "${IMAGE}"
+
+  deploy:
+    name: Helm deploy to AKS
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ vars.AZURE_RESOURCE_GROUP }}
+          cluster-name: ${{ vars.AKS_CLUSTER_NAME }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Deploy with Helm
+        run: |
+          helm dependency update ./helm/ibkrtrader
+          helm upgrade --install "${RELEASE_NAME}" ./helm/ibkrtrader \
+            --namespace "${AKS_NAMESPACE}" \
+            --create-namespace \
+            -f ./helm/ibkrtrader/values.paper.yaml \
+            -f ./helm/ibkrtrader/values.azure.yaml \
+            --set-string ibkrAdapter.image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/ibkr-adapter" \
+            --set-string ibkrAdapter.image.tag="${IMAGE_TAG}" \
+            --set-string riskGateway.image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/risk-gateway" \
+            --set-string riskGateway.image.tag="${IMAGE_TAG}" \
+            --set-string riskMonitor.image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/risk-monitor" \
+            --set-string riskMonitor.image.tag="${IMAGE_TAG}" \
+            --set-string api.image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/api" \
+            --set-string api.image.tag="${IMAGE_TAG}" \
+            --set-string dashboard.image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/dashboard" \
+            --set-string dashboard.image.tag="${IMAGE_TAG}" \
+            --set-string strategies[0].image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/strategy-hello" \
+            --set-string strategies[0].image.tag="${IMAGE_TAG}" \
+            --set-string strategies[1].image.repository="${ACR_LOGIN_SERVER}/ibkrtrader/strategy-nvidia" \
+            --set-string strategies[1].image.tag="${IMAGE_TAG}"
+
+      - name: Verify rollout
+        run: |
+          kubectl -n "${AKS_NAMESPACE}" get pods
+          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-ibkr-adapter --timeout=300s
+          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-api --timeout=300s
+          kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-dashboard --timeout=300s

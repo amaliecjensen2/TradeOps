@@ -1,0 +1,21 @@
+# Azure AKS override values.
+# Use with: -f helm/ibkrtrader/values.azure.yaml
+
+global:
+  # AKS can pull from ACR when the cluster is attached to the registry.
+  imagePullSecrets: []
+
+# Ensure CloudNativePG operator/CRDs are present on a fresh AKS cluster.
+cloudnative-pg:
+  enabled: true
+  crds:
+    create: true
+
+# Enable ingress only when you have an ingress controller + DNS ready.
+dashboard:
+  ingress:
+    enabled: false
+    className: ""
+    host: ""
+    annotations: {}
+    tls: []
