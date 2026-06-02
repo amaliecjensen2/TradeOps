@@ -1,0 +1,44 @@
+{{- if and .Values.nats.enabled .Values.jetstreamStreams.bootstrapJob.enabled -}}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "ibkrtrader.fullname" . }}-nats-stream-bootstrap
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ibkrtrader.labels" . | nindent 4 }}
+    app.kubernetes.io/component: nats-stream-bootstrap
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        {{- include "ibkrtrader.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: nats-stream-bootstrap
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: nats
+          image: {{ .Values.jetstreamStreams.bootstrapJob.image | quote }}
+          command:
+            - sh
+            - -ec
+            - |
+              nats="nats --server nats://{{ include "ibkrtrader.natsHost" . }}:4222"
+              until ${nats} server check connection >/dev/null 2>&1; do
+                echo "Waiting for NATS..."
+                sleep 2
+              done
+
+              ${nats} stream info ORDERS >/dev/null 2>&1 || \
+                ${nats} stream add ORDERS --subjects "orders.>" --storage file --retention limits --max-age 168h --defaults
+              ${nats} stream info FILLS >/dev/null 2>&1 || \
+                ${nats} stream add FILLS --subjects "fills.>" --storage file --retention limits --max-age 0 --defaults
+              ${nats} stream info MARKETDATA >/dev/null 2>&1 || \
+                ${nats} stream add MARKETDATA --subjects "marketdata.>" --storage file --retention limits --max-age 1h --defaults
+              ${nats} stream info RISK >/dev/null 2>&1 || \
+                ${nats} stream add RISK --subjects "risk.>,pnl.>,positions.>" --storage file --retention limits --max-age 720h --defaults
+{{- end }}

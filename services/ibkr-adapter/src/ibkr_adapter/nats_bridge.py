@@ -1,8 +1,8 @@
-"""NATS bridge — subscribes to order commands, publishes all events.
+"""NATS bridge - subscribes to order commands, publishes all events.
 
 This module owns the NATS connection and routes:
-  - Inbound:  orders.>  → IBKRGateway.place_order()
-  - Outbound: any subject → JetStream publish (with at-least-once delivery)
+  - Inbound:  orders.> to IBKRGateway.place_order()
+  - Outbound: any subject to JetStream publish with core NATS fallback
 """
 
 from __future__ import annotations
@@ -60,17 +60,20 @@ class NATSBridge:
         """Subscribe to orders.> and forward to IBKR gateway."""
         assert self._nc is not None, "call connect() first"
         await self._nc.subscribe(subjects.ORDERS_INBOX, cb=self._handle_order_msg)
-        log.info("nats_bridge.subscribed_orders",
-                 subject=subjects.ORDERS_INBOX)
+        log.info("nats_bridge.subscribed_orders", subject=subjects.ORDERS_INBOX)
 
     async def publish(self, subject: str, payload: bytes) -> None:
-        """Publish a raw payload.  Falls back to core NATS if JS publish fails."""
+        """Publish a raw payload. Falls back to core NATS if JS publish fails."""
         if self._js is None:
             return
         try:
             await self._js.publish(subject, payload)
-        except nats.js.errors.NoStreamResponseError:
-            # Stream not yet created (dev environment) — degrade gracefully
+        except (nats.js.errors.NoStreamResponseError, nats.errors.TimeoutError) as exc:
+            log.warning(
+                "nats_bridge.jetstream_publish_failed",
+                subject=subject,
+                error=str(exc),
+            )
             if self._nc:
                 await self._nc.publish(subject, payload)
 
@@ -79,7 +82,7 @@ class NATSBridge:
             await self._nc.drain()
 
     # ------------------------------------------------------------------ #
-    # Internal callbacks                                                   #
+    # Internal callbacks
     # ------------------------------------------------------------------ #
 
     async def _handle_order_msg(self, msg: nats.aio.client.Msg) -> None:
@@ -90,7 +93,8 @@ class NATSBridge:
         except Exception as exc:
             log.warning("nats_bridge.order_decode_error", error=str(exc))
             metrics.ORDERS_REJECTED.labels(
-                strategy="unknown", reason="decode_error").inc()
+                strategy="unknown", reason="decode_error"
+            ).inc()
             return
 
         metrics.ORDERS_RECEIVED.labels(strategy=cmd.strategy).inc()
@@ -107,6 +111,7 @@ class NATSBridge:
             return
 
         import time
+
         t0 = time.perf_counter()
         try:
             await self._gateway.place_order(cmd)

@@ -96,7 +96,9 @@ spec:
   ingressClassName: {{ .Values.dashboard.ingress.className }}
   {{- end }}
   rules:
-    - host: {{ .Values.dashboard.ingress.host | quote }}
+    - {{- if .Values.dashboard.ingress.host }}
+      host: {{ .Values.dashboard.ingress.host | quote }}
+      {{- end }}
       http:
         paths:
           - path: /

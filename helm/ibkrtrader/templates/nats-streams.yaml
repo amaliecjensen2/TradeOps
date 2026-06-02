@@ -47,7 +47,7 @@ spec:
   name: MARKETDATA
   subjects: ["marketdata.>"]
   retention: limits
-  storage: memory       # ephemeral
+  storage: file
   maxAge: 1h
   replicas: 1
 ---
@@ -60,7 +60,7 @@ metadata:
     {{- include "ibkrtrader.labels" . | nindent 4 }}
 spec:
   name: RISK
-  subjects: ["risk.>", "pnl.>"]
+  subjects: ["risk.>", "pnl.>", "positions.>"]
   retention: limits
   storage: file
   maxAge: 720h          # 30 days

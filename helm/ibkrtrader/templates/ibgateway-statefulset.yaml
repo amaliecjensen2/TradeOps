@@ -33,6 +33,9 @@ spec:
     spec:
       serviceAccountName: {{ include "ibkrtrader.serviceAccountName" $ }}
       terminationGracePeriodSeconds: 30
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
       {{- with $.Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -51,13 +54,18 @@ spec:
         - name: init-jts
           image: "{{ $gw.image.repository }}:{{ $gw.image.tag }}"
           imagePullPolicy: {{ $gw.image.pullPolicy | default "IfNotPresent" }}
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
           command:
             - sh
             - -c
             - |
+              set -eu
               echo "Backfilling missing Jts defaults from image into PVC..."
               mkdir -p /mnt/jts
-              cp -an /home/ibgateway/Jts/. /mnt/jts/
+              cp -an /home/ibgateway/Jts/. /mnt/jts/ || true
+              chown -R 1000:1000 /mnt/jts
               echo "Patching TrustedIPs to allow all cluster traffic..."
               if [ -f /mnt/jts/jts.ini ]; then
                 sed -i 's/^TrustedIPs=.*/TrustedIPs=/' /mnt/jts/jts.ini

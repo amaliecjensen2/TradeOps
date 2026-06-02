@@ -15,6 +15,7 @@ spec:
   # Headless so DNS resolves directly to the pod (we never want a LB
   # in front of a stateful trading socket).
   clusterIP: None
+  publishNotReadyAddresses: true
   selector:
     {{- include "ibkrtrader.selectorLabels" $ | nindent 4 }}
     app.kubernetes.io/component: ibgateway

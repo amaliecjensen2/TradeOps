@@ -299,6 +299,9 @@ nats:
 # only if the NACK controller is installed — disabled by default).
 jetstreamStreams:
   enabled: false
+  bootstrapJob:
+    enabled: true
+    image: natsio/nats-box:0.16.0
 
 # ----------------------------------------------------------------------------
 # Observability
