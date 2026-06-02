@@ -105,6 +105,11 @@ Hvis en pod ikke starter:
 kubectl -n trading describe pod <pod-navn>
 ```
 
+Hvis GitHub Actions viser `The connection to the server localhost:8080 was refused`,
+betyder det normalt, at AKS context/kubeconfig ikke blev sat. Kig på trinnene lige
+før `Dump diagnostics on failure`, især Azure login, `AZURE_RESOURCE_GROUP`,
+`AKS_CLUSTER_NAME` og service principalens adgang til AKS-clusteret.
+
 ## 7) Vigtige noter
 
 - Chartet forventer to strategier i raekkefoelge: hello og nvidia.
