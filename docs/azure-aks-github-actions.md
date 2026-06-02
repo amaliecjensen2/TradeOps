@@ -56,6 +56,10 @@ az ad sp create-for-rbac \
 
 Gem JSON-outputtet fra kommandoen. Det bliver brugt som GitHub secret.
 
+Hvis du opretter eller roterer secret manuelt i Azure Portal, skal du bruge
+secretens **Value** og ikke **Secret ID**. En ugyldig eller udloe bet client secret
+giver typisk fejlen `Invalid client secret provided` i `azure/login`.
+
 Hent ACR credentials:
 
 ```powershell
@@ -69,6 +73,7 @@ Under Settings > Secrets and variables > Actions:
 
 Repository secrets:
 - `AZURE_CREDENTIALS` = JSON fra service principal
+- Alternativt kan du bruge `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_SUBSCRIPTION_ID`, `AZURE_TENANT_ID`
 - `ACR_LOGIN_SERVER` = fx `amalietraderacr.azurecr.io`
 - `ACR_USERNAME` = fra `az acr credential show`
 - `ACR_PASSWORD` = fra `az acr credential show`
@@ -109,6 +114,11 @@ Hvis GitHub Actions viser `The connection to the server localhost:8080 was refus
 betyder det normalt, at AKS context/kubeconfig ikke blev sat. Kig på trinnene lige
 før `Dump diagnostics on failure`, især Azure login, `AZURE_RESOURCE_GROUP`,
 `AKS_CLUSTER_NAME` og service principalens adgang til AKS-clusteret.
+
+Hvis Azure login fejler med `Invalid client secret provided`, er problemet normalt
+selve GitHub-secreten og ikke Helm-chartet. Den hurtigste reparation er at oprette
+en ny service principal secret eller køre `az ad sp create-for-rbac --sdk-auth`
+igen og opdatere `AZURE_CREDENTIALS` med det fulde JSON-output.
 
 ## 7) Vigtige noter
 

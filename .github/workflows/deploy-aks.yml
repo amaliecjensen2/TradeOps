@@ -56,10 +56,10 @@ jobs:
     needs: build-and-push
     env:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-      AZURE_CLIENT_ID: ${{ secrets.APP_CLIENT_ID || secrets.CLIENTID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.CLIENTSECRET }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTIONID }}
-      AZURE_TENANT_ID: ${{ secrets.TENANTID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID || secrets.APP_CLIENT_ID || secrets.CLIENTID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET || secrets.CLIENTSECRET }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID || secrets.SUBSCRIPTIONID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID || secrets.TENANTID }}
 
     steps:
       - name: Checkout
@@ -70,13 +70,22 @@ jobs:
         run: |
           missing=0
 
-          if [ -z "${AZURE_CREDENTIALS}" ]; then
+          if [ -n "${AZURE_CREDENTIALS}" ]; then
+            if ! jq -e '.clientId and .clientSecret and .subscriptionId and .tenantId' >/dev/null 2>&1 <<<"${AZURE_CREDENTIALS}"; then
+              echo "::error::AZURE_CREDENTIALS must be valid JSON with clientId, clientSecret, subscriptionId and tenantId. Recreate it with 'az ad sp create-for-rbac --sdk-auth' and store the full JSON output as the GitHub secret."
+              missing=1
+            fi
+          else
             for name in AZURE_CLIENT_ID AZURE_CLIENT_SECRET AZURE_SUBSCRIPTION_ID AZURE_TENANT_ID; do
               if [ -z "${!name}" ]; then
-                echo "::error::Missing Azure secret ${name}. Set AZURE_CREDENTIALS, or set APP_CLIENT_ID/CLIENTID, CLIENTSECRET, SUBSCRIPTIONID and TENANTID."
+                echo "::error::Missing Azure secret ${name}. Set AZURE_CREDENTIALS, or set AZURE_CLIENT_ID/AZURE_CLIENT_SECRET/AZURE_SUBSCRIPTION_ID/AZURE_TENANT_ID. Legacy CLIENTID/CLIENTSECRET/SUBSCRIPTIONID/TENANTID names are also supported."
                 missing=1
               fi
             done
+
+            if [ -n "${AZURE_CLIENT_SECRET}" ] && [[ "${AZURE_CLIENT_SECRET}" =~ ^[0-9a-fA-F-]{32,}$ ]]; then
+              echo "::warning::AZURE_CLIENT_SECRET looks like an identifier rather than a client secret value. In Azure App registrations, copy the secret Value field, not the Secret ID."
+            fi
           fi
 
           for name in AZURE_RESOURCE_GROUP AKS_CLUSTER_NAME ACR_LOGIN_SERVER; do
