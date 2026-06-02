@@ -3,7 +3,7 @@ Dette er et algoritmisk handelssystem jeg har bygget til at handle aktier automa
 
 ## Hvad gør det?
 
-Systemet forbinder til Interactive Brokers Gateway, henter markedsdata i realtid, og sender ordrer igennem automatisk baseret på de strategier jeg har defineret. Alt kører i containere og deployes med Helm.
+hejSystemet forbinder til Interactive Brokers Gateway, henter markedsdata i realtid, og sender ordrer igennem automatisk baseret på de strategier jeg har defineret. Alt kører i containere og deployes med Helm.
 
 Der er lige nu to strategier:
 - **strategy-hello**
