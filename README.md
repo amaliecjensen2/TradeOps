@@ -1,6 +1,5 @@
 # TradeOps
-
-Et algoritmisk handelssystem jeg har bygget til at handle aktier automatisk via Interactive Brokers. Systemet kører på Kubernetes og er sat op til at kunne køre flere strategier på samme tid.
+Dette er et algoritmisk handelssystem jeg har bygget til at handle aktier automatisk via Interactive Brokers. Systemet kører på Kubernetes og er sat op til at kunne køre flere strategier på samme tid.
 
 ## Hvad gør det?
 
