@@ -12,8 +12,8 @@ cloudnative-pg:
 # Enable ingress only when you have an ingress controller + DNS ready.
 dashboard:
   ingress:
-    enabled: false
-    className: ""
+    enabled: true
+    className: "nginx"
     host: ""
     annotations: {}
     tls: []

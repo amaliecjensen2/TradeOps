@@ -67,6 +67,8 @@ spec:
               value: {{ .Values.ibkrAdapter.logFormat | default "json" | quote }}
             - name: RECONNECT_INTERVAL_S
               value: {{ .Values.ibkrAdapter.reconnectIntervalS | default 10 | quote }}
+            - name: UNIVERSE
+              value: {{ .Values.ibkrAdapter.universe | default "" | quote }}
             {{- include "ibkrtrader.commonEnv" . | nindent 12 }}
           resources:
             {{- toYaml .Values.ibkrAdapter.resources | nindent 12 }}

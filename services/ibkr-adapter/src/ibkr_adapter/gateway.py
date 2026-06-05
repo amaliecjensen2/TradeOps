@@ -13,6 +13,7 @@ it can be unit-tested with a mock callback.
 from __future__ import annotations
 
 import asyncio
+import math
 from typing import Awaitable, Callable
 
 import ib_insync as ibi
@@ -29,6 +30,7 @@ from ibkr_adapter.models import (
     PositionSnapshot,
     SecType,
     Side,
+    Tick,
 )
 
 log = get_logger(__name__)
@@ -37,6 +39,18 @@ log = get_logger(__name__)
 EventCallback = Callable[[str, bytes], Awaitable[None]]
 
 _IB_SIDE_MAP = {"BOT": Side.BUY, "SLD": Side.SELL}
+
+
+def _clean(value) -> float | None:
+    if value is None:
+        return None
+    try:
+        f = float(value)
+    except (TypeError, ValueError):
+        return None
+    if math.isnan(f):
+        return None
+    return f
 
 
 class IBKRGateway:
@@ -57,6 +71,7 @@ class IBKRGateway:
         self._ib.execDetailsEvent += self._handle_exec_details
         self._ib.pnlEvent += self._handle_pnl
         self._ib.positionEvent += self._handle_position
+        self._ib.pendingTickersEvent += self._handle_pending_tickers
 
     # ------------------------------------------------------------------ #
     # Public API                                                           #
@@ -74,6 +89,18 @@ class IBKRGateway:
         if self._ib.isConnected():
             self._ib.disconnect()
         log.info("ibkr_gateway.stopped")
+
+    async def subscribe_marketdata(self, symbols: list[str]) -> None:
+        # Falls back to delayed data if the account has no live subscription.
+        self._ib.reqMarketDataType(3)
+        for symbol in symbols:
+            contract = ibi.Stock(symbol, "SMART", "USD")
+            qualified = await self._ib.qualifyContractsAsync(contract)
+            if not qualified:
+                log.warning("ibkr_gateway.marketdata_qualify_failed", symbol=symbol)
+                continue
+            self._ib.reqMktData(qualified[0], "", False, False)
+            log.info("ibkr_gateway.marketdata_subscribed", symbol=symbol)
 
     async def place_order(self, cmd: OrderCommand) -> int:
         """Submit an order to TWS. Returns the TWS orderId."""
@@ -134,6 +161,10 @@ class IBKRGateway:
                 # Subscribe to PnL updates
                 if self._cfg.ibkr_account:
                     self._ib.reqPnL(self._cfg.ibkr_account)
+
+                # Subscribe to realtime market data for the configured universe
+                if self._cfg.universe_list:
+                    await self.subscribe_marketdata(self._cfg.universe_list)
 
                 self._heartbeat_task = asyncio.create_task(
                     self._heartbeat_loop())
@@ -218,6 +249,22 @@ class IBKRGateway:
         )
         await self._on_event(subjects.pnl(account), msg.model_dump_json().encode())
         metrics.PNL_DAILY.labels(account=account).set(pnl.dailyPnL or 0.0)
+
+    async def _handle_pending_tickers(self, tickers: set[ibi.Ticker]) -> None:
+        for t in tickers:
+            symbol = t.contract.symbol if t.contract else ""
+            if not symbol:
+                continue
+            last = _clean(t.last)
+            bid = _clean(t.bid)
+            ask = _clean(t.ask)
+            if last is None and bid is None and ask is None:
+                continue
+            msg = Tick(symbol=symbol, bid=bid, ask=ask, last=last)
+            await self._on_event(
+                subjects.marketdata("realtime", symbol),
+                msg.model_dump_json().encode(),
+            )
 
     async def _handle_position(self, position: ibi.Position) -> None:
         account = position.account

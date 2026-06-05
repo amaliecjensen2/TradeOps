@@ -32,7 +32,7 @@ az aks update --resource-group amalie-trader-rg --name amalie-trader-aks --attac
 az aks get-credentials --resource-group amalie-trader-rg --name amalie-trader-aks --overwrite-existing
 kubectl create namespace trading
 
-# IBKR login secret (brug dine egne vaerdier)
+# IBKR login secret (indsæt dine egne vaerdier)
 kubectl -n trading create secret generic ibkrtrader-ibkr-credentials \
   --from-literal=TWS_USERID="<ibkr-user>" \
   --from-literal=TWS_PASSWORD="<ibkr-password>"
@@ -54,8 +54,6 @@ az ad sp create-for-rbac \
   --sdk-auth
 ```
 
-Gem JSON-outputtet fra kommandoen. Det bliver brugt som GitHub secret.
-
 Hent ACR credentials:
 
 ```powershell
@@ -69,6 +67,7 @@ Under Settings > Secrets and variables > Actions:
 
 Repository secrets:
 - `AZURE_CREDENTIALS` = JSON fra service principal
+- Alternativt kan du bruge `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_SUBSCRIPTION_ID`, `AZURE_TENANT_ID`
 - `ACR_LOGIN_SERVER` = fx `amalietraderacr.azurecr.io`
 - `ACR_USERNAME` = fra `az acr credential show`
 - `ACR_PASSWORD` = fra `az acr credential show`
@@ -87,7 +86,7 @@ Ved push til `main`:
 1. Bygger alle service-images
 2. Pusher til ACR
 3. Koerer Helm upgrade/install mod AKS
-4. Verificerer rollout paa noegle-deployments
+4. Verificerer rollout 
 
 ## 6) Drift og fejlfinding
 
@@ -104,6 +103,16 @@ Hvis en pod ikke starter:
 ```powershell
 kubectl -n trading describe pod <pod-navn>
 ```
+
+Hvis GitHub Actions viser `The connection to the server localhost:8080 was refused`,
+betyder det normalt, at AKS context/kubeconfig ikke blev sat. Kig på trinnene lige
+før `Dump diagnostics on failure`, især Azure login, `AZURE_RESOURCE_GROUP`,
+`AKS_CLUSTER_NAME` og service principalens adgang til AKS-clusteret.
+
+Hvis Azure login fejler med `Invalid client secret provided`, er problemet normalt
+selve GitHub-secreten og ikke Helm-chartet. Den hurtigste reparation er at oprette
+en ny service principal secret eller køre `az ad sp create-for-rbac --sdk-auth`
+igen og opdatere `AZURE_CREDENTIALS` med det fulde JSON-output.
 
 ## 7) Vigtige noter
 

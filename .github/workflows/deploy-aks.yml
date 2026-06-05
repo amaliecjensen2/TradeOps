@@ -9,6 +9,8 @@ on:
 env:
   IMAGE_TAG: ${{ github.sha }}
   ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  AKS_CLUSTER_NAME: ${{ vars.AKS_CLUSTER_NAME }}
   AKS_NAMESPACE: ${{ vars.AKS_NAMESPACE || 'trading' }}
   RELEASE_NAME: ${{ vars.HELM_RELEASE_NAME || 'trader' }}
 
@@ -52,30 +54,74 @@ jobs:
     name: Helm deploy to AKS
     runs-on: ubuntu-latest
     needs: build-and-push
+    env:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID || secrets.APP_CLIENT_ID || secrets.CLIENTID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET || secrets.CLIENTSECRET }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID || secrets.SUBSCRIPTIONID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID || secrets.TENANTID }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate Azure secrets
+      - name: Validate Azure configuration
         shell: bash
         run: |
-          test -n "${{ secrets.APP_CLIENT_ID || secrets.CLIENTID }}"
-          test -n "${{ secrets.CLIENTSECRET }}"
-          test -n "${{ secrets.SUBSCRIPTIONID }}"
-          test -n "${{ secrets.TENANTID }}"
+          missing=0
 
-      - name: Log in to Azure
+          if [ -n "${AZURE_CREDENTIALS}" ]; then
+            if ! jq -e '.clientId and .clientSecret and .subscriptionId and .tenantId' >/dev/null 2>&1 <<<"${AZURE_CREDENTIALS}"; then
+              echo "::error::AZURE_CREDENTIALS must be valid JSON with clientId, clientSecret, subscriptionId and tenantId. Recreate it with 'az ad sp create-for-rbac --sdk-auth' and store the full JSON output as the GitHub secret."
+              missing=1
+            fi
+          else
+            for name in AZURE_CLIENT_ID AZURE_CLIENT_SECRET AZURE_SUBSCRIPTION_ID AZURE_TENANT_ID; do
+              if [ -z "${!name}" ]; then
+                echo "::error::Missing Azure secret ${name}. Set AZURE_CREDENTIALS, or set AZURE_CLIENT_ID/AZURE_CLIENT_SECRET/AZURE_SUBSCRIPTION_ID/AZURE_TENANT_ID. Legacy CLIENTID/CLIENTSECRET/SUBSCRIPTIONID/TENANTID names are also supported."
+                missing=1
+              fi
+            done
+
+            if [ -n "${AZURE_CLIENT_SECRET}" ] && [[ "${AZURE_CLIENT_SECRET}" =~ ^[0-9a-fA-F-]{32,}$ ]]; then
+              echo "::warning::AZURE_CLIENT_SECRET looks like an identifier rather than a client secret value. In Azure App registrations, copy the secret Value field, not the Secret ID."
+            fi
+          fi
+
+          for name in AZURE_RESOURCE_GROUP AKS_CLUSTER_NAME ACR_LOGIN_SERVER; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required GitHub Actions variable or secret: ${name}"
+              missing=1
+            fi
+          done
+
+          exit "${missing}"
+
+      - name: Log in to Azure with AZURE_CREDENTIALS
+        if: env.AZURE_CREDENTIALS != ''
+        uses: azure/login@v3
+        with:
+          creds: ${{ env.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure with client secret fields
+        if: env.AZURE_CREDENTIALS == ''
         uses: azure/login@v3
         with:
           creds: >-
-            {"clientId":"${{ secrets.APP_CLIENT_ID || secrets.CLIENTID }}","clientSecret":"${{ secrets.CLIENTSECRET }}","subscriptionId":"${{ secrets.SUBSCRIPTIONID }}","tenantId":"${{ secrets.TENANTID }}"}
+            {"clientId":"${{ env.AZURE_CLIENT_ID }}","clientSecret":"${{ env.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ env.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ env.AZURE_TENANT_ID }}"}
 
       - name: Set AKS context
+        id: aks-context
         uses: azure/aks-set-context@v4
         with:
-          resource-group: ${{ vars.AZURE_RESOURCE_GROUP }}
-          cluster-name: ${{ vars.AKS_CLUSTER_NAME }}
+          resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
+          cluster-name: ${{ env.AKS_CLUSTER_NAME }}
+
+      - name: Verify Kubernetes context
+        shell: bash
+        run: |
+          kubectl config current-context
+          kubectl cluster-info
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
@@ -159,7 +205,7 @@ jobs:
           echo "Gateway logs: kubectl -n ${AKS_NAMESPACE} logs sts/${RELEASE_NAME}-ibkrtrader-ibgw-paper -f"
 
       - name: Dump diagnostics on failure
-        if: failure()
+        if: failure() && steps.aks-context.outcome == 'success'
         shell: bash
         run: |
           kubectl -n "${AKS_NAMESPACE}" get pods -o wide
@@ -167,3 +213,9 @@ jobs:
           kubectl -n "${AKS_NAMESPACE}" describe pod ${RELEASE_NAME}-ibkrtrader-ibgw-paper-0 || true
           kubectl -n "${AKS_NAMESPACE}" describe deployment ${RELEASE_NAME}-ibkrtrader-ibkr-adapter || true
           kubectl -n "${AKS_NAMESPACE}" logs deploy/${RELEASE_NAME}-ibkrtrader-ibkr-adapter --tail=200 || true
+
+      - name: Explain missing AKS context
+        if: failure() && steps.aks-context.outcome != 'success'
+        shell: bash
+        run: |
+          echo "::error::AKS context was not configured, so kubectl diagnostics were skipped. Check Azure login, AZURE_RESOURCE_GROUP, AKS_CLUSTER_NAME and service principal access to the AKS cluster."
