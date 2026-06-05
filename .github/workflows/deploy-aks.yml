@@ -164,18 +164,23 @@ jobs:
             image:
               repository: ${ACR_LOGIN_SERVER}/ibkrtrader/dashboard
               tag: ${IMAGE_TAG}
-          strategies:
-            - name: hello
-              clientId: 11
-              image:
-                repository: ${ACR_LOGIN_SERVER}/ibkrtrader/strategy-hello
-                tag: ${IMAGE_TAG}
-            - name: nvidia
-              clientId: 12
-              image:
-                repository: ${ACR_LOGIN_SERVER}/ibkrtrader/strategy-nvidia
-                tag: ${IMAGE_TAG}
           EOF
+
+          # Helm replaces lists wholesale during merge, so a partial strategies
+          # override in image-overrides.yaml would strip risk/config/replicas
+          # from values.yaml. Instead, rebuild the strategies list from
+          # values.yaml and only rewrite the image fields — everything else
+          # (risk limits, per-strategy config, resources) is preserved.
+          yq eval '
+            {
+              "strategies": (
+                .strategies | map(
+                  .image.repository = (strenv(ACR_LOGIN_SERVER) + "/ibkrtrader/strategy-" + .name) |
+                  .image.tag = strenv(IMAGE_TAG)
+                )
+              )
+            }
+          ' ./helm/ibkrtrader/values.yaml > /tmp/strategies-overrides.yaml
 
       - name: Deploy with Helm
         run: |
@@ -185,7 +190,8 @@ jobs:
             --create-namespace \
             -f ./helm/ibkrtrader/values.paper.yaml \
             -f ./helm/ibkrtrader/values.azure.yaml \
-            -f /tmp/image-overrides.yaml
+            -f /tmp/image-overrides.yaml \
+            -f /tmp/strategies-overrides.yaml
 
       - name: Verify rollout
         shell: bash
