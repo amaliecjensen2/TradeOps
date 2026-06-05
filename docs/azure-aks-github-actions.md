@@ -32,7 +32,7 @@ az aks update --resource-group amalie-trader-rg --name amalie-trader-aks --attac
 az aks get-credentials --resource-group amalie-trader-rg --name amalie-trader-aks --overwrite-existing
 kubectl create namespace trading
 
-# IBKR login secret (brug dine egne vaerdier)
+# IBKR login secret (indsæt dine egne vaerdier)
 kubectl -n trading create secret generic ibkrtrader-ibkr-credentials \
   --from-literal=TWS_USERID="<ibkr-user>" \
   --from-literal=TWS_PASSWORD="<ibkr-password>"
@@ -53,12 +53,6 @@ az ad sp create-for-rbac \
   --scopes "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/amalie-trader-rg" \
   --sdk-auth
 ```
-
-Gem JSON-outputtet fra kommandoen. Det bliver brugt som GitHub secret.
-
-Hvis du opretter eller roterer secret manuelt i Azure Portal, skal du bruge
-secretens **Value** og ikke **Secret ID**. En ugyldig eller udloe bet client secret
-giver typisk fejlen `Invalid client secret provided` i `azure/login`.
 
 Hent ACR credentials:
 
@@ -92,7 +86,7 @@ Ved push til `main`:
 1. Bygger alle service-images
 2. Pusher til ACR
 3. Koerer Helm upgrade/install mod AKS
-4. Verificerer rollout paa noegle-deployments
+4. Verificerer rollout 
 
 ## 6) Drift og fejlfinding
 
