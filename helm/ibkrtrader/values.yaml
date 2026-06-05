@@ -157,6 +157,11 @@ ibkrAdapter:
   reconnectIntervalS: 10
   logLevel: INFO
   logFormat: json      # json | console
+  # Comma-separated tickers to stream realtime market data for.
+  # Adapter calls IBKR reqMktData for each symbol and publishes ticks to
+  # marketdata.realtime.<SYMBOL>. Must cover every symbol in any enabled
+  # strategy's universe; otherwise the strategy receives no bars.
+  universe: "NVDA,AAPL"
   nodeSelector: {}
   tolerations: []
 

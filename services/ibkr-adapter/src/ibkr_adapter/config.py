@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     ibkr_client_id: int = Field(1, alias="IBKR_CLIENT_ID")
     ibkr_account: str = Field("", alias="IBKR_ACCOUNT")
 
+    # Comma-separated tickers to stream realtime market data for (e.g. "NVDA,AAPL").
+    # Bars/ticks are published to marketdata.realtime.<SYMBOL> for strategies.
+    universe: str = Field("", alias="UNIVERSE")
+
     # Reconnect settings
     reconnect_interval_s: float = Field(10.0, alias="RECONNECT_INTERVAL_S")
     max_reconnect_attempts: int = Field(
@@ -42,6 +46,10 @@ class Settings(BaseSettings):
         if not (1 <= v <= 32767):
             raise ValueError("ibkr_client_id must be between 1 and 32767")
         return v
+
+    @property
+    def universe_list(self) -> list[str]:
+        return [s.strip().upper() for s in self.universe.split(",") if s.strip()]
 
 
 _settings: Settings | None = None
