@@ -33,10 +33,7 @@ Data gemmes i TimescaleDB (en PostgreSQL-variant der er god til tidsseriedata).
 ## Deploy
 
 ```powershell
-# Byg og push images
-.\build-and-push.ps1 -GithubUser <dit-github-brugernavn>
-
-# Deploy til paper trading
+# Deploy til paper trading (forudsætter at images allerede er pushet til et registry)
 helm install trader ./helm/ibkrtrader `
   -f helm/ibkrtrader/values.paper.yaml `
   -n trading
@@ -48,7 +45,6 @@ Repoet er nu klargjort til Azure-deploy med CI/CD:
 
 - GitHub Actions workflow: `.github/workflows/deploy-aks.yml`
 - Azure override values: `helm/ibkrtrader/values.azure.yaml`
-- Lokal deploy helper: `deploy-aks.ps1`
 - Detaljeret step-by-step guide: `docs/azure-aks-github-actions.md`
 
 Workflowet bygger alle service-images, pusher dem til ACR og deployer chartet til AKS via Helm ved push til `main`.
