@@ -14,12 +14,12 @@ keywords:
   - ibkr
   - interactive-brokers
   - quant
-home: https://github.com/perjmi/ibkrtrader
+home: https://github.com/amaliejensen2/ibkrtrader
 sources:
-  - https://github.com/perjmi/ibkrtrader
+  - https://github.com/amaliejensen2/ibkrtrader
 maintainers:
-  - name: perjmi
-    email: perjmi@gmail.com
+  - name: amaliejensen2
+    email: amalienovember@gmail.com
 dependencies:
   - name: nats
     version: "1.2.x"

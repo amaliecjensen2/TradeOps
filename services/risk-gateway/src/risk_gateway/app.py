@@ -49,6 +49,7 @@ def create_app(engine: CheckEngine, nats_sync) -> FastAPI:
 
     @app.get("/readyz")
     async def readyz():
+        # Hent NATS-klienten defensivt, selv om den er et internt felt.
         nc = getattr(nats_sync, "_nc", None)
         if nc is None or nc.is_closed:
             return JSONResponse(status_code=503, content={"status": "nats_disconnected"})
@@ -59,7 +60,9 @@ def create_app(engine: CheckEngine, nats_sync) -> FastAPI:
         import time
         t0 = time.perf_counter()
         try:
+            # Prometheus måler kun tiden brugt inde i selve check-pipelinen.
             with CHECK_LATENCY.time():
+                # Kaster RiskRejection hvis ordren bryder en risikoregel.
                 engine.check(req)
         except RiskRejection as exc:
             reason_type = _classify_reason(exc.reason)
@@ -76,11 +79,14 @@ def create_app(engine: CheckEngine, nats_sync) -> FastAPI:
                 content=OrderRejected(
                     reason=exc.reason,
                     idempotency_key=req.idempotency_key,
+                    # Gør Pydantic-modellen klar til JSON-responsen.
                 ).model_dump(mode="json"),
             )
 
         # Videresend accepteret ordre til NATS, til ibkr adapter
+        # Subjectet styrer hvilken strategi og hvilket symbol ordren tilhører.
         subject = f"orders.{req.strategy}.{req.symbol}"
+        # NATS forventer bytes, så modellen serialiseres til JSON først.
         payload = req.model_dump_json().encode()
         await nats_sync.publish(subject, payload)
 
@@ -91,6 +97,7 @@ def create_app(engine: CheckEngine, nats_sync) -> FastAPI:
             symbol=req.symbol,
             side=req.side,
             qty=req.quantity,
+            # Logges i millisekunder, selv om målingen starter i sekunder.
             latency_ms=f"{(time.perf_counter() - t0) * 1000:.2f}",
         )
         return OrderAccepted(idempotency_key=req.idempotency_key)

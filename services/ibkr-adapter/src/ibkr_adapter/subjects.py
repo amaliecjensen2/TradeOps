@@ -1,6 +1,6 @@
 """NATS subject konstanter.
 
-At holde alle subjects ét sted gør det trivielt at verificere at
+At holde alle subjects et sted gør det trivielt at verificere at
 adapteren, strategier, risk gateway og risk monitor alle bruger identiske
 subject strenge.
 

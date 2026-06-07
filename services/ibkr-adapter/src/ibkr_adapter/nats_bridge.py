@@ -59,14 +59,17 @@ class NATSBridge:
     async def subscribe_orders(self) -> None:
         """Abonnér på orders.> og videresend til IBKR gateway."""
         assert self._nc is not None, "kald connect() først"
+        # Adapterens indgående side: interne ordrekommandoer kommer ind via NATS.
         await self._nc.subscribe(subjects.ORDERS_INBOX, cb=self._handle_order_msg)
-        log.info("nats_bridge.subscribed_orders", subject=subjects.ORDERS_INBOX)
+        log.info("nats_bridge.subscribed_orders",
+                 subject=subjects.ORDERS_INBOX)
 
     async def publish(self, subject: str, payload: bytes) -> None:
         """Publicér en rå payload. Falder tilbage til core NATS hvis JS publish fejler."""
         if self._js is None:
             return
         try:
+            # Adapterens udgående side: IBKR events publiceres tilbage på bussen.
             await self._js.publish(subject, payload)
         except (nats.js.errors.NoStreamResponseError, nats.errors.TimeoutError) as exc:
             log.warning(
@@ -112,6 +115,7 @@ class NATSBridge:
 
         t0 = time.perf_counter()
         try:
+            # Broens kerneopgave: oversæt en intern ordrebesked til et gateway-kald mod IBKR.
             await self._gateway.place_order(cmd)
             metrics.ORDERS_PLACED.labels(strategy=cmd.strategy).inc()
             metrics.ORDER_LATENCY.observe(time.perf_counter() - t0)

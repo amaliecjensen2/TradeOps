@@ -1,7 +1,8 @@
-"""Minimal asynkron HTTP server til Kubernetes liveness/readiness probes.
+"""Minimal asynkron HTTP server til Kubernetes overvågning.
 
   GET /healthz  altid 200 (processen er i live)
   GET /readyz   200 når der er forbindelse til både NATS og TWS, 503 ellers
+  tjekke rom IBKR-forbindelsen er nede eller NATS er død 
 """
 
 from __future__ import annotations
@@ -25,7 +26,7 @@ class HealthServer:
         self._gateway = gateway
         self._nats_bridge = nats_bridge
 
-    async def start(self) -> None:
+    async def start(self) -> None:  # starter en webserver
         app = web.Application()
         app.router.add_get("/healthz", self._healthz)
         app.router.add_get("/readyz", self._readyz)

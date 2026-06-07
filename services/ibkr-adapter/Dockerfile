@@ -1,4 +1,4 @@
-# ── build stage ──────────────────────────────────────────────────────────────
+#build stage
 FROM python:3.12-slim AS builder
 
 WORKDIR /build
@@ -13,7 +13,7 @@ COPY src/ src/
 # Build wheel
 RUN pip wheel --no-cache-dir --wheel-dir /wheels .
 
-# ── runtime stage ─────────────────────────────────────────────────────────────
+# runtime stage 
 FROM python:3.12-slim
 
 # Non-root user — principle of least privilege

@@ -1,6 +1,6 @@
 """Prometheus metrics udstillet på :9090/metrics.
 
-Alle countere / gauges for adapteren ligger her, så der præcis er én
+Alle countere / gauges for adapteren ligger her, så der præcis er en
 import af prometheus_client på tværs af servicen.
 """
 
