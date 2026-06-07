@@ -1,12 +1,13 @@
 """Structured logging."""
-import logging
-import sys
-import structlog
+import logging  # python standard logging
+import sys  # der hvor logs skrives ud
+import structlog  # til at lave strukturede logs
 from trader_api.config import get_settings
 
 
 def configure_logging() -> None:
     s = get_settings()
+    # hent logging, slå det op i logginf modul hvis det ikke findes bruge INFO
     level = getattr(logging, s.log_level.upper(), logging.INFO)
     shared = [structlog.contextvars.merge_contextvars,
               structlog.processors.add_log_level,

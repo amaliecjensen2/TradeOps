@@ -1,16 +1,16 @@
 """FastAPI application for trader-api.
 
-All endpoints are read-only. Writes (orders) go through risk-gateway.
+Alle endpoints er read-only
 
 Routes:
   GET /healthz
   GET /readyz
   GET /status               — system status (connected, halted, mode)
-  GET /positions            — current open positions
-  GET /pnl                  — latest PnL snapshot
-  GET /pnl/history          — time-series PnL (from TimescaleDB)
-  GET /fills                — recent execution reports
-  GET /orders               — recent order events
+  GET /positions            - åbne positioner
+  GET /pnl                  — seneste PnL snapshot
+  GET /pnl/history          — tidsserie PnL (from TimescaleDB)
+  GET /fills                — seneste udførelser reporter
+  GET /orders               — seneste order events
 """
 
 from __future__ import annotations
@@ -29,21 +29,20 @@ log = get_logger(__name__)
 def create_app(db: Database, cache: RealtimeCache, account: str) -> FastAPI:
     app = FastAPI(title="trader-api", version="0.1.0", docs_url="/docs")
 
-    # CORS — dashboard is served from a different origin in development
     app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],   # Tighten in production with specific domain
-        allow_methods=["GET"],
+        CORSMiddleware,  # browseren må kalde api fra en anden orgin
+        allow_origins=["*"],  # Alle må kalde API
+        allow_methods=["GET"],  # kun get req er tilladt
         allow_headers=["*"],
     )
 
     @app.get("/healthz")
-    async def healthz():
+    async def healthz():  # tjek for at apis kan kaldes / lever processen?
         return {"status": "ok"}
 
     @app.get("/readyz")
     async def readyz():
-        nc = getattr(cache, "_nc", None)
+        nc = getattr(cache, "_nc", None)  # prøver at hente nats fra cachen
         if nc is None or nc.is_closed:
             return JSONResponse(status_code=503, content={"status": "not_ready"})
         return {"status": "ready"}
@@ -57,9 +56,9 @@ def create_app(db: Database, cache: RealtimeCache, account: str) -> FastAPI:
             "account": account,
         }
 
-    @app.get("/positions")
+    @app.get("/positions")  # retunerer aktuelle positioner
     async def positions():
-        # Prefer real-time cache; fall back to DB snapshot
+        # forsøger først cachen, hvis tom hent fra DB
         if cache.positions:
             return list(cache.positions.values())
         try:
@@ -68,7 +67,7 @@ def create_app(db: Database, cache: RealtimeCache, account: str) -> FastAPI:
             log.warning("api.positions_db_error", error=str(exc))
             return []
 
-    @app.get("/pnl")
+    @app.get("/pnl")  # retunerer profit n loss
     async def pnl_latest():
         if cache.pnl:
             return cache.pnl
@@ -79,15 +78,17 @@ def create_app(db: Database, cache: RealtimeCache, account: str) -> FastAPI:
             log.warning("api.pnl_db_error", error=str(exc))
             return {}
 
-    @app.get("/pnl/history")
+    @app.get("/pnl/history")  # retunerer pnl over tid
     async def pnl_history(limit: int = Query(default=200, le=1000)):
         try:
+            # query db for pnl history, med limit på def 200 rækker og max 1000 rækker
+            # til skalering kan der indføres pagination, hvor man deler data op i sider, f.eks giv mig 1 side med 20 rækker
             return await db.get_pnl_history(account, limit=limit)
         except Exception as exc:
             log.warning("api.pnl_history_db_error", error=str(exc))
             return []
 
-    @app.get("/fills")
+    @app.get("/fills")  # retunerer faktiske udførte handler
     async def fills(limit: int = Query(default=100, le=500)):
         try:
             return await db.get_fills(account, limit=limit)
@@ -95,7 +96,7 @@ def create_app(db: Database, cache: RealtimeCache, account: str) -> FastAPI:
             log.warning("api.fills_db_error", error=str(exc))
             return []
 
-    @app.get("/orders")
+    @app.get("/orders")  # retunerer odrer
     async def orders(limit: int = Query(default=100, le=500)):
         try:
             return await db.get_order_events(limit=limit)

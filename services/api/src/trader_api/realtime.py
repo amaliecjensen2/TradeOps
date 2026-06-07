@@ -1,8 +1,8 @@
-"""NATS real-time state cache.
+"""NATS realtids-cache for systemtilstand.
 
-Keeps an in-memory snapshot of current positions, PnL, and system status
-so the API can serve low-latency reads without hitting the database.
-Updates are pushed from ibkr-adapter via NATS.
+Bevarer et in-memory snapshot af aktuelle positioner, PnL og systemstatus,
+så API'et kan levere svar med lav latenstid uden at ramme databasen.
+Opdateringer pushes fra ibkr-adapter via NATS.
 """
 
 from __future__ import annotations
@@ -18,16 +18,18 @@ log = get_logger(__name__)
 
 
 class RealtimeCache:
+    # tager settings objekt ind, her finder den nats url f.eks
     def __init__(self, settings: Settings) -> None:
         self._cfg = settings
         self._nc = None
 
-        # Snapshots — overwritten on every NATS message
-        self.positions: dict[str, dict] = {}    # symbol → snapshot
+        # Snapshots overwritten on every NATS message
+        # en dict der skal holde postioner i hukommelsen, nøglen er f.eks nvda ig værdien er et snapshot for den position
+        self.positions: dict[str, dict] = {}
         self.pnl: dict | None = None
         self.adapter_connected: bool = False
-        self.halted: bool = False
-        self.halt_reason: str = ""
+        self.halted: bool = False  # er der halt fra risk monitor?
+        self.halt_reason: str = ""  # årsag til halt
 
     async def connect(self) -> None:
         self._nc = await nats.connect(
@@ -38,7 +40,7 @@ class RealtimeCache:
         )
         log.info("realtime_cache.connected")
 
-    async def subscribe_all(self) -> None:
+    async def subscribe_all(self) -> None:  # subscriber til nats
         assert self._nc
         await self._nc.subscribe("positions.>",           cb=self._on_position)
         await self._nc.subscribe("pnl.>",                 cb=self._on_pnl)
@@ -46,7 +48,7 @@ class RealtimeCache:
         await self._nc.subscribe("risk.adapter.disconnected", cb=self._on_disconnect)
         await self._nc.subscribe("risk.halt",             cb=self._on_halt)
 
-    async def close(self) -> None:
+    async def close(self) -> None:  # lukker nats forbindelsen
         if self._nc:
             await self._nc.drain()
 

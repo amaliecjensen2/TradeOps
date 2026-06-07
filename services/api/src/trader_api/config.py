@@ -1,7 +1,10 @@
-"""Config for trader-api."""
+"""Config foil for trader-api.
+samler nats, postgres, logging
+"""
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+# basesettings gør at værdier automatisk kan læses fra enviroment variables
 
 
 class Settings(BaseSettings):
@@ -29,6 +32,7 @@ class Settings(BaseSettings):
         )
 
 
+# singleton, setting bliver kun oprettet en gang, sikrer hele appen bruger samme config
 _settings: Settings | None = None
 
 
