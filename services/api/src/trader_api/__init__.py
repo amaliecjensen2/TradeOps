@@ -1,1 +1,1 @@
-"""trader_api package."""
+"""trader_api pakke."""

@@ -1,13 +1,13 @@
-"""Moving Average Crossover strategy.
+"""Moving Average Crossover strategi.
 
-Signal logic:
-  - Maintain a rolling buffer of closing prices per symbol
-  - BUY  when fast MA crosses ABOVE slow MA (golden cross)
-  - SELL when fast MA crosses BELOW slow MA (death cross)
-  - Only one position per symbol at a time (flat → long → flat)
+Signal logik:
+  Vedligehold en rullende buffer af lukkepriser pr symbol
+  BUY  når hurtig MA krydser OVER langsom MA (golden cross)
+  SELL når hurtig MA krydser UNDER langsom MA (death cross)
+  Kun én position pr symbol ad gangen (flat til long til flat)
 
-This is an intentionally simple example to validate the full pipeline.
-Replace with your own logic in a new strategy service.
+Dette er et bevidst simpelt eksempel til at validere hele pipelinen.
+Erstat med din egen logik i en ny strategi service.
 """
 
 from __future__ import annotations
@@ -30,11 +30,11 @@ def _simple_moving_average(prices: deque, period: int) -> float | None:
 class HelloStrategy(BaseStrategy):
     def __init__(self, settings) -> None:
         super().__init__(settings)
-        # Rolling close-price buffer per symbol (max slow_period + 1 bars)
+        # Rullende lukkepris buffer pr symbol (max slow_period + 1 bars)
         buf_size = settings.slow_period + 1
         self._prices: dict[str, deque] = defaultdict(
             lambda: deque(maxlen=buf_size))
-        # Track whether we currently hold a position per symbol
+        # Spor om vi pt holder en position pr symbol
         self._position: dict[str, float] = {}
 
     async def on_bar(self, bar: dict) -> None:
@@ -51,7 +51,7 @@ class HelloStrategy(BaseStrategy):
             self._prices[symbol], self._cfg.slow_period)
 
         if fast_ma is None or slow_ma is None:
-            # Not enough bars yet
+            # Ikke nok bars endnu
             log.debug("strategy.warming_up",
                       symbol=symbol,
                       bars=len(self._prices[symbol]),
@@ -66,11 +66,11 @@ class HelloStrategy(BaseStrategy):
 
         current_pos = self._position.get(symbol, 0.0)
 
-        # Golden cross: fast MA crosses above slow MA → BUY if flat
+        # Golden cross: hurtig MA krydser over langsom MA, BUY hvis flat
         if fast_ma > slow_ma and current_pos <= 0:
             log.info("strategy.golden_cross", symbol=symbol,
                      fast_ma=fast_ma, slow_ma=slow_ma)
-            # Close short first if any
+            # Luk short først hvis nogen
             if current_pos < 0:
                 filled = await self.buy(symbol, abs(current_pos))
                 if filled:
@@ -80,7 +80,7 @@ class HelloStrategy(BaseStrategy):
             if filled:
                 self._position[symbol] = self._cfg.trade_qty
 
-        # Death cross: fast MA crosses below slow MA → SELL if long
+        # Death cross: hurtig MA krydser under langsom MA, SELL hvis long
         elif fast_ma < slow_ma and current_pos >= 0:
             log.info("strategy.death_cross", symbol=symbol,
                      fast_ma=fast_ma, slow_ma=slow_ma)

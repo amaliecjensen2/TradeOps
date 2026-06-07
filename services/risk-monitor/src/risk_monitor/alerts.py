@@ -1,14 +1,14 @@
-"""Alert delivery — Telegram Bot API.
+"""Alarmlevering via Telegram Bot API.
 
-Usage:
+Brug:
     alerts = AlertSender(settings)
-    await alerts.send("⚠️ HALT triggered: max daily loss exceeded")
+    await alerts.send("HALT triggered: max daily loss exceeded")
 
-The Telegram Bot API is a plain HTTPS POST — no heavy SDK needed.
-Token and chat_id come from environment variables / Kubernetes secrets.
+Telegram Bot APIet er en simpel HTTPS POST, ingen tung SDK nødvendig.
+Token og chat_id kommer fra miljøvariabler / Kubernetes secrets.
 
-If TELEGRAM_ENABLED=false (default in paper mode), all methods are no-ops
-so alerts never fire in development unless explicitly enabled.
+Hvis TELEGRAM_ENABLED=false (standard i paper mode), er alle metoder no ops
+så alarmer aldrig affyrer i udvikling med mindre det eksplicit aktiveres.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ class AlertSender:
         self._mode = settings.ibkr_mode
 
     async def send(self, text: str) -> None:
-        """Send a plain-text Telegram message. Silently swallows errors."""
+        """Send en plain text Telegram besked. Sluger fejl stille."""
         if not self._enabled:
             log.info("alert.suppressed_telegram_disabled", message=text)
             return
@@ -51,7 +51,7 @@ class AlertSender:
                 resp.raise_for_status()
             log.info("alert.telegram_sent")
         except Exception as exc:
-            # Never let an alert failure crash the monitor
+            # Lad aldrig en alarmfejl crashe monitoren
             log.error("alert.telegram_failed", error=str(exc))
 
     async def halt(self, reason: str) -> None:

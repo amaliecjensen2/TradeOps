@@ -1,1 +1,1 @@
-"""ibkr_adapter package."""
+"""ibkr_adapter pakke."""

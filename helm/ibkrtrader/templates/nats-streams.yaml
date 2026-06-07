@@ -1,9 +1,9 @@
 {{- if .Values.jetstreamStreams.enabled -}}
 {{/*
-  Declarative JetStream stream definitions via NACK CRDs.
-  Requires the NACK controller (https://github.com/nats-io/nack)
-  to be installed in the cluster. Disabled by default; enable in
-  values.yaml after installing NACK.
+  Deklarative JetStream stream definitioner via NACK CRDer.
+  Kræver at NACK controlleren (https://github.com/nats-io/nack)
+  er installeret i clusteret. Slået fra som standard; aktivér i
+  values.yaml efter at NACK er installeret.
 */}}
 ---
 apiVersion: jetstream.nats.io/v1beta2
@@ -18,7 +18,7 @@ spec:
   subjects: ["orders.>"]
   retention: limits
   storage: file
-  maxAge: 168h         # 7 days
+  maxAge: 168h         # 7 dage
   replicas: 1
 ---
 apiVersion: jetstream.nats.io/v1beta2
@@ -33,7 +33,7 @@ spec:
   subjects: ["fills.>"]
   retention: limits
   storage: file
-  maxAge: 0             # forever (mirror to S3 in v2)
+  maxAge: 0             # for evigt (mirror til S3 i v2)
   replicas: 1
 ---
 apiVersion: jetstream.nats.io/v1beta2
@@ -63,6 +63,6 @@ spec:
   subjects: ["risk.>", "pnl.>", "positions.>"]
   retention: limits
   storage: file
-  maxAge: 720h          # 30 days
+  maxAge: 720h          # 30 dage
   replicas: 1
 {{- end }}

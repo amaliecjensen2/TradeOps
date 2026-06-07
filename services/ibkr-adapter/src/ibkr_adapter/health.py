@@ -1,7 +1,7 @@
-"""Minimal async HTTP server for Kubernetes liveness/readiness probes.
+"""Minimal asynkron HTTP server til Kubernetes liveness/readiness probes.
 
-  GET /healthz  — always 200 (process is alive)
-  GET /readyz   — 200 when connected to both NATS and TWS, 503 otherwise
+  GET /healthz  altid 200 (processen er i live)
+  GET /readyz   200 når der er forbindelse til både NATS og TWS, 503 ellers
 """
 
 from __future__ import annotations

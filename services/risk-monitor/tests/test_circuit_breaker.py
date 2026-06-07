@@ -1,4 +1,4 @@
-"""Unit tests for circuit breaker logic."""
+"""Unit tests for circuit breaker logikken."""
 
 import pytest
 
@@ -46,7 +46,7 @@ class TestCircuitBreaker:
         assert not result.should_halt
 
     def test_drawdown_breach(self, cb, state):
-        # HWM = 100_000, now at 94_000 → 6% drawdown > 5% limit
+        # HWM = 100_000, nu på 94_000, 6% drawdown > 5% grænse
         state.update_pnl(0, 0, 0, net_liquidation=100_000)
         state.update_pnl(0, 0, 0, net_liquidation=94_000)
         result = cb.evaluate(state)
@@ -67,13 +67,13 @@ class TestCircuitBreaker:
 
     def test_no_re_trip_when_halted(self, cb, state):
         state.update_pnl(daily_pnl=-999.0, unrealized_pnl=0, realized_pnl=0)
-        state.halted = True   # already halted
+        state.halted = True   # allerede haltet
         result = cb.evaluate(state)
-        assert not result.should_halt  # should not re-trigger
+        assert not result.should_halt  # bør ikke trigge igen
 
     def test_heartbeat_timeout_alert_only(self, cb, state):
         import time
-        state.last_heartbeat_ts = time.monotonic() - 120  # 2 min ago
+        state.last_heartbeat_ts = time.monotonic() - 120  # 2 min siden
         result = cb.evaluate(state)
         assert not result.should_halt
         assert result.alert_only

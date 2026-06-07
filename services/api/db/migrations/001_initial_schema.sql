@@ -1,6 +1,6 @@
--- ibkrtrader TimescaleDB schema
--- Run once at cluster bootstrap via the init Job (see timescale-init-job.yaml).
--- Safe to re-run: all statements use IF NOT EXISTS.
+-- ibkrtrader TimescaleDB skema
+-- Køres én gang ved cluster bootstrap via init Jobbet (se timescale init job.yaml).
+-- Sikkert at køre igen: alle statements bruger IF NOT EXISTS.
 
 -- ============================================================
 -- Extensions
@@ -8,7 +8,7 @@
 CREATE EXTENSION IF NOT EXISTS timescaledb;
 
 -- ============================================================
--- fills — every execution report from TWS
+-- fills, hver eksekveringsrapport fra TWS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS fills (
     timestamp       TIMESTAMPTZ NOT NULL,
@@ -30,7 +30,7 @@ CREATE INDEX IF NOT EXISTS fills_account_symbol_idx ON fills (account, symbol, t
 CREATE UNIQUE INDEX IF NOT EXISTS fills_exec_id_idx ON fills (exec_id);
 
 -- ============================================================
--- pnl_ticks — periodic PnL snapshots from the adapter
+-- pnl_ticks, periodiske PnL snapshots fra adapteren
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pnl_ticks (
     timestamp           TIMESTAMPTZ      NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS pnl_ticks (
 SELECT create_hypertable('pnl_ticks', 'timestamp', if_not_exists => TRUE);
 CREATE INDEX IF NOT EXISTS pnl_ticks_account_idx ON pnl_ticks (account, timestamp DESC);
 
--- Continuous aggregate: 1-minute PnL bars for the chart
+-- Continuous aggregate: 1 minutters PnL bars til charten
 CREATE MATERIALIZED VIEW IF NOT EXISTS pnl_1min
 WITH (timescaledb.continuous) AS
 SELECT
@@ -57,7 +57,7 @@ GROUP BY bucket, account
 WITH NO DATA;
 
 -- ============================================================
--- positions_snapshot — latest known position per symbol
+-- positions_snapshot, seneste kendte position pr. symbol
 -- ============================================================
 CREATE TABLE IF NOT EXISTS positions_snapshot (
     timestamp       TIMESTAMPTZ      NOT NULL,
@@ -74,7 +74,7 @@ SELECT create_hypertable('positions_snapshot', 'timestamp', if_not_exists => TRU
 CREATE INDEX IF NOT EXISTS positions_account_symbol_idx ON positions_snapshot (account, symbol, timestamp DESC);
 
 -- ============================================================
--- order_events — audit trail for every order attempt
+-- order_events, audit trail for hvert ordreforsøg
 -- ============================================================
 CREATE TABLE IF NOT EXISTS order_events (
     timestamp       TIMESTAMPTZ NOT NULL,
@@ -93,7 +93,7 @@ SELECT create_hypertable('order_events', 'timestamp', if_not_exists => TRUE);
 CREATE INDEX IF NOT EXISTS order_events_strategy_idx ON order_events (strategy, timestamp DESC);
 
 -- ============================================================
--- marketdata_bars — optional OHLCV storage (1-min bars)
+-- marketdata_bars, valgfri OHLCV opbevaring (1 min bars)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS marketdata_bars (
     timestamp   TIMESTAMPTZ      NOT NULL,

@@ -1,12 +1,12 @@
 {{/*
-Expand the name of the chart.
+Udvid navnet på chartet.
 */}}
 {{- define "ibkrtrader.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
-Create a default fully qualified app name. Truncated at 63 chars.
+Opret et default fuldt kvalificeret app navn. Trunkeres ved 63 tegn.
 */}}
 {{- define "ibkrtrader.fullname" -}}
 {{- if .Values.fullnameOverride -}}
@@ -29,7 +29,7 @@ Chart label.
 {{- end -}}
 
 {{/*
-Common labels.
+Fælles labels.
 */}}
 {{- define "ibkrtrader.labels" -}}
 helm.sh/chart: {{ include "ibkrtrader.chart" . }}
@@ -50,7 +50,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{/*
-Service account name.
+Service account navn.
 */}}
 {{- define "ibkrtrader.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create -}}
@@ -61,8 +61,8 @@ Service account name.
 {{- end -}}
 
 {{/*
-Active gateway service hostname based on .Values.ibkr.mode.
-Strategies and the risk gateway use this to find IBGW.
+Aktivt gateway service hostnavn baseret på .Values.ibkr.mode.
+Strategier og risk gatewayen bruger dette til at finde IBGW.
 */}}
 {{- define "ibkrtrader.activeGatewayHost" -}}
 {{- printf "%s-ibgw-%s.%s.svc.cluster.local" (include "ibkrtrader.fullname" .) .Values.ibkr.mode .Release.Namespace -}}
@@ -77,22 +77,22 @@ Strategies and the risk gateway use this to find IBGW.
 {{- end -}}
 
 {{/*
-Internal NATS DNS (the subchart's service).
+Intern NATS DNS (subchartens service).
 */}}
 {{- define "ibkrtrader.natsHost" -}}
 {{- printf "%s-nats.%s.svc.cluster.local" .Release.Name .Release.Namespace -}}
 {{- end -}}
 
 {{/*
-Postgres host — the CNPG Cluster's read-write service.
+Postgres host, CNPG Cluster's read write service.
 */}}
 {{- define "ibkrtrader.pgHost" -}}
 {{- printf "%s-timescale-rw.%s.svc.cluster.local" (include "ibkrtrader.fullname" .) .Release.Namespace -}}
 {{- end -}}
 
 {{/*
-Validate that all enabled strategies have unique clientIds.
-Fails template rendering with a clear error if duplicates are found.
+Validér at alle aktiverede strategier har unikke clientIds.
+Stopper template rendering med en tydelig fejl hvis dubletter findes.
 */}}
 {{- define "ibkrtrader.validateClientIds" -}}
 {{- $seen := dict -}}
@@ -111,7 +111,7 @@ Fails template rendering with a clear error if duplicates are found.
 {{- end -}}
 
 {{/*
-Standard env block for any pod that needs to reach IBGW + NATS + Postgres.
+Standard env blok for enhver pod der skal nå IBGW + NATS + Postgres.
 */}}
 {{- define "ibkrtrader.commonEnv" -}}
 - name: IBGW_HOST

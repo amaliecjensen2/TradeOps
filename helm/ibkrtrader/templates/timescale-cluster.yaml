@@ -1,11 +1,11 @@
 {{- if .Values.timescale.cluster.enabled -}}
 {{- $name := printf "%s-timescale" (include "ibkrtrader.fullname" .) -}}
 {{/*
-  Requires the CloudNativePG operator (installed via the chart dependency).
-  We use a CNPG-compatible Postgres image with TimescaleDB preloaded —
-  the upstream CNPG image does NOT bundle Timescale and the Timescale
-  Docker image is incompatible with the CNPG operator (different uid,
-  different distro). The clevyr image bridges that gap.
+  Kræver CloudNativePG operatoren (installeret via chart dependency).
+  Vi bruger et CNPG kompatibelt Postgres image med TimescaleDB forindlæst,
+  upstream CNPG imaget bundler IKKE Timescale og Timescale
+  Docker imaget er inkompatibelt med CNPG operatoren (forskellig uid,
+  forskellig distro). Clevyr imaget bygger bro over det.
 */}}
 ---
 apiVersion: postgresql.cnpg.io/v1

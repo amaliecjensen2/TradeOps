@@ -1,1 +1,1 @@
-"""strategy_hello package."""
+"""strategy_hello pakke."""

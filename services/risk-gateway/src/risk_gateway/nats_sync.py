@@ -1,11 +1,11 @@
-"""NATS listener — keeps CheckEngine state up to date.
+"""NATS listener, holder CheckEngine state opdateret.
 
-Subscribes to:
-  pnl.>           — per-account daily P&L (proxy for per-strategy loss)
-  positions.>     — position snapshots
-  marketdata.>    — last prices for fat-finger check
-  risk.halt       — circuit-breaker tripped by risk-monitor
-  risk.adapter.reconnected — clear halt if desired (manual only for now)
+Abonnerer på:
+  pnl.>           per konto daglig P&L (proxy for per strategi tab)
+  positions.>     positionssnapshots
+  marketdata.>    sidste priser til fat finger check
+  risk.halt       circuit breaker udløst af risk monitor
+  risk.adapter.reconnected ryd halt hvis ønsket (kun manuelt indtil videre)
 """
 
 from __future__ import annotations
@@ -56,11 +56,11 @@ class NATSStateSync:
     async def _on_pnl(self, msg) -> None:
         try:
             data = json.loads(msg.data)
-            # Map account-level daily PnL to each strategy as a fallback.
-            # When per-strategy PnL is available it will override this.
+            # Map kontoens daglige PnL til hver strategi som fallback.
+            # Når per strategi PnL er tilgængelig vil det overskrive dette.
             account = data.get("account", "")
             daily_pnl = float(data.get("daily_pnl", 0))
-            # Store under account key; per-strategy key set by strategy fills
+            # Gem under kontonøgle; per strategi nøgle sættes af strategi fills
             self._engine.strategy_daily_pnl[f"_account_{account}"] = daily_pnl
         except Exception as exc:
             log.warning("nats_state_sync.pnl_error", error=str(exc))
@@ -70,8 +70,8 @@ class NATSStateSync:
             data = json.loads(msg.data)
             symbol = data.get("symbol", "")
             position = float(data.get("position", 0))
-            # subject: positions.<account>.<symbol> — no strategy info here.
-            # We store globally; per-strategy tracking requires strategy tags.
+            # subject: positions.<account>.<symbol>, ingen strategiinfo her.
+            # Vi gemmer globalt; per strategi tracking kræver strategi tags.
             account = data.get("account", "global")
             key = f"_account_{account}"
             if key not in self._engine.strategy_positions:
@@ -84,7 +84,7 @@ class NATSStateSync:
         try:
             data = json.loads(msg.data)
             symbol = data.get("symbol", "")
-            # Accept both bar (close) and tick (last) formats
+            # Accepter både bar (close) og tick (last) format
             price = data.get("close") or data.get("last") or data.get("ask")
             if symbol and price:
                 self._engine.last_prices[symbol] = float(price)
@@ -94,9 +94,9 @@ class NATSStateSync:
     async def _on_halt(self, msg) -> None:
         try:
             data = json.loads(msg.data)
-            reason = data.get("reason", "risk-monitor halt")
+            reason = data.get("reason", "risk monitor halt")
         except Exception:
-            reason = "risk-monitor halt"
+            reason = "risk monitor halt"
         self._engine.halted = True
         self._engine.halt_reason = reason
         log.critical("nats_state_sync.halt_received", reason=reason)

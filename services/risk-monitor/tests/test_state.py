@@ -24,18 +24,18 @@ class TestAccountState:
     def test_hwm_only_moves_up(self):
         s = AccountState()
         s.update_pnl(0, 0, 0, net_liquidation=100_000)
-        s.update_pnl(0, 0, 0, net_liquidation=110_000)  # new high
+        s.update_pnl(0, 0, 0, net_liquidation=110_000)  # nyt højdepunkt
         s.update_pnl(0, 0, 0, net_liquidation=95_000)   # drawdown
-        # HWM should be 110_000
+        # HWM bør være 110_000
         assert abs(s._pnl_hwm - 110_000) < 0.01
-        # Drawdown = (110_000 - 95_000) / 110_000 ≈ 13.6%
+        # Drawdown = (110_000 95_000) / 110_000 ca. 13.6%
         assert s.drawdown_pct > 0.13
 
     def test_gross_exposure(self):
         s = AccountState()
         s.update_position("AAPL", 100, 150, market_value=15_000)
         s.update_position("TSLA", -50, 200, market_value=-10_000)
-        # Gross = |15_000| + |-10_000| = 25_000
+        # Gross = |15_000| + | 10_000| = 25_000
         assert s.gross_exposure == 25_000
 
     def test_heartbeat_tracking(self):

@@ -1,8 +1,8 @@
-"""Configuration for risk-gateway.
+"""Konfiguration for risk gateway.
 
-Global limits come from values.yaml riskGateway.global.
-Per-strategy limits are injected via STRATEGY_LIMITS_JSON env var,
-rendered by the Helm strategy-deployment template.
+Globale grænser kommer fra values.yaml riskGateway.global.
+Per strategi grænser injiceres via STRATEGY_LIMITS_JSON env var,
+renderet af Helm strategy deployment templaten.
 """
 
 import json
@@ -14,33 +14,33 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="", case_sensitive=False)
 
-    # ------------------------------------------------------------------ NATS
+    # NATS
     nats_url: str = Field("nats://nats:4222", alias="NATS_URL")
 
-    # --------------------------------------------------------------- Account
+    # Konto
     ibkr_account: str = Field("", alias="IBKR_ACCOUNT")
     ibkr_mode: str = Field("paper", alias="IBKR_MODE")
 
-    # ------------------------------------------------ Global risk limits
+    # Globale risikogrænser
     max_account_drawdown_pct: float = Field(
         0.05, alias="MAX_ACCOUNT_DRAWDOWN_PCT")
     max_gross_exposure: float = Field(1_000_000.0, alias="MAX_GROSS_EXPOSURE")
     max_orders_per_second: int = Field(50, alias="MAX_ORDERS_PER_SECOND")
-    # Comma-separated list of symbols that may never be traded
+    # Kommasepareret liste af symboler der aldrig må handles
     restricted_symbols: str = Field("", alias="RESTRICTED_SYMBOLS")
 
-    # ---------------------------------------- Per-strategy limits (JSON map)
+    # Per strategi grænser (JSON map)
     # Format: {"hello": {"maxOrderNotional": 1000, "maxDailyLoss": 100, ...}}
     strategy_limits_json: str = Field("{}", alias="STRATEGY_LIMITS_JSON")
 
-    # --------------------------------------------------------------- Server
+    # Server
     port: int = Field(8080, alias="PORT")
     workers: int = Field(1, alias="WORKERS")
 
-    # --------------------------------------------------------------- Metrics
+    # Metrics
     metrics_port: int = Field(9090, alias="METRICS_PORT")
 
-    # --------------------------------------------------------------- Logging
+    # Logging
     log_level: str = Field("INFO", alias="LOG_LEVEL")
     log_format: str = Field("json", alias="LOG_FORMAT")
 

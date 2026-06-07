@@ -1,24 +1,24 @@
-"""NATS subject constants.
+"""NATS subject konstanter.
 
-Keeping all subjects in one place makes it trivial to verify that the
-adapter, strategies, risk-gateway, and risk-monitor all use identical
-subject strings.
+At holde alle subjects ét sted gør det trivielt at verificere at
+adapteren, strategier, risk gateway og risk monitor alle bruger identiske
+subject strenge.
 
-Subject hierarchy:
-  orders.<strategy>.<symbol>        — strategies → adapter (order commands)
-  fills.<account>.<symbol>          — adapter → risk-monitor / dashboard
-  pnl.<account>                     — adapter → risk-monitor / dashboard
-  positions.<account>.<symbol>      — adapter → dashboard / API
-  marketdata.<feed>.<symbol>        — adapter → strategies
-  risk.adapter.heartbeat            — adapter → risk-monitor (liveness)
-  risk.adapter.disconnected         — adapter → risk-monitor (alert)
-  risk.adapter.reconnected          — adapter → risk-monitor (alert)
+Subject hierarki:
+  orders.<strategy>.<symbol>        strategier til adapter (ordrekommandoer)
+  fills.<account>.<symbol>          adapter til risk monitor / dashboard
+  pnl.<account>                     adapter til risk monitor / dashboard
+  positions.<account>.<symbol>      adapter til dashboard / API
+  marketdata.<feed>.<symbol>        adapter til strategier
+  risk.adapter.heartbeat            adapter til risk monitor (liveness)
+  risk.adapter.disconnected         adapter til risk monitor (alarm)
+  risk.adapter.reconnected          adapter til risk monitor (alarm)
 """
 
-# Inbound (adapter subscribes)
-ORDERS_INBOX = "orders.>"          # wildcard — all strategies, all symbols
+# Indkommende (adapter abonnerer)
+ORDERS_INBOX = "orders.>"          # wildcard, alle strategier, alle symboler
 
-# Outbound (adapter publishes)
+# Udgående (adapter publicerer)
 
 
 def fills(account: str, symbol: str) -> str:

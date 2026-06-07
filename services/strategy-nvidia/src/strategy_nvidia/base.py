@@ -1,4 +1,4 @@
-"""BaseStrategy — reusable foundation for all ibkrtrader strategies."""
+"""BaseStrategy, genbrugelig fundament for alle ibkrtrader strategier."""
 
 from __future__ import annotations
 
@@ -79,7 +79,7 @@ class BaseStrategy(ABC):
 
     @abstractmethod
     async def on_bar(self, bar: dict) -> None:
-        """Override this with your trading logic."""
+        """Overskriv denne med din handelslogik."""
 
     async def buy(self, symbol: str, quantity: float,
                   limit_price: float | None = None) -> bool:

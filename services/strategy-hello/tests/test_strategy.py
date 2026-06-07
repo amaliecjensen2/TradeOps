@@ -1,4 +1,4 @@
-"""Tests for MA crossover signal logic."""
+"""Tests for MA crossover signal logikken."""
 from collections import deque
 import pytest
 from strategy_hello.strategy import _simple_moving_average, HelloStrategy
@@ -44,8 +44,8 @@ class TestHelloStrategy:
 
     async def test_golden_cross_triggers_buy(self, strategy, mocker):
         mock_buy = mocker.patch.object(strategy, "buy", return_value=True)
-        # Feed bars: slow (3 bars needed), fast (2 bars)
-        # Prices trending up → fast MA > slow MA
+        # Fodr bars: slow (3 bars nødvendige), fast (2 bars)
+        # Priser stiger, fast MA > slow MA
         for price in [90.0, 95.0, 110.0]:
             await strategy.on_bar({"symbol": "AAPL", "close": price})
         mock_buy.assert_called()
@@ -54,11 +54,11 @@ class TestHelloStrategy:
         mock_buy = mocker.patch.object(strategy, "buy", return_value=True)
         mock_sell = mocker.patch.object(strategy, "sell", return_value=True)
 
-        # First create a long position via golden cross
+        # Skab først en long position via golden cross
         for price in [90.0, 95.0, 110.0]:
             await strategy.on_bar({"symbol": "AAPL", "close": price})
 
-        # Now prices trend down → death cross
+        # Nu falder priserne, death cross
         for price in [105.0, 95.0, 80.0]:
             await strategy.on_bar({"symbol": "AAPL", "close": price})
 

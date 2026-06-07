@@ -1,8 +1,8 @@
 {{/*
-  One Deployment + Service + ConfigMap per enabled strategy in
-  .Values.strategies. clientId uniqueness is validated up-front; an
-  invalid input fails the install with a clear error rather than
-  silently producing two pods racing for the same IBKR client slot.
+  Én Deployment + Service + ConfigMap pr aktiveret strategi i
+  .Values.strategies. clientId unikhed valideres på forhånd; et
+  ugyldigt input fejler installationen med en tydelig fejl i stedet for
+  stille at producere to pods der konkurrerer om det samme IBKR client slot.
 */}}
 {{- include "ibkrtrader.validateClientIds" . -}}
 {{- $root := . -}}
@@ -40,8 +40,8 @@ metadata:
   annotations:
     ibkrtrader.io/clientId: {{ $strategy.clientId | quote }}
 spec:
-  # Hard cap at 1: a strategy holds a single IBKR client slot. Two
-  # replicas would either collide on clientId or trade twice.
+  # Hårdt loft på 1: en strategi holder et enkelt IBKR client slot. To
+  # replicas ville enten kollidere på clientId eller handle to gange.
   replicas: 1
   strategy:
     type: Recreate
@@ -57,7 +57,7 @@ spec:
         app.kubernetes.io/component: strategy
         ibkrtrader.io/strategy: {{ $strategy.name }}
       annotations:
-        # Restart pod when config changes
+        # Genstart pod når config ændres
         checksum/config: {{ toYaml $strategy | sha256sum }}
     spec:
       serviceAccountName: {{ include "ibkrtrader.serviceAccountName" $root }}

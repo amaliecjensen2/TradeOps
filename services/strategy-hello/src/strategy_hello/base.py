@@ -1,13 +1,13 @@
-"""BaseStrategy — reusable foundation for all ibkrtrader strategies.
+"""BaseStrategy, genbrugelig fundament for alle ibkrtrader strategier.
 
-Subclass this and implement on_bar(). Everything else is handled here:
-  - NATS subscription for market data
-  - HTTP order submission to risk-gateway
-  - Idempotency key generation
-  - Health + metrics server
-  - Graceful shutdown
+Subklass denne og implementer on_bar(). Alt andet håndteres her:
+  NATS abonnement på markedsdata
+  HTTP ordreindsendelse til risk gateway
+  Idempotency nøgle generering
+  Health + metrics server
+  Graceful nedlukning
 
-Usage:
+Brug:
     class MyStrategy(BaseStrategy):
         async def on_bar(self, bar: dict) -> None:
             if self.should_buy(bar):
@@ -72,7 +72,7 @@ class BaseStrategy(ABC):
         # Health server
         asyncio.create_task(self._start_health_server())
 
-        # Connect to NATS
+        # Forbind til NATS
         self._nc = await nats.connect(
             self._cfg.nats_url,
             name=self._cfg.strategy_name,
@@ -80,7 +80,7 @@ class BaseStrategy(ABC):
             max_reconnect_attempts=-1,
         )
 
-        # Subscribe to market data for our universe
+        # Abonnér på markedsdata for vores univers
         for symbol in self._cfg.universe:
             subject = f"marketdata.realtime.{symbol}"
             await self._nc.subscribe(subject, cb=self._on_marketdata_msg)
@@ -88,7 +88,7 @@ class BaseStrategy(ABC):
 
         log.info("strategy.ready", universe=self._cfg.universe)
 
-        # Keep running until SIGTERM
+        # Kør indtil SIGTERM
         try:
             while self._running:
                 await asyncio.sleep(1)
@@ -107,11 +107,9 @@ class BaseStrategy(ABC):
 
     @abstractmethod
     async def on_bar(self, bar: dict) -> None:
-        """Override this with your trading logic."""
+        """Overskriv denne med din handelslogik."""
 
-    # ------------------------------------------------------------------ #
-    # Order helpers                                                        #
-    # ------------------------------------------------------------------ #
+    # Ordre hjælpere
 
     async def buy(self, symbol: str, quantity: float,
                   limit_price: float | None = None) -> bool:

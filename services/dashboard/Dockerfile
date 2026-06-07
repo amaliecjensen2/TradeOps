@@ -1,4 +1,4 @@
-# ── build ──────────────────────────────────────────────────────────────────
+# byg
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
@@ -7,7 +7,7 @@ COPY . .
 RUN mkdir -p public
 RUN npm run build
 
-# ── runtime ───────────────────────────────────────────────────────────────
+# runtime
 FROM node:20-alpine
 RUN addgroup -g 1001 trader && adduser -u 1001 -G trader -D trader
 WORKDIR /app

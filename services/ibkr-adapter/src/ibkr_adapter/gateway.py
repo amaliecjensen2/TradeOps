@@ -1,13 +1,15 @@
-"""IBKR Gateway connection manager.
+"""IBKR Gateway forbindelsesmanager.
 
-Wraps ib_insync with:
-  - Async reconnect loop with exponential back-off
-  - Event callbacks that publish structured messages to a callback queue
-  - Heartbeat publishing on a configurable interval
+Indpakker ib_insync med:
+  Asynkront reconnect loop med eksponentiel back off
+  Event callbacks der publicerer strukturerede beskeder til en callback kø
+  Heartbeat publicering på et konfigurerbart interval
 
-The gateway emits events by calling the `on_event` callable passed at
-construction time.  IBKRGateway is intentionally free of NATS imports so
-it can be unit-tested with a mock callback.
+Gatewayen udsender events ved at kalde det `on_event` callable der er givet ved
+konstruktion. IBKRGateway er bevidst fri for NATS imports, så den kan unit testes
+med en mock callback.
+
+dette er broen mellem interactive brokers og resten af systemet
 """
 
 from __future__ import annotations
@@ -35,7 +37,7 @@ from ibkr_adapter.models import (
 
 log = get_logger(__name__)
 
-# Type alias for the callback the adapter uses to route events back to NATS.
+# Type alias for det callback adapteren bruger til at rute events tilbage til NATS.
 EventCallback = Callable[[str, bytes], Awaitable[None]]
 
 _IB_SIDE_MAP = {"BOT": Side.BUY, "SLD": Side.SELL}
@@ -54,7 +56,7 @@ def _clean(value) -> float | None:
 
 
 class IBKRGateway:
-    """Manages a single TWS connection and translates TWS events → events."""
+    """Håndterer en enkelt TWS forbindelse og oversætter TWS events til events."""
 
     HEARTBEAT_INTERVAL_S = 15
 
@@ -66,19 +68,17 @@ class IBKRGateway:
         self._heartbeat_task: asyncio.Task | None = None
         self._reconnect_task: asyncio.Task | None = None
 
-        # Wire TWS callbacks
+        # Tilkobl TWS callbacks
         self._ib.disconnectedEvent += self._handle_disconnected
         self._ib.execDetailsEvent += self._handle_exec_details
         self._ib.pnlEvent += self._handle_pnl
         self._ib.positionEvent += self._handle_position
         self._ib.pendingTickersEvent += self._handle_pending_tickers
 
-    # ------------------------------------------------------------------ #
-    # Public API                                                           #
-    # ------------------------------------------------------------------ #
+    # Offentligt API
 
     async def start(self) -> None:
-        """Connect and start the heartbeat loop. Runs forever."""
+        """Forbind og start heartbeat loopet. Kører for evigt."""
         await self._connect_with_retry()
 
     async def stop(self) -> None:
@@ -91,19 +91,20 @@ class IBKRGateway:
         log.info("ibkr_gateway.stopped")
 
     async def subscribe_marketdata(self, symbols: list[str]) -> None:
-        # Falls back to delayed data if the account has no live subscription.
+        # Falder tilbage til forsinkede data hvis kontoen ikke har en live abonnement.
         self._ib.reqMarketDataType(3)
         for symbol in symbols:
             contract = ibi.Stock(symbol, "SMART", "USD")
             qualified = await self._ib.qualifyContractsAsync(contract)
             if not qualified:
-                log.warning("ibkr_gateway.marketdata_qualify_failed", symbol=symbol)
+                log.warning(
+                    "ibkr_gateway.marketdata_qualify_failed", symbol=symbol)
                 continue
             self._ib.reqMktData(qualified[0], "", False, False)
             log.info("ibkr_gateway.marketdata_subscribed", symbol=symbol)
 
     async def place_order(self, cmd: OrderCommand) -> int:
-        """Submit an order to TWS. Returns the TWS orderId."""
+        """Indsend en ordre til TWS. Returnerer TWS orderId."""
         contract = self._build_contract(cmd)
         order = self._build_order(cmd)
         trade = self._ib.placeOrder(contract, order)
@@ -121,13 +122,11 @@ class IBKRGateway:
     def is_connected(self) -> bool:
         return self._connected
 
-    # ------------------------------------------------------------------ #
-    # Connection management                                                #
-    # ------------------------------------------------------------------ #
+    # Forbindelseshåndtering
 
     async def _connect_with_retry(self) -> None:
         attempt = 0
-        max_attempts = self._cfg.max_reconnect_attempts  # 0 = infinite
+        max_attempts = self._cfg.max_reconnect_attempts  # 0 = uendeligt
 
         while True:
             attempt += 1
@@ -158,19 +157,19 @@ class IBKRGateway:
                     ).model_dump_json().encode(),
                 )
 
-                # Subscribe to PnL updates
+                # Abonner på PnL opdateringer
                 if self._cfg.ibkr_account:
                     self._ib.reqPnL(self._cfg.ibkr_account)
 
-                # Subscribe to realtime market data for the configured universe
+                # Abonnér på realtime markedsdata for det konfigurerede univers
                 if self._cfg.universe_list:
                     await self.subscribe_marketdata(self._cfg.universe_list)
 
                 self._heartbeat_task = asyncio.create_task(
                     self._heartbeat_loop())
 
-                # eventkit.Event is not an asyncio.Event; keep the task alive
-                # until ib_insync reports that the socket has disconnected.
+                # eventkit.Event er ikke en asyncio.Event; hold tasken i live
+                # indtil ib_insync rapporterer at socket er afbrudt.
                 while self._ib.isConnected():
                     await asyncio.sleep(1)
 
@@ -198,7 +197,7 @@ class IBKRGateway:
         if self._heartbeat_task:
             self._heartbeat_task.cancel()
         log.warning("ibkr_gateway.disconnected")
-        await self._emit_disconnected("TWS reported disconnection")
+        await self._emit_disconnected("TWS rapporterede afbrydelse")
 
     async def _emit_disconnected(self, reason: str) -> None:
         await self._on_event(
@@ -210,16 +209,14 @@ class IBKRGateway:
             ).model_dump_json().encode(),
         )
 
-    # ------------------------------------------------------------------ #
-    # TWS event handlers → publish to NATS via callback                   #
-    # ------------------------------------------------------------------ #
+    # TWS event handlere, publicerer til NATS via callback
 
     async def _handle_exec_details(
         self, trade: ibi.Trade, fill: ibi.Fill
     ) -> None:
         account = fill.execution.acctNumber
         symbol = fill.contract.symbol
-        side_raw = fill.execution.side  # "BOT" or "SLD"
+        side_raw = fill.execution.side  # "BOT" eller "SLD"
 
         msg = Fill(
             account=account,
@@ -291,9 +288,7 @@ class IBKRGateway:
             )
             await self._on_event(subjects.HEARTBEAT, msg.model_dump_json().encode())
 
-    # ------------------------------------------------------------------ #
-    # Helpers                                                              #
-    # ------------------------------------------------------------------ #
+    # Hjælpere
 
     @staticmethod
     def _build_contract(cmd: OrderCommand) -> ibi.Contract:

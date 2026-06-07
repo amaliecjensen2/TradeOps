@@ -1,4 +1,4 @@
-"""Prometheus metrics for risk-monitor."""
+"""Prometheus metrics for risk monitor."""
 
 from prometheus_client import Counter, Gauge, start_http_server
 

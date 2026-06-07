@@ -10,7 +10,7 @@ export default function PnLChart({ data }: Props) {
         return <p className="text-gray-500 text-sm">No data yet</p>;
     }
 
-    // Reverse so oldest is left
+    // Vend om så ældste er til venstre
     const chartData = [...data].reverse().map((d) => ({
         time: new Date(d.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
         pnl: d.daily_pnl,

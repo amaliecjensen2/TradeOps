@@ -1,4 +1,4 @@
-"""Structured logging."""
+"""Struktureret logging."""
 import logging  # python standard logging
 import sys  # der hvor logs skrives ud
 import structlog  # til at lave strukturede logs

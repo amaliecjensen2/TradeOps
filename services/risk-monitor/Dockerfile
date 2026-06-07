@@ -1,4 +1,4 @@
-# ── build stage ──────────────────────────────────────────────────────────────
+# byg fase
 FROM python:3.12-slim AS builder
 
 WORKDIR /build
@@ -7,7 +7,7 @@ COPY pyproject.toml .
 COPY src/ src/
 RUN pip wheel --no-cache-dir --wheel-dir /wheels .
 
-# ── runtime stage ─────────────────────────────────────────────────────────────
+# runtime fase
 FROM python:3.12-slim
 
 RUN addgroup --gid 1001 trader \

@@ -1,4 +1,4 @@
-"""Config foil for trader-api.
+"""Config foil for trader api.
 samler nats, postgres, logging
 """
 

@@ -1,20 +1,20 @@
-"""Kubernetes Lease-based leader election.
+"""Kubernetes Lease baseret leader election.
 
-Two replicas of risk-monitor run simultaneously for high availability,
-but only the *leader* trips the circuit breaker and sends alerts.
-The follower keeps its state up to date and takes over instantly if the
-leader pod restarts.
+To replicas af risk monitor kører samtidigt for høj tilgængelighed,
+men kun *lederen* trippeer circuit breakeren og sender alarmer.
+Followeren holder sin tilstand opdateret og overtager øjeblikkeligt hvis
+leder podden genstarter.
 
 Implementation: standard Kubernetes Lease (coordination.k8s.io/v1).
-The leader continuously renews the Lease; if it fails to renew within
-lease_duration_s, another pod may acquire it.
+Lederen fornyer Leasen kontinuerligt; hvis den ikke når at forny inden for
+lease_duration_s kan en anden pod erhverve den.
 
-Usage:
+Brug:
     elector = LeaderElector(settings)
     async with elector:
         while True:
             if elector.is_leader:
-                # do leader work
+                # udfør leder arbejde
             await asyncio.sleep(1)
 """
 
@@ -102,18 +102,18 @@ class LeaderElector:
             renew_time = spec.renew_time
             acquire_time = spec.acquire_time
 
-            # Check if existing lease is expired
+            # Tjek om eksisterende lease er udløbet
             if holder != self._pod_name:
                 if renew_time is None:
-                    pass  # no renew time — treat as expired
+                    pass  # ingen renew time, behandl som udløbet
                 else:
                     elapsed = (
                         now - renew_time.replace(tzinfo=datetime.timezone.utc)).total_seconds()
                     if elapsed < self._duration:
-                        # Another pod holds a valid lease
+                        # En anden pod holder en gyldig lease
                         return False
 
-            # Try to take / renew the lease
+            # Forsøg at overtage / forny leasen
             lease.spec.holder_identity = self._pod_name
             lease.spec.renew_time = now
             lease.spec.lease_duration_seconds = self._duration
@@ -158,6 +158,6 @@ class LeaderElector:
             return True
         except ApiException as exc:
             if exc.status == 409:
-                # Another pod created it first
+                # En anden pod oprettede den først
                 return False
             raise

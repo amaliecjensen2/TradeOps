@@ -1,19 +1,19 @@
-"""Pre-trade risk checks.
+"""Pre trade risikochecks.
 
-CheckEngine runs a pipeline of checks against an incoming OrderRequest.
-Each check raises RiskRejection on breach; otherwise it passes silently.
-The pipeline is fail-fast: first rejection wins.
+CheckEngine kører en pipeline af checks mod en indkommende OrderRequest.
+Hvert check rejser RiskRejection ved overtrædelse; ellers passerer det stille.
+Pipelinen er fail fast: første afvisning vinder.
 
-Checks (in order):
-  1. Restricted symbol
-  2. Fat-finger price band (limit/stop price ±20% of last known price)
-  3. Per-strategy max order notional
-  4. Per-strategy max daily loss (read from NATS state)
-  5. Per-strategy max position size
-  6. Per-strategy rate limit
-  7. Global max orders-per-second
-  8. Idempotency (duplicate key detection)
-  9. Halt flag (risk-monitor has tripped the circuit breaker)
+Checks (i rækkefølge):
+  1. Begrænset symbol
+  2. Fat finger prisbånd (limit/stop pris ±20% af sidste kendte pris)
+  3. Per strategi max ordrenotional
+  4. Per strategi max dagligt tab (læst fra NATS state)
+  5. Per strategi max positionsstørrelse
+  6. Per strategi rate limit
+  7. Global max ordrer pr sekund
+  8. Idempotens (duplikatnøgle detektion)
+  9. Halt flag (risk monitor har udløst circuit breakeren)
 """
 
 from __future__ import annotations
@@ -27,11 +27,11 @@ from risk_gateway.models import OrderRequest
 
 log = get_logger(__name__)
 
-FAT_FINGER_BAND = 0.20   # ±20% from last known price
+FAT_FINGER_BAND = 0.20   # ±20% fra sidste kendte pris
 
 
 class RiskRejection(Exception):
-    """Raised when a pre-trade check fails."""
+    """Rejses når et pre trade check fejler."""
 
     def __init__(self, reason: str) -> None:
         super().__init__(reason)
@@ -44,31 +44,31 @@ class CheckEngine:
         self._strategy_limits = settings.strategy_limits
         self._restricted = settings.restricted_symbols_set
 
-        # State tracked in-memory (sufficient for single-replica or sticky sessions)
-        self._idempotency_cache: dict[str, float] = {}   # key → timestamp
-        self._idempotency_ttl = 300.0                    # 5 minutes
+        # State holdt i hukommelsen (tilstrækkelig for single replica eller sticky sessions)
+        self._idempotency_cache: dict[str, float] = {}   # nøgle til tidsstempel
+        self._idempotency_ttl = 300.0                    # 5 minutter
 
-        # Per-strategy order rate limiting (sliding window)
+        # Per strategi ordre rate limiting (sliding window)
         self._strategy_order_times: dict[str, deque] = defaultdict(deque)
 
         # Global rate limiting (sliding window)
         self._global_order_times: deque = deque()
 
-        # Per-strategy daily loss tracking (updated by NATS listener)
+        # Per strategi dagligt tab tracking (opdateret af NATS listener)
         self.strategy_daily_pnl: dict[str, float] = {}
 
-        # Per-strategy current position (updated by NATS listener)
+        # Per strategi nuværende position (opdateret af NATS listener)
         self.strategy_positions: dict[str, dict[str, float]] = {}
 
-        # Last known prices per symbol (for fat-finger check)
+        # Sidste kendte priser pr symbol (til fat finger check)
         self.last_prices: dict[str, float] = {}
 
-        # Global halt flag (set by NATS when risk-monitor trips)
+        # Globalt halt flag (sættes af NATS når risk monitor udløser)
         self.halted: bool = False
         self.halt_reason: str = ""
 
     def check(self, req: OrderRequest) -> None:
-        """Run all checks. Raises RiskRejection on first failure."""
+        """Kør alle checks. Rejser RiskRejection ved første fejl."""
         self._check_halt()
         self._check_restricted_symbol(req)
         self._check_fat_finger(req)
@@ -79,9 +79,7 @@ class CheckEngine:
         self._check_global_rate()
         self._check_idempotency(req)
 
-    # ------------------------------------------------------------------ #
-    # Individual checks                                                    #
-    # ------------------------------------------------------------------ #
+    # Individuelle checks
 
     def _check_halt(self) -> None:
         if self.halted:
@@ -93,10 +91,10 @@ class CheckEngine:
 
     def _check_fat_finger(self, req: OrderRequest) -> None:
         if req.limit_price is None:
-            return   # market orders — no fat-finger check
+            return   # markedsordrer, intet fat finger check
         last = self.last_prices.get(req.symbol)
         if last is None or last <= 0:
-            return   # no reference price yet
+            return   # ingen referencepris endnu
         deviation = abs(req.limit_price - last) / last
         if deviation > FAT_FINGER_BAND:
             raise RiskRejection(
@@ -109,7 +107,7 @@ class CheckEngine:
         max_notional = limits.get("maxOrderNotional")
         if max_notional is None:
             return
-        # Use limit price if available, else last known price for estimate
+        # Brug limit pris hvis tilgængelig, ellers sidste kendte pris som estimat
         ref_price = req.limit_price or self.last_prices.get(req.symbol, 0)
         notional = req.quantity * ref_price
         if notional > max_notional:
@@ -149,7 +147,7 @@ class CheckEngine:
         max_rate = limits.get("maxOrdersPerSecond", 10)
         now = time.monotonic()
         window = self._strategy_order_times[req.strategy]
-        # Drop entries older than 1 second
+        # Smid entries ud der er ældre end 1 sekund
         while window and now - window[0] > 1.0:
             window.popleft()
         if len(window) >= max_rate:
@@ -170,7 +168,7 @@ class CheckEngine:
 
     def _check_idempotency(self, req: OrderRequest) -> None:
         now = time.monotonic()
-        # Clean expired keys
+        # Ryd udløbne nøgler
         expired = [k for k, t in self._idempotency_cache.items()
                    if now - t > self._idempotency_ttl]
         for k in expired:

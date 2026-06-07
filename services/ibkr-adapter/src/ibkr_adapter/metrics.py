@@ -1,18 +1,18 @@
-"""Prometheus metrics exposed on :9090/metrics.
+"""Prometheus metrics udstillet på :9090/metrics.
 
-All counters / gauges for the adapter live here so there is exactly one
-import of prometheus_client across the service.
+Alle countere / gauges for adapteren ligger her, så der præcis er én
+import af prometheus_client på tværs af servicen.
 """
 
 from prometheus_client import Counter, Gauge, Histogram, start_http_server
 
-# Connection state
+# Forbindelsesstatus
 CONNECTED = Gauge(
     "ibkr_adapter_connected",
     "1 when the adapter has an active TWS connection, 0 otherwise",
 )
 
-# Order processing
+# Ordrebehandling
 ORDERS_RECEIVED = Counter(
     "ibkr_adapter_orders_received_total",
     "NATS order commands received",
@@ -43,7 +43,7 @@ PNL_DAILY = Gauge(
     ["account"],
 )
 
-# Latency: NATS order message → TWS placeOrder() call
+# Latens: NATS ordrebesked til TWS placeOrder() kald
 ORDER_LATENCY = Histogram(
     "ibkr_adapter_order_latency_seconds",
     "Time from receiving NATS order to calling TWS placeOrder",

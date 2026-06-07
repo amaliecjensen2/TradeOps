@@ -2,8 +2,8 @@
 {{- $name := printf "%s-risk-monitor" (include "ibkrtrader.fullname" .) -}}
 {{- $sa := printf "%s-risk-monitor" (include "ibkrtrader.fullname" .) -}}
 ---
-# Dedicated ServiceAccount — the monitor needs RBAC to scale strategy
-# Deployments to 0 (the kill switch). Other components don't.
+# Dedikeret ServiceAccount, monitoren skal bruge RBAC til at scalere strategi
+# Deployments til 0 (kill switchen). Andre komponenter behøver det ikke.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -23,19 +23,19 @@ metadata:
     {{- include "ibkrtrader.labels" . | nindent 4 }}
     app.kubernetes.io/component: risk-monitor
 rules:
-  # Scale strategy Deployments to 0 on breach.
+  # Scaler strategi Deployments til 0 ved overtrædelse.
   - apiGroups: ["apps"]
     resources: ["deployments", "deployments/scale"]
     verbs: ["get", "list", "watch", "patch", "update"]
-  # Leader election (the monitor runs replicas=2 with one leader).
+  # Leader election (monitoren kører replicas=2 med én leder).
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  # Read its own ConfigMap so config reload doesn't require a restart.
+  # Læs sin egen ConfigMap så config reload ikke kræver en genstart.
   - apiGroups: [""]
     resources: ["configmaps"]
     verbs: ["get", "list", "watch"]
-  # Emit Events visible in `kubectl describe`.
+  # Udsend Events synlige i `kubectl describe`.
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["create", "patch"]

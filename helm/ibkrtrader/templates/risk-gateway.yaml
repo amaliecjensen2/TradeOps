@@ -71,7 +71,7 @@ spec:
               value: {{ .Values.riskGateway.global.maxOrdersPerSecond | quote }}
             - name: RESTRICTED_SYMBOLS
               value: {{ join "," .Values.riskGateway.global.restrictedSymbols | quote }}
-            {{- /* Build per-strategy limits JSON from strategies list */ -}}
+            {{- /* Byg per strategi limits JSON fra strategies listen */ -}}
             {{- $limits := dict -}}
             {{- range $s := .Values.strategies -}}
               {{- if $s.enabled -}}
@@ -87,8 +87,8 @@ spec:
               readOnly: true
           resources:
             {{- toYaml .Values.riskGateway.resources | nindent 12 }}
-          # Fail-closed: if /readyz reports an unreachable state DB the
-          # pod stops accepting traffic, strategies see 503 and halt.
+          # Fail closed: hvis /readyz rapporterer en uopnåelig state DB
+          # stopper podden med at acceptere trafik, strategier ser 503 og standser.
           readinessProbe:
             httpGet:
               path: /readyz

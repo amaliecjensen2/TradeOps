@@ -3,7 +3,7 @@
 {{- $db := .Values.timescale.cluster.bootstrap.database -}}
 {{- $owner := .Values.timescale.cluster.bootstrap.owner -}}
 ---
-# ConfigMap carries the migration SQL so the Job can mount it.
+# ConfigMap bærer migration SQLen så Jobbet kan mounte den.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,7 +13,7 @@ metadata:
     {{- include "ibkrtrader.labels" . | nindent 4 }}
     app.kubernetes.io/component: db-migrate
   annotations:
-    # helm.sh/hook ensures this runs AFTER the Cluster is created.
+    # helm.sh/hook sikrer at dette kører EFTER at Clusteret er oprettet.
     helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-weight: "-5"
     helm.sh/hook-delete-policy: before-hook-creation

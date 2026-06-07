@@ -1,7 +1,7 @@
 {{- if .Values.serviceMonitors.enabled -}}
 {{/*
-  Requires Prometheus Operator CRDs (kube-prometheus-stack).
-  One ServiceMonitor per component that exposes /metrics.
+  Kræver Prometheus Operator CRDer (kube prometheus stack).
+  Én ServiceMonitor pr komponent der udstiller /metrics.
 */}}
 {{- $components := list "risk-gateway" "api" -}}
 {{- range $component := $components }}
@@ -27,7 +27,7 @@ spec:
       interval: {{ $.Values.serviceMonitors.interval }}
       path: /metrics
 {{- end }}
-# Strategies: one ServiceMonitor selecting all of them.
+# Strategier: én ServiceMonitor der vælger dem alle.
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor

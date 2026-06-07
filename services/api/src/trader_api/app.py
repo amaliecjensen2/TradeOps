@@ -1,16 +1,16 @@
-"""FastAPI application for trader-api.
+"""FastAPI applikation for trader api.
 
-Alle endpoints er read-only
+Alle endpoints er kun læs.
 
-Routes:
+Ruter:
   GET /healthz
   GET /readyz
-  GET /status               — system status (connected, halted, mode)
-  GET /positions            - åbne positioner
-  GET /pnl                  — seneste PnL snapshot
-  GET /pnl/history          — tidsserie PnL (from TimescaleDB)
-  GET /fills                — seneste udførelser reporter
-  GET /orders               — seneste order events
+  GET /status               systemstatus (connected, halted, mode)
+  GET /positions            åbne positioner
+  GET /pnl                  seneste PnL snapshot
+  GET /pnl/history          tidsserie PnL (fra TimescaleDB)
+  GET /fills                seneste udførelsesrapporter
+  GET /orders               seneste ordreevents
 """
 
 from __future__ import annotations

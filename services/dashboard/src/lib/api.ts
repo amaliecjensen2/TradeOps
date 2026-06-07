@@ -1,6 +1,6 @@
 /**
- * Typed API client.  All components import from here — never fetch() directly.
- * Base URL is set via NEXT_PUBLIC_API_URL env var injected by Helm/Next.js.
+ * Typet API klient. Alle komponenter importerer herfra, aldrig fetch() direkte.
+ * Base URL sættes via NEXT_PUBLIC_API_URL env var injiceret af Helm/Next.js.
  */
 
 const BASE = "/api/trader";

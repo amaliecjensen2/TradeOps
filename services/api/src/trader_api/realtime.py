@@ -1,8 +1,8 @@
-"""NATS realtids-cache for systemtilstand.
+"""NATS realtids cache for systemtilstand.
 
-Bevarer et in-memory snapshot af aktuelle positioner, PnL og systemstatus,
-så API'et kan levere svar med lav latenstid uden at ramme databasen.
-Opdateringer pushes fra ibkr-adapter via NATS.
+Bevarer et in memory snapshot af aktuelle positioner, PnL og systemstatus,
+så APIet kan levere svar med lav latenstid uden at ramme databasen.
+Opdateringer pushes fra ibkr adapter via NATS.
 """
 
 from __future__ import annotations
@@ -23,8 +23,8 @@ class RealtimeCache:
         self._cfg = settings
         self._nc = None
 
-        # Snapshots overwritten on every NATS message
-        # en dict der skal holde postioner i hukommelsen, nøglen er f.eks nvda ig værdien er et snapshot for den position
+        # Snapshots overskrives ved hver NATS besked
+        # en dict der skal holde postioner i hukommelsen, nøglen er f.eks nvda og værdien er et snapshot for den position
         self.positions: dict[str, dict] = {}
         self.pnl: dict | None = None
         self.adapter_connected: bool = False

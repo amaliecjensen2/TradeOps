@@ -1,7 +1,7 @@
-"""Structured logging setup using structlog.
+"""Struktureret logging opsætning via structlog.
 
-Call configure_logging() once at process startup.
-All other modules import `get_logger` and call it at module level.
+Kald configure_logging() én gang ved procesopstart.
+Alle andre moduler importerer `get_logger` og kalder det på modulniveau.
 """
 
 import logging
@@ -51,7 +51,7 @@ def configure_logging() -> None:
     root.addHandler(handler)
     root.setLevel(level)
 
-    # Quiet noisy third-party loggers
+    # Dæmp støjende tredjeparts loggers
     for noisy in ("ib_insync", "asyncio"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 

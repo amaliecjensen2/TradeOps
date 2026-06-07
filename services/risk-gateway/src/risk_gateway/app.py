@@ -1,10 +1,10 @@
-"""FastAPI application for the risk-gateway.
+"""FastAPI applikation for risk gateway.
 
-Routes:
-  POST /orders   — pre-trade check + forward to NATS
-  GET  /healthz  — liveness
-  GET  /readyz   — readiness (NATS connected)
-  GET  /metrics  — Prometheus (separate port via prometheus-client)
+Ruter:
+  POST /orders   pre trade check + videresend til NATS
+  GET  /healthz  liveness
+  GET  /readyz   readiness (NATS forbundet)
+  GET  /metrics  Prometheus (separat port via prometheus_client)
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from risk_gateway.models import OrderAccepted, OrderRejected, OrderRequest
 
 log = get_logger(__name__)
 
-# ── Prometheus metrics ─────────────────────────────────────────────────────
+# Prometheus metrics
 ORDERS_ACCEPTED = Counter(
     "risk_gateway_orders_accepted_total", "Orders passed pre-trade checks", [
         "strategy"]
@@ -39,7 +39,7 @@ CHECK_LATENCY = Histogram(
 def create_app(engine: CheckEngine, nats_sync) -> FastAPI:
     app = FastAPI(title="risk-gateway", docs_url=None, redoc_url=None)
 
-    # Mount Prometheus metrics on /metrics
+    # Mount Prometheus metrics på /metrics
     metrics_app = make_asgi_app()
     app.mount("/metrics", metrics_app)
 
@@ -79,7 +79,7 @@ def create_app(engine: CheckEngine, nats_sync) -> FastAPI:
                 ).model_dump(mode="json"),
             )
 
-        # Forward accepted order to NATS → ibkr-adapter
+        # Videresend accepteret ordre til NATS, til ibkr adapter
         subject = f"orders.{req.strategy}.{req.symbol}"
         payload = req.model_dump_json().encode()
         await nats_sync.publish(subject, payload)
@@ -99,7 +99,7 @@ def create_app(engine: CheckEngine, nats_sync) -> FastAPI:
 
 
 def _classify_reason(reason: str) -> str:
-    """Map rejection reason text to a short label for Prometheus."""
+    """Map afvisningstekst til en kort label til Prometheus."""
     r = reason.lower()
     if "halt" in r:
         return "halt"

@@ -1,8 +1,8 @@
-"""Wire-format message models (JSON over NATS).
+"""Wire format beskedmodeller (JSON over NATS).
 
-All models use Pydantic v2. Strategies, the risk-monitor, and the
-dashboard must use the same schemas — this file is the single source of
-truth.  In a multi-language environment, generate schemas with:
+Alle modeller bruger Pydantic v2. Strategier, risk monitor og
+dashboardet skal bruge de samme skemaer. Denne fil er den eneste kilde til
+sandhed. I et flersprogsmiljø kan skemaer genereres med:
 
     python -c "from ibkr_adapter.models import *; import json; \
         print(json.dumps(OrderCommand.model_json_schema(), indent=2))"
@@ -21,9 +21,7 @@ def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
-# --------------------------------------------------------------------------- #
-# Shared                                                                       #
-# --------------------------------------------------------------------------- #
+# Delt
 
 class Side(str, Enum):
     BUY = "BUY"
@@ -45,12 +43,10 @@ class SecType(str, Enum):
     CRYPTO = "CRYPTO"
 
 
-# --------------------------------------------------------------------------- #
-# Inbound: orders.<strategy>.<symbol>                                          #
-# --------------------------------------------------------------------------- #
+# Indkommende: orders.<strategy>.<symbol>
 
 class OrderCommand(BaseModel):
-    """Published by a strategy pod to request a new order."""
+    """Publiceres af en strategi pod for at anmode om en ny ordre."""
 
     strategy: str = Field(..., description="Strategy name (kebab-case)")
     client_id: int = Field(..., ge=1, le=32767)
@@ -75,12 +71,10 @@ class OrderCommand(BaseModel):
         return v.upper()
 
 
-# --------------------------------------------------------------------------- #
-# Outbound: fills.<account>.<symbol>                                           #
-# --------------------------------------------------------------------------- #
+# Udgående: fills.<account>.<symbol>
 
 class Fill(BaseModel):
-    """Published when TWS reports an execution (execDetails callback)."""
+    """Publiceres når TWS rapporterer en eksekvering (execDetails callback)."""
 
     account: str
     symbol: str
@@ -96,12 +90,10 @@ class Fill(BaseModel):
     timestamp: datetime = Field(default_factory=_utcnow)
 
 
-# --------------------------------------------------------------------------- #
-# Outbound: pnl.<account>                                                      #
-# --------------------------------------------------------------------------- #
+# Udgående: pnl.<account>
 
 class PnLSnapshot(BaseModel):
-    """Published on every PnL update from TWS (pnlSingle / pnl callbacks)."""
+    """Publiceres ved hver PnL opdatering fra TWS (pnlSingle / pnl callbacks)."""
 
     account: str
     daily_pnl: float
@@ -111,9 +103,7 @@ class PnLSnapshot(BaseModel):
     timestamp: datetime = Field(default_factory=_utcnow)
 
 
-# --------------------------------------------------------------------------- #
-# Outbound: positions.<account>.<symbol>                                       #
-# --------------------------------------------------------------------------- #
+# Udgående: positions.<account>.<symbol>
 
 class PositionSnapshot(BaseModel):
     account: str
@@ -126,9 +116,7 @@ class PositionSnapshot(BaseModel):
     timestamp: datetime = Field(default_factory=_utcnow)
 
 
-# --------------------------------------------------------------------------- #
-# Outbound: marketdata.<feed>.<symbol>                                         #
-# --------------------------------------------------------------------------- #
+# Udgående: marketdata.<feed>.<symbol>
 
 class Bar(BaseModel):
     feed: Literal["realtime", "historical"]
@@ -153,9 +141,7 @@ class Tick(BaseModel):
     timestamp: datetime = Field(default_factory=_utcnow)
 
 
-# --------------------------------------------------------------------------- #
-# Outbound: risk.adapter.*                                                     #
-# --------------------------------------------------------------------------- #
+# Udgående: risk.adapter.*
 
 class AdapterHeartbeat(BaseModel):
     status: Literal["connected", "connecting"] = "connected"

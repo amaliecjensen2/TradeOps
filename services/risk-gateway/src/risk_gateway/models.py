@@ -1,4 +1,4 @@
-"""Pydantic models for the risk-gateway HTTP API."""
+"""Pydantic modeller for risk gateway HTTP APIet."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ class Side(str, Enum):
 
 
 class OrderRequest(BaseModel):
-    """POST /orders — sent by a strategy pod."""
+    """POST /orders, sendt af en strategi pod."""
     strategy: str
     client_id: int = Field(..., ge=1, le=32767)
     idempotency_key: str

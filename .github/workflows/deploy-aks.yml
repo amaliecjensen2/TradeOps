@@ -166,11 +166,11 @@ jobs:
               tag: ${IMAGE_TAG}
           EOF
 
-          # Helm replaces lists wholesale during merge, so a partial strategies
-          # override in image-overrides.yaml would strip risk/config/replicas
-          # from values.yaml. Instead, rebuild the strategies list from
-          # values.yaml and only rewrite the image fields — everything else
-          # (risk limits, per-strategy config, resources) is preserved.
+          # Helm erstatter lister i deres helhed under merge, så en delvis strategies
+          # override i image overrides.yaml ville fjerne risk/config/replicas
+          # fra values.yaml. I stedet genbygges strategi listen fra
+          # values.yaml og kun image felterne omskrives, alt andet
+          # (risikogrænser, pr strategi config, ressourcer) bevares.
           yq eval '
             {
               "strategies": (

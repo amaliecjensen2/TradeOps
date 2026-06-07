@@ -1,11 +1,11 @@
 # ============================================================================
 #
-# ibkrtrader — default values
+# ibkrtrader, default værdier
 #
-# This is the v0 surface. Most components reference placeholder images
-# (registry.local/ibkrtrader/...) that you build yourself. The chart is
-# designed to deploy a complete topology even with placeholders so wiring
-# can be verified end-to-end.
+# Dette er v0 overfladen. De fleste komponenter refererer placeholder images
+# (registry.local/ibkrtrader/...) som du selv bygger. Chartet er
+# designet til at deploye en komplet topologi selv med placeholders så wiring
+# kan verificeres ende til ende.
 # ============================================================================
 
 global:
@@ -18,13 +18,13 @@ global:
 # IBKR Gateway
 # ----------------------------------------------------------------------------
 ibkr:
-  # mode selects which gateway StatefulSet strategies point at.
-  # Both StatefulSets can be deployed simultaneously by enabling both
-  # gateways below; this flag only steers default DNS resolution.
+  # mode vælger hvilken gateway StatefulSet strategier peger på.
+  # Begge StatefulSets kan deployes samtidigt ved at aktivere begge
+  # gateways nedenfor; dette flag styrer kun default DNS resolution.
   mode: paper          # paper | live
-  account: "DUQ568769"  # IBKR account ID
+  account: "DUQ568769"  # IBKR konto ID
 
-  # Per-mode gateway configuration. Disable one to save resources.
+  # Per mode gateway konfiguration. Deaktiver én for at spare ressourcer.
   gateways:
     paper:
       enabled: true
@@ -34,13 +34,13 @@ ibkr:
         pullPolicy: IfNotPresent
       apiPort: 4004
       vncPort: 5900
-      # IBC auto-restart time (Toronto) — gateway restarts inside the
-      # existing session window so daily 2FA is not re-prompted. The
-      # weekly Sunday 01:00 ET reset still requires a manual tap.
+      # IBC auto restart tidspunkt (Toronto), gatewayen genstarter inden for
+      # det eksisterende session vindue så daglig 2FA ikke promptes igen. Den
+      # ugentlige Sunday 01:00 ET reset kræver stadig et manuelt tap.
       autoRestartTime: "11:55 PM"
       twoFaTimeoutAction: restart
       readOnlyApi: false
-      trustedIPs: "10.0.0.0/8"   # pod CIDR — set to "" to restrict to localhost only
+      trustedIPs: "10.0.0.0/8"   # pod CIDR, sæt til "" for kun at tillade localhost
       resources:
         requests: { cpu: 250m, memory: 512Mi }
         limits:   { cpu: "2",  memory: 2Gi }
@@ -74,24 +74,24 @@ ibkr:
       tolerations: []
       affinity: {}
 
-  # Credentials. In production replace with externalSecrets or sealed-secrets.
+  # Credentials. I produktion erstattes med externalSecrets eller sealed secrets.
   credentials:
-    # If existingSecret is set, the chart will not create a Secret.
-    # Expected keys: TWS_USERID, TWS_PASSWORD.
-    existingSecret: "ibkrtrader-ibkr-credentials"  # kubectl apply -f ibkr-credentials.secret.yaml
+    # Hvis existingSecret er sat, opretter chartet ikke en Secret.
+    # Forventede nøgler: TWS_USERID, TWS_PASSWORD.
+    existingSecret: "ibkrtrader-ibkr-credentials"  # kubectl apply f ibkr credentials.secret.yaml
     username: ""
     password: ""
 
 # ----------------------------------------------------------------------------
-# Strategies
+# Strategier
 #
-# Each entry produces:
-#   - one Deployment (image, resources, env, configmap mount)
-#   - one Service (for /metrics scraping)
-#   - one ConfigMap (strategy-specific config rendered as YAML)
+# Hver entry producerer:
+#   én Deployment (image, resources, env, configmap mount)
+#   én Service (til /metrics scraping)
+#   én ConfigMap (strategi specifik config renderet som YAML)
 #
-# clientId MUST be unique across all strategies — _helpers.tpl validates this
-# at template-render time and fails the install if there are collisions.
+# clientId SKAL være unikt på tværs af alle strategier, _helpers.tpl validerer dette
+# på template render tidspunkt og fejler installationen ved kollisioner.
 # ----------------------------------------------------------------------------
 strategies:
   - name: hello
@@ -136,11 +136,11 @@ strategies:
 # ----------------------------------------------------------------------------
 # IBKR Adapter
 #
-# The adapter owns the single TWS connection (clientId=1 is reserved for it).
-# It bridges IBKR ↔ NATS:
-#   orders.>        (NATS inbound)  → TWS placeOrder()
-#   fills/pnl/pos   (TWS callbacks) → NATS outbound
-#   risk.adapter.*  heartbeat + disconnection alerts
+# Adapteren ejer den eneste TWS forbindelse (clientId=1 er reserveret til den).
+# Den binder IBKR til NATS:
+#   orders.>        (NATS indkommende) til TWS placeOrder()
+#   fills/pnl/pos   (TWS callbacks) til NATS udgående
+#   risk.adapter.*  heartbeat + disconnection alarmer
 # ----------------------------------------------------------------------------
 ibkrAdapter:
   enabled: true
@@ -148,7 +148,7 @@ ibkrAdapter:
     repository: ghcr.io/amaliecjensen/ibkrtrader/ibkr-adapter
     tag: v0.1.1
     pullPolicy: IfNotPresent
-  # clientId=1 is reserved for the adapter. Do NOT use 1 in .strategies[].
+  # clientId=1 er reserveret til adapteren. Brug IKKE 1 i .strategies[].
   clientId: 1
   resources:
     requests: { cpu: 100m, memory: 128Mi }
@@ -156,10 +156,10 @@ ibkrAdapter:
   reconnectIntervalS: 10
   logLevel: INFO
   logFormat: json      # json | console
-  # Comma-separated tickers to stream realtime market data for.
-  # Adapter calls IBKR reqMktData for each symbol and publishes ticks to
-  # marketdata.realtime.<SYMBOL>. Must cover every symbol in any enabled
-  # strategy's universe; otherwise the strategy receives no bars.
+  # Kommasepareret liste af tickers at streame realtime markedsdata for.
+  # Adapteren kalder IBKR reqMktData for hvert symbol og publicerer ticks til
+  # marketdata.realtime.<SYMBOL>. Skal dække alle symboler i et hvilket som helst aktiveret
+  # strategi univers; ellers modtager strategien ingen bars.
   universe: "NVDA,AAPL"
   nodeSelector: {}
   tolerations: []
@@ -179,8 +179,8 @@ riskGateway:
     requests: { cpu: 100m, memory: 128Mi }
     limits:   { cpu: 500m, memory: 512Mi }
 
-  # Account-wide pre-trade limits. Enforced in addition to per-strategy
-  # limits in `.Values.strategies[].risk`.
+  # Konto dækkende pre trade grænser. Håndhæves i tillæg til pr strategi
+  # grænser i `.Values.strategies[].risk`.
   global:
     maxAccountDrawdownPct: 0.05
     maxGrossExposure: 1000000
@@ -193,31 +193,31 @@ riskMonitor:
     repository: ghcr.io/amaliecjensen/ibkrtrader/risk-monitor
     tag: v0
     pullPolicy: IfNotPresent
-  replicas: 2          # leader-elected via Lease
+  replicas: 2          # leader elected via Lease
   resources:
     requests: { cpu: 100m, memory: 128Mi }
     limits:   { cpu: 500m, memory: 512Mi }
-  # Drift / breach evaluation cadence
+  # Drift / breach evaluerings kadence
   reconcileIntervalSeconds: 10
-  # Whether the monitor is allowed to scale strategy Deployments to 0.
-  # Disable in dev to avoid accidental kills.
+  # Om monitoren får lov til at scalere strategi Deployments til 0.
+  # Deaktiver i dev for at undgå utilsigtet kill.
   killSwitchEnabled: true
 
-  # Risk thresholds — passed to the monitor as env vars.
-  # Override in values.paper.yaml / values.live.yaml as needed.
+  # Risikogrænser, sendes til monitoren som env vars.
+  # Overstyr i values.paper.yaml / values.live.yaml efter behov.
   thresholds:
-    maxDailyLoss: -500          # halt if daily P&L drops below this (USD)
-    maxDrawdownPct: 0.05        # halt at 5% intra-day drawdown from HWM
-    maxGrossExposure: 1000000   # halt if gross exposure exceeds this (USD)
-    heartbeatTimeoutS: 60       # alert (no halt) if adapter silent > 60s
+    maxDailyLoss: -500          # halt hvis daglig P&L falder under dette (USD)
+    maxDrawdownPct: 0.05        # halt ved 5% intra day drawdown fra HWM
+    maxGrossExposure: 1000000   # halt hvis gross eksponering overstiger dette (USD)
+    heartbeatTimeoutS: 60       # alarm (ingen halt) hvis adapteren er tavs > 60s
 
-  # Telegram alerts.
-  # Set telegram.enabled=true and provide token + chatId via a secret.
-  # Never commit real credentials — use existingSecret in production.
+  # Telegram alarmer.
+  # Sæt telegram.enabled=true og angiv token + chatId via en secret.
+  # Commit aldrig rigtige credentials, brug existingSecret i produktion.
   telegram:
     enabled: false
-    existingSecret: ""          # Secret with keys: TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
-    token: ""                   # only for local dev; use existingSecret in prod
+    existingSecret: ""          # Secret med nøgler: TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
+    token: ""                   # kun til lokal dev; brug existingSecret i prod
     chatId: ""
 
 # ----------------------------------------------------------------------------
@@ -257,9 +257,9 @@ dashboard:
 # Data plane
 # ----------------------------------------------------------------------------
 
-# CloudNativePG: the operator is installed via the chart dependency.
-# `timescale.cluster` configures the per-release Cluster CR.
-# Key name is "cloudnative-pg" because the dependency alias removed.
+# CloudNativePG: operatoren installeres via chart dependency.
+# `timescale.cluster` konfigurerer pr release Cluster CRen.
+# Nøglens navn er "cloudnative-pg" fordi dependency aliaset blev fjernet.
 cloudnative-pg:
   enabled: false
   crds:
@@ -268,9 +268,9 @@ cloudnative-pg:
 timescale:
   cluster:
     enabled: true
-    instances: 1                       # bump to 3 for HA
+    instances: 1                       # bump til 3 for HA
     image:
-      # CNPG-compatible Postgres image with TimescaleDB extension preloaded.
+      # CNPG kompatibelt Postgres image med TimescaleDB extension forindlæst.
       repository: ghcr.io/clevyr/cloudnativepg-timescale
       tag: "17.5-22"
     storage:
@@ -282,16 +282,16 @@ timescale:
     bootstrap:
       database: trader
       owner: trader
-    # Plug in S3 backups in v1.
+    # Tilslut S3 backups i v1.
     backup:
       enabled: false
 
-# NATS via subchart. Default config = JetStream enabled, file storage.
+# NATS via subchart. Default config = JetStream aktiveret, file storage.
 nats:
   enabled: true
   config:
     cluster:
-      enabled: false                   # bump to 3-node cluster for HA
+      enabled: false                   # bump til 3 node cluster for HA
     jetstream:
       enabled: true
       fileStore:
@@ -299,8 +299,8 @@ nats:
         pvc:
           size: 10Gi
 
-# JetStream streams declared in nats-streams.yaml (NACK CRDs, applied
-# only if the NACK controller is installed — disabled by default).
+# JetStream streams deklareret i nats streams.yaml (NACK CRDer, anvendes
+# kun hvis NACK controlleren er installeret, deaktiveret som standard).
 jetstreamStreams:
   enabled: false
   bootstrapJob:
@@ -311,7 +311,7 @@ jetstreamStreams:
 # Observability
 # ----------------------------------------------------------------------------
 serviceMonitors:
-  # Requires the Prometheus Operator CRDs (kube-prometheus-stack).
+  # Kræver Prometheus Operator CRDer (kube prometheus stack).
   enabled: false
   interval: 30s
   labels: {}
@@ -324,4 +324,4 @@ rbac:
 
 serviceAccount:
   create: true
-  name: ""                             # generated from chart name if empty
+  name: ""                             # genereres fra chart navn hvis tomt

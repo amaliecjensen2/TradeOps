@@ -12,8 +12,8 @@ metadata:
     app.kubernetes.io/component: ibgateway
     ibkrtrader.io/mode: {{ $mode }}
 spec:
-  # Headless so DNS resolves directly to the pod (we never want a LB
-  # in front of a stateful trading socket).
+  # Headless så DNS resolver direkte til podden (vi vil aldrig have en LB
+  # foran et stateful trading socket).
   clusterIP: None
   publishNotReadyAddresses: true
   selector:
