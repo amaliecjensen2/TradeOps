@@ -42,6 +42,11 @@ PNL_DAILY = Gauge(
     "Current daily PnL as reported by TWS",
     ["account"],
 )
+NET_LIQUIDATION = Gauge(
+    "ibkr_adapter_net_liquidation",
+    "Latest NetLiquidation value reported by TWS account updates",
+    ["account"],
+)
 
 # Latens: NATS ordrebesked til TWS placeOrder() kald
 ORDER_LATENCY = Histogram(

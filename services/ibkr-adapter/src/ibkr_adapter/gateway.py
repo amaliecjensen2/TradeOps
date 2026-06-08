@@ -67,12 +67,20 @@ class IBKRGateway:
         self._connected = False
         self._heartbeat_task: asyncio.Task | None = None
         self._reconnect_task: asyncio.Task | None = None
+        # Seneste NetLiquidation set fra accountValueEvent. Cachet så vi kan
+        # rige PnLSnapshot med kontoens nettoværdi (risk-monitor bruger den
+        # til HWM/drawdown beregning).
+        self._latest_net_liquidation: float | None = None
 
         # Tilkobl TWS callbacks
         self._ib.disconnectedEvent += self._handle_disconnected
         self._ib.execDetailsEvent += self._handle_exec_details
         self._ib.pnlEvent += self._handle_pnl
-        self._ib.positionEvent += self._handle_position
+        # updatePortfolioEvent giver marketPrice/marketValue pr position.
+        # positionEvent (uden market data) bruges ikke længere; reqAccountUpdates
+        # leverer PortfolioItem snapshots der dækker samme felter plus mere.
+        self._ib.updatePortfolioEvent += self._handle_portfolio_item
+        self._ib.accountValueEvent += self._handle_account_value
         self._ib.pendingTickersEvent += self._handle_pending_tickers
 
     # Offentligt API
@@ -160,6 +168,12 @@ class IBKRGateway:
                 # Abonner på PnL opdateringer
                 if self._cfg.ibkr_account:
                     self._ib.reqPnL(self._cfg.ibkr_account)
+                    # reqAccountUpdates trigger periodisk updatePortfolio +
+                    # updateAccountValue callbacks, som leverer marketValue pr
+                    # position og NetLiquidation på kontoniveau, dvs det
+                    # input risk-monitor skal bruge til gross exposure og
+                    # drawdown.
+                    self._ib.reqAccountUpdates(True, self._cfg.ibkr_account)
 
                 # Abonnér på realtime markedsdata for det konfigurerede univers
                 if self._cfg.universe_list:
@@ -243,6 +257,7 @@ class IBKRGateway:
             daily_pnl=pnl.dailyPnL or 0.0,
             unrealized_pnl=pnl.unrealizedPnL or 0.0,
             realized_pnl=pnl.realizedPnL or 0.0,
+            net_liquidation=self._latest_net_liquidation,
         )
         await self._on_event(subjects.pnl(account), msg.model_dump_json().encode())
         metrics.PNL_DAILY.labels(account=account).set(pnl.dailyPnL or 0.0)
@@ -263,17 +278,40 @@ class IBKRGateway:
                 msg.model_dump_json().encode(),
             )
 
-    async def _handle_position(self, position: ibi.Position) -> None:
-        account = position.account
-        symbol = position.contract.symbol
+    async def _handle_portfolio_item(self, item: ibi.PortfolioItem) -> None:
+        # PortfolioItem leverer både position og market data i samme event,
+        # så risk-monitor kan beregne gross exposure korrekt. Kun konto vi har
+        # konfigureret accepteres, ib_insync videresender også events for
+        # andre konti hvis forbindelsen abonnerer på flere.
+        account = item.account
+        if self._cfg.ibkr_account and account != self._cfg.ibkr_account:
+            return
+        symbol = item.contract.symbol
         msg = PositionSnapshot(
             account=account,
             symbol=symbol,
-            sec_type=position.contract.secType,
-            avg_cost=position.avgCost,
-            position=position.position,
+            sec_type=item.contract.secType,
+            avg_cost=item.averageCost,
+            position=item.position,
+            market_price=_clean(item.marketPrice),
+            market_value=_clean(item.marketValue),
         )
         await self._on_event(subjects.positions(account, symbol), msg.model_dump_json().encode())
+
+    async def _handle_account_value(self, value: ibi.AccountValue) -> None:
+        # NetLiquidation rapporteres pr currency; tag den i kontoens base
+        # currency (BASE) eller den eneste tilgængelige. Værdien cachet og
+        # tilføjes næste PnLSnapshot, så risk-monitor får HWM input uden at
+        # ændre on the wire subject layout.
+        if value.tag != "NetLiquidation":
+            return
+        if self._cfg.ibkr_account and value.account != self._cfg.ibkr_account:
+            return
+        nl = _clean(value.value)
+        if nl is None:
+            return
+        self._latest_net_liquidation = nl
+        metrics.NET_LIQUIDATION.labels(account=value.account).set(nl)
 
     async def _heartbeat_loop(self) -> None:
         while True:
