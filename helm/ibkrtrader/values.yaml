@@ -9,9 +9,13 @@
 # ============================================================================
 
 global:
-  imageRegistry: ghcr.io/amaliecjensen
-  imagePullSecrets:
-    - name: ghcr-pull-secret
+  # Default registry er Azure Container Registry. CI workflowet overstyrer
+  # alligevel pr service image.repository, så denne værdi rammer kun ved
+  # manuel helm upgrade uden image-overrides.yaml.
+  imageRegistry: tradeops.azurecr.io
+  # AKS pull fra attached ACR går via kubelet managed identity,
+  # så ingen imagePullSecret kræves.
+  imagePullSecrets: []
   storageClass: ""
 
 # ----------------------------------------------------------------------------
@@ -97,8 +101,9 @@ strategies:
   - name: hello
     enabled: true
     image:
-      repository: ghcr.io/amaliecjensen/ibkrtrader/strategy-hello
-      tag: v0
+      repository: tradeops.azurecr.io/ibkrtrader/strategy-hello
+      # Default tag = senest deployede git SHA. CI overstyrer pr deploy.
+      tag: "0aeaad4f907ade67761487eb78cd4b092fa56499"
       pullPolicy: IfNotPresent
     clientId: 11
     replicas: 1
@@ -116,8 +121,8 @@ strategies:
   - name: nvidia
     enabled: true
     image:
-      repository: ghcr.io/amaliecjensen/ibkrtrader/strategy-nvidia
-      tag: v0
+      repository: tradeops.azurecr.io/ibkrtrader/strategy-nvidia
+      tag: "0aeaad4f907ade67761487eb78cd4b092fa56499"
       pullPolicy: IfNotPresent
     clientId: 12
     replicas: 1
@@ -145,8 +150,8 @@ strategies:
 ibkrAdapter:
   enabled: true
   image:
-    repository: ghcr.io/amaliecjensen/ibkrtrader/ibkr-adapter
-    tag: v0.1.1
+    repository: tradeops.azurecr.io/ibkrtrader/ibkr-adapter
+    tag: "0aeaad4f907ade67761487eb78cd4b092fa56499"
     pullPolicy: IfNotPresent
   # clientId=1 er reserveret til adapteren. Brug IKKE 1 i .strategies[].
   clientId: 1
@@ -170,8 +175,8 @@ ibkrAdapter:
 riskGateway:
   enabled: true
   image:
-    repository: ghcr.io/amaliecjensen/ibkrtrader/risk-gateway
-    tag: v0
+    repository: tradeops.azurecr.io/ibkrtrader/risk-gateway
+    tag: "0aeaad4f907ade67761487eb78cd4b092fa56499"
     pullPolicy: IfNotPresent
   replicas: 2
   port: 8080
@@ -190,8 +195,8 @@ riskGateway:
 riskMonitor:
   enabled: true
   image:
-    repository: ghcr.io/amaliecjensen/ibkrtrader/risk-monitor
-    tag: v0
+    repository: tradeops.azurecr.io/ibkrtrader/risk-monitor
+    tag: "0aeaad4f907ade67761487eb78cd4b092fa56499"
     pullPolicy: IfNotPresent
   replicas: 2          # leader elected via Lease
   resources:
@@ -226,8 +231,8 @@ riskMonitor:
 api:
   enabled: true
   image:
-    repository: ghcr.io/amaliecjensen/ibkrtrader/api
-    tag: v0
+    repository: tradeops.azurecr.io/ibkrtrader/api
+    tag: "0aeaad4f907ade67761487eb78cd4b092fa56499"
     pullPolicy: IfNotPresent
   replicas: 2
   port: 8000
@@ -238,8 +243,8 @@ api:
 dashboard:
   enabled: true
   image:
-    repository: ghcr.io/amaliecjensen/ibkrtrader/dashboard
-    tag: v0.1.1
+    repository: tradeops.azurecr.io/ibkrtrader/dashboard
+    tag: "0aeaad4f907ade67761487eb78cd4b092fa56499"
     pullPolicy: IfNotPresent
   replicas: 1
   port: 3000
