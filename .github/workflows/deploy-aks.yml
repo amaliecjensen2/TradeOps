@@ -202,6 +202,34 @@ jobs:
             ' > /tmp/ibkr-credentials.yaml
           chmod 600 /tmp/ibkr-credentials.yaml
 
+      - name: Generate Telegram credentials values
+        shell: bash
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          # Begge eller ingen, halv konfiguration bliver bare et stille deploy uden
+          # alarmer og er svært at debugge senere.
+          if [ -n "${TELEGRAM_TOKEN}" ] && [ -z "${TELEGRAM_CHAT_ID}" ] \
+             || [ -z "${TELEGRAM_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
+            echo "::error::TELEGRAM_TOKEN og TELEGRAM_CHAT_ID skal sættes sammen (eller begge være tomme)"
+            exit 1
+          fi
+          if [ -z "${TELEGRAM_TOKEN}" ]; then
+            # Ingen Telegram credentials, render tom values fil så helm step kan
+            # inkludere -f uden at det ændrer noget. Telegram forbliver disabled.
+            echo "{}" > /tmp/telegram-credentials.yaml
+            exit 0
+          fi
+          TELEGRAM_TOKEN="${TELEGRAM_TOKEN}" TELEGRAM_CHAT_ID="${TELEGRAM_CHAT_ID}" \
+            yq eval -n '
+              .riskMonitor.telegram.enabled = true |
+              .riskMonitor.telegram.existingSecret = "" |
+              .riskMonitor.telegram.token = strenv(TELEGRAM_TOKEN) |
+              .riskMonitor.telegram.chatId = strenv(TELEGRAM_CHAT_ID)
+            ' > /tmp/telegram-credentials.yaml
+          chmod 600 /tmp/telegram-credentials.yaml
+
       - name: Deploy with Helm
         run: |
           helm dependency update ./helm/ibkrtrader
@@ -212,7 +240,8 @@ jobs:
             -f ./helm/ibkrtrader/values.azure.yaml \
             -f /tmp/image-overrides.yaml \
             -f /tmp/strategies-overrides.yaml \
-            -f /tmp/ibkr-credentials.yaml
+            -f /tmp/ibkr-credentials.yaml \
+            -f /tmp/telegram-credentials.yaml
 
       - name: Verify rollout
         shell: bash

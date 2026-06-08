@@ -1,6 +1,7 @@
 {{- if .Values.riskMonitor.enabled -}}
 {{- $name := printf "%s-risk-monitor" (include "ibkrtrader.fullname" .) -}}
 {{- $sa := printf "%s-risk-monitor" (include "ibkrtrader.fullname" .) -}}
+{{- $telegramSecret := default (printf "%s-telegram" (include "ibkrtrader.fullname" .)) .Values.riskMonitor.telegram.existingSecret -}}
 ---
 # Dedikeret ServiceAccount, monitoren skal bruge RBAC til at scalere strategi
 # Deployments til 0 (kill switchen). Andre komponenter behøver det ikke.
@@ -124,22 +125,19 @@ spec:
               value: {{ .Values.riskMonitor.thresholds.heartbeatTimeoutS | quote }}
             - name: TELEGRAM_ENABLED
               value: {{ .Values.riskMonitor.telegram.enabled | quote }}
-            {{- if .Values.riskMonitor.telegram.existingSecret }}
+            {{- if .Values.riskMonitor.telegram.enabled }}
+            # Altid via secretKeyRef så token/chatId aldrig havner i Deployment-specen.
+            # $telegramSecret = existingSecret hvis sat, ellers chart-renderet navn.
             - name: TELEGRAM_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.riskMonitor.telegram.existingSecret }}
+                  name: {{ $telegramSecret }}
                   key: TELEGRAM_TOKEN
             - name: TELEGRAM_CHAT_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.riskMonitor.telegram.existingSecret }}
+                  name: {{ $telegramSecret }}
                   key: TELEGRAM_CHAT_ID
-            {{- else }}
-            - name: TELEGRAM_TOKEN
-              value: {{ .Values.riskMonitor.telegram.token | quote }}
-            - name: TELEGRAM_CHAT_ID
-              value: {{ .Values.riskMonitor.telegram.chatId | quote }}
             {{- end }}
             {{- include "ibkrtrader.commonEnv" . | nindent 12 }}
           resources:
