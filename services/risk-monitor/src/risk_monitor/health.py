@@ -33,7 +33,7 @@ class HealthServer:
         return web.Response(text="ok")
 
     async def _readyz(self, _: web.Request) -> web.Response:
-        # Klar når state har modtaget mindst ét heartbeat ELLER vi er follower
+        # Klar når state har modtaget mindst et heartbeat ELLER vi er follower
         if self._state is None:
             return web.Response(status=503, text="not_initialised")
         return web.Response(text="ready")
