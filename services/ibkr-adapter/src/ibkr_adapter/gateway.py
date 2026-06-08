@@ -171,9 +171,10 @@ class IBKRGateway:
                     # ib_insync auto-subscriber til account updates ved connect,
                     # men vi filtrerer eksplicit til vores konto her så
                     # updatePortfolio + updateAccountValue events kun kommer
-                    # for den ene konto vi følger. ib_insync's wrapper kalder
-                    # internt reqAccountUpdates(True, account) til TWS.
-                    self._ib.reqAccountUpdates(self._cfg.ibkr_account)
+                    # for den ene konto vi følger. Synkrone reqAccountUpdates
+                    # forsøger run_until_complete på den allerede kørende
+                    # event loop, brug Async-varianten fra async kontekst.
+                    await self._ib.reqAccountUpdatesAsync(self._cfg.ibkr_account)
 
                 # Abonnér på realtime markedsdata for det konfigurerede univers
                 if self._cfg.universe_list:
