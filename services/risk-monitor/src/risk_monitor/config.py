@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     max_drawdown_pct: float = Field(0.05, alias="MAX_DRAWDOWN_PCT")
 
     # Loft for gross exponering i kontoens valuta
-    max_gross_exposure: float = Field(1_000.0, alias="MAX_GROSS_EXPOSURE")
+    max_gross_exposure: float = Field(1_000_000.0, alias="MAX_GROSS_EXPOSURE")
 
     # Hvor mange sekunder uden heartbeat fra adapteren før der alarmeres
     heartbeat_timeout_s: float = Field(60.0, alias="HEARTBEAT_TIMEOUT_S")
