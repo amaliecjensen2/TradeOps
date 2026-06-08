@@ -14,17 +14,8 @@ riskMonitor:
   killSwitchEnabled: false   # sikrere standard i paper, aktivér når testet
 
   # Telegram: slået fra som standard i paper.
-  # For at aktivere, enten:
-  #   Mulighed A (produktion):
-  #     kubectl create secret generic telegram-credentials \
-  #       --from-literal=TELEGRAM_TOKEN=<token> \
-  #       --from-literal=TELEGRAM_CHAT_ID=<chat id>
-  #     sæt derefter existingSecret: telegram-credentials
-  #
-  #   Mulighed B (hurtig dev test):
-  #     Sæt token + chatId direkte her (commit aldrig rigtige værdier).
+  # CI tænder automatisk for det hvis TELEGRAM_TOKEN/TELEGRAM_CHAT_ID GitHub
+  # secrets er sat (se .github/workflows/deploy-aks.yml). Til lokal dev kan
+  # du sætte enabled=true + token + chatId direkte her (commit ikke værdierne).
   telegram:
     enabled: false
-    existingSecret: ""
-    token: ""
-    chatId: ""

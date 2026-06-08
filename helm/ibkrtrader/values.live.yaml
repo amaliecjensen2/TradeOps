@@ -17,12 +17,12 @@ riskMonitor:
   killSwitchEnabled: true
 
   # Telegram: stærkt anbefalet til live trading.
-  # Opret secret før helm install (se values.paper.yaml for instrukser).
+  # CI injicerer TELEGRAM_TOKEN/TELEGRAM_CHAT_ID fra GitHub secrets og
+  # chartet renderer selv den nødvendige Secret. Hold existingSecret tom
+  # så CI-injektionen ikke bliver overstyret.
   telegram:
     enabled: true
-    existingSecret: "telegram-credentials"   # kubectl create secret ...
-    token: ""
-    chatId: ""
+    existingSecret: ""
 
 # Strammere grænser som standard i live.
 riskGateway:
