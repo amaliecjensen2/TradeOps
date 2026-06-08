@@ -191,7 +191,7 @@ riskGateway:
   # grænser i `.Values.strategies[].risk`.
   global:
     maxAccountDrawdownPct: 0.05
-    maxGrossExposure: 1000000
+    maxGrossExposure: 1000
     maxOrdersPerSecond: 50
     restrictedSymbols: []
 
