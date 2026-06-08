@@ -1,11 +1,14 @@
 """NATS listener, holder CheckEngine state opdateret.
 
 Abonnerer på:
-  pnl.>           per konto daglig P&L (proxy for per strategi tab)
-  positions.>     positionssnapshots
-  marketdata.>    sidste priser til fat finger check
-  risk.halt       circuit breaker udløst af risk monitor
-  risk.adapter.reconnected ryd halt hvis ønsket (kun manuelt indtil videre)
+  pnl.>                            per konto daglig P&L (proxy for per strategi tab)
+  positions.>                      positionssnapshots
+  marketdata.>                     sidste priser til fat finger check
+  risk.halt                        circuit breaker udløst af risk monitor
+  risk.adapter.snapshot_complete   adapteren signalerer initial state komplet,
+                                   åbner /orders gate (fail-closed cold start)
+  risk.adapter.disconnected        adapteren har mistet TWS, lukker /orders gate
+                                   indtil næste snapshot_complete
 """
 
 from __future__ import annotations
@@ -43,6 +46,12 @@ class NATSStateSync:
         await self._nc.subscribe("positions.>",     cb=self._on_position)
         await self._nc.subscribe("marketdata.>",    cb=self._on_marketdata)
         await self._nc.subscribe("risk.halt",       cb=self._on_halt)
+        await self._nc.subscribe(
+            "risk.adapter.snapshot_complete", cb=self._on_snapshot_complete
+        )
+        await self._nc.subscribe(
+            "risk.adapter.disconnected", cb=self._on_adapter_disconnected
+        )
         log.info("nats_state_sync.subscribed")
 
     async def publish(self, subject: str, payload: bytes) -> None:
@@ -103,3 +112,29 @@ class NATSStateSync:
         self._engine.halted = True
         self._engine.halt_reason = reason
         log.critical("nats_state_sync.halt_received", reason=reason)
+
+    async def _on_snapshot_complete(self, msg) -> None:
+        try:
+            data = json.loads(msg.data)
+        except Exception:
+            data = {}
+        self._engine.primed = True
+        self._engine.prime_reason = ""
+        log.info(
+            "nats_state_sync.snapshot_complete",
+            account=data.get("account", ""),
+            positions=data.get("positions_count", 0),
+        )
+
+    async def _on_adapter_disconnected(self, msg) -> None:
+        # Fail-closed: hvis adapteren mister TWS er vores cache potentielt stale.
+        # Genåbn først /orders når adapteren har reemiteret snapshot_complete
+        # efter reconnect.
+        try:
+            data = json.loads(msg.data)
+            reason = data.get("reason", "adapter disconnected")
+        except Exception:
+            reason = "adapter disconnected"
+        self._engine.primed = False
+        self._engine.prime_reason = f"adapter disconnected: {reason}"
+        log.warning("nats_state_sync.adapter_disconnected", reason=reason)

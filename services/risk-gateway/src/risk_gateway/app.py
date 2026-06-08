@@ -53,12 +53,37 @@ def create_app(engine: CheckEngine, nats_sync) -> FastAPI:
         nc = getattr(nats_sync, "_nc", None)
         if nc is None or nc.is_closed:
             return JSONResponse(status_code=503, content={"status": "nats_disconnected"})
+        if not engine.primed:
+            return JSONResponse(
+                status_code=503,
+                content={"status": "priming", "reason": engine.prime_reason},
+            )
         return {"status": "ready"}
 
     @app.post("/orders", response_model=OrderAccepted, status_code=status.HTTP_200_OK)
     async def submit_order(req: OrderRequest):
         import time
         t0 = time.perf_counter()
+        # Fail-closed cold start: indtil adapteren har publiceret snapshot_complete
+        # ville fat-finger / daily-loss / position-limit checks passere mod tom
+        # state. Returnér 503 så strategier retry'er i stedet for at handle blindt.
+        if not engine.primed:
+            ORDERS_REJECTED.labels(
+                strategy=req.strategy, reason_type="priming"
+            ).inc()
+            log.warning(
+                "risk_gateway.order_rejected_priming",
+                strategy=req.strategy,
+                symbol=req.symbol,
+                reason=engine.prime_reason,
+            )
+            return JSONResponse(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                content=OrderRejected(
+                    reason=f"gateway priming: {engine.prime_reason}",
+                    idempotency_key=req.idempotency_key,
+                ).model_dump(mode="json"),
+            )
         try:
             # Prometheus måler kun tiden brugt inde i selve check-pipelinen.
             with CHECK_LATENCY.time():
@@ -124,4 +149,6 @@ def _classify_reason(reason: str) -> str:
         return "duplicate"
     if "restricted" in r:
         return "restricted_symbol"
+    if "priming" in r:
+        return "priming"
     return "other"

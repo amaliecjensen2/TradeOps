@@ -32,6 +32,7 @@ from ibkr_adapter.models import (
     PositionSnapshot,
     SecType,
     Side,
+    SnapshotComplete,
     Tick,
 )
 
@@ -59,6 +60,11 @@ class IBKRGateway:
     """Håndterer en enkelt TWS forbindelse og oversætter TWS events til events."""
 
     HEARTBEAT_INTERVAL_S = 15
+    # Hvor længe vi venter på det første streaming pnl event efter
+    # reqAccountUpdatesAsync er færdig, før vi syntetiserer et nul-snapshot
+    # og frigiver risk-gateway. TWS leverer normalt pnl inden for et sekund;
+    # 5s er rigeligt og holder også cold-start latency lav.
+    SNAPSHOT_PNL_TIMEOUT_S = 5.0
 
     def __init__(self, settings: Settings, on_event: EventCallback) -> None:
         self._cfg = settings
@@ -71,6 +77,9 @@ class IBKRGateway:
         # rige PnLSnapshot med kontoens nettoværdi (risk-monitor bruger den
         # til HWM/drawdown beregning).
         self._latest_net_liquidation: float | None = None
+        # Sættes ved første pnlEvent efter (re)connect. Bruges af snapshot
+        # flowet til at vide hvornår initial state er komplet.
+        self._pnl_received: asyncio.Event = asyncio.Event()
 
         # Tilkobl TWS callbacks
         self._ib.disconnectedEvent += self._handle_disconnected
@@ -166,6 +175,7 @@ class IBKRGateway:
                 )
 
                 # Abonner på PnL opdateringer
+                self._pnl_received.clear()
                 if self._cfg.ibkr_account:
                     self._ib.reqPnL(self._cfg.ibkr_account)
                     # ib_insync auto-subscriber til account updates ved connect,
@@ -175,6 +185,12 @@ class IBKRGateway:
                     # forsøger run_until_complete på den allerede kørende
                     # event loop, brug Async-varianten fra async kontekst.
                     await self._ib.reqAccountUpdatesAsync(self._cfg.ibkr_account)
+
+                # Markér at initial pnl + positions snapshot er publiceret
+                # så risk-gateway kan åbne for ordrer. Kører bevidst FØR
+                # marketdata subscribe så cold-start latency ikke afhænger
+                # af antal symboler i universet.
+                await self._emit_snapshot_complete()
 
                 # Abonnér på realtime markedsdata for det konfigurerede univers
                 if self._cfg.universe_list:
@@ -262,6 +278,56 @@ class IBKRGateway:
         )
         await self._on_event(subjects.pnl(account), msg.model_dump_json().encode())
         metrics.PNL_DAILY.labels(account=account).set(pnl.dailyPnL or 0.0)
+        self._pnl_received.set()
+
+    async def _emit_snapshot_complete(self) -> None:
+        """Vent kort på første streaming pnl, syntetisér ellers et nul-snapshot,
+        og publicér så SNAPSHOT_COMPLETE.
+
+        Risk-gateway gater /orders indtil denne besked ses, så pre-trade checks
+        (daily loss, position limit) aldrig kører mod tom state efter cold start
+        eller adapter reconnect.
+        """
+        account = self._cfg.ibkr_account or ""
+        if account:
+            try:
+                await asyncio.wait_for(
+                    self._pnl_received.wait(),
+                    timeout=self.SNAPSHOT_PNL_TIMEOUT_S,
+                )
+            except asyncio.TimeoutError:
+                # TWS leverede ikke pnl i tide. Publicér et syntetisk nul-snapshot
+                # så downstream konsumere kan initialisere; den næste rigtige
+                # pnlEvent overskriver det.
+                log.warning(
+                    "ibkr_gateway.snapshot_pnl_timeout",
+                    account=account,
+                    timeout_s=self.SNAPSHOT_PNL_TIMEOUT_S,
+                )
+                synthetic = PnLSnapshot(
+                    account=account,
+                    daily_pnl=0.0,
+                    unrealized_pnl=0.0,
+                    realized_pnl=0.0,
+                    net_liquidation=self._latest_net_liquidation,
+                )
+                await self._on_event(
+                    subjects.pnl(account),
+                    synthetic.model_dump_json().encode(),
+                )
+
+        positions_count = (
+            len(self._ib.portfolio(account)) if account else 0
+        )
+        msg = SnapshotComplete(account=account, positions_count=positions_count)
+        await self._on_event(
+            subjects.SNAPSHOT_COMPLETE, msg.model_dump_json().encode()
+        )
+        log.info(
+            "ibkr_gateway.snapshot_complete",
+            account=account,
+            positions=positions_count,
+        )
 
     async def _handle_pending_tickers(self, tickers: set[ibi.Ticker]) -> None:
         for t in tickers:

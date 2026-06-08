@@ -13,6 +13,9 @@ Subject hierarki:
   risk.adapter.heartbeat            adapter til risk monitor (liveness)
   risk.adapter.disconnected         adapter til risk monitor (alarm)
   risk.adapter.reconnected          adapter til risk monitor (alarm)
+  risk.adapter.snapshot_complete    adapter signalerer at initial pnl + positions
+                                    snapshot er publiceret; risk-gateway gater
+                                    /orders indtil denne ses
 """
 
 # Indkommende (adapter abonnerer)
@@ -40,3 +43,4 @@ def marketdata(feed: str, symbol: str) -> str:
 HEARTBEAT = "risk.adapter.heartbeat"
 DISCONNECTED = "risk.adapter.disconnected"
 RECONNECTED = "risk.adapter.reconnected"
+SNAPSHOT_COMPLETE = "risk.adapter.snapshot_complete"

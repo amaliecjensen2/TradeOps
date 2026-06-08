@@ -20,6 +20,9 @@ class TestSubjects:
         assert subjects.marketdata(
             "realtime", "SPY") == "marketdata.realtime.SPY"
 
+    def test_snapshot_complete_subject(self):
+        assert subjects.SNAPSHOT_COMPLETE == "risk.adapter.snapshot_complete"
+
 
 class TestOrderCommand:
     def test_valid_order(self):

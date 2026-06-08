@@ -67,6 +67,13 @@ class CheckEngine:
         self.halted: bool = False
         self.halt_reason: str = ""
 
+        # Priming gate, fail-closed indtil adapteren har publiceret
+        # SNAPSHOT_COMPLETE. Forhindrer cold-start vinduet hvor
+        # fat-finger / daily-loss / position-limit checks ville passere
+        # trivielt fordi state dicts er tomme.
+        self.primed: bool = False
+        self.prime_reason: str = "waiting for adapter snapshot"
+
     def check(self, req: OrderRequest) -> None:
         """Kør alle checks. Rejser RiskRejection ved første fejl."""
         self._check_halt()

@@ -156,3 +156,14 @@ class AdapterDisconnected(BaseModel):
     ibgw_port: int
     reason: str = ""
     timestamp: datetime = Field(default_factory=_utcnow)
+
+
+class SnapshotComplete(BaseModel):
+    """Publiceres når adapteren har emitteret det initiale pnl + positions
+    snapshot for kontoen. Risk-gateway gater /orders indtil denne ses, så
+    pre-trade checks aldrig kører mod tom state.
+    """
+
+    account: str
+    positions_count: int = 0
+    timestamp: datetime = Field(default_factory=_utcnow)

@@ -52,3 +52,35 @@ async def test_position_snapshot_overwrites_previous(sync, engine):
     await sync._on_position(msg)
 
     assert engine.strategy_positions["nvidia"]["NVDA"] == 19.0
+
+
+@pytest.mark.asyncio
+async def test_engine_starts_unprimed(engine):
+    assert engine.primed is False
+    assert engine.prime_reason
+
+
+@pytest.mark.asyncio
+async def test_snapshot_complete_primes_engine(sync, engine):
+    msg = SimpleNamespace(data=json.dumps({
+        "account": "DUQ568769", "positions_count": 2,
+    }).encode())
+
+    await sync._on_snapshot_complete(msg)
+
+    assert engine.primed is True
+    assert engine.prime_reason == ""
+
+
+@pytest.mark.asyncio
+async def test_adapter_disconnected_unprimes_engine(sync, engine):
+    engine.primed = True
+    engine.prime_reason = ""
+    msg = SimpleNamespace(data=json.dumps({
+        "reason": "TWS connection lost",
+    }).encode())
+
+    await sync._on_adapter_disconnected(msg)
+
+    assert engine.primed is False
+    assert "TWS connection lost" in engine.prime_reason
