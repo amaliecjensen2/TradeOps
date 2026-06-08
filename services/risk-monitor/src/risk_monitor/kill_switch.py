@@ -7,8 +7,9 @@ release namespace).
 
 Kill switchen er idempotent, det er sikkert at kalde den to gange.
 
-Hvis kill_switch_enabled=False (paper / dev) bliver handlingen logget men
-ingen Deployments ændres.
+Hvis kill_switch_enabled=False (paper / dev) springes Deployment scaling
+over, men risk.halt NATS beskeden publiceres stadig så risk-gateway
+afviser nye ordrer. Det giver et soft halt uden at dræbe pods.
 """
 
 from __future__ import annotations
@@ -42,27 +43,31 @@ class KillSwitch:
         self._apps_v1 = k8s_client.AppsV1Api()
 
     async def trip(self, reason: str, nats_bridge=None) -> list[str]:
-        """Scalere alle strategi Deployments til 0. Returnerer liste af berørte navne."""
-        self._load_k8s()
+        """Scalere alle strategi Deployments til 0. Returnerer liste af berørte navne.
 
-        if not self._enabled:
+        risk.halt publiceres altid på NATS uanset kill_switch_enabled, så
+        risk-gateway kan afvise nye ordrer. Kun pod scaling springes over
+        når flaget er false.
+        """
+        affected: list[str] = []
+
+        if self._enabled:
+            self._load_k8s()
+            # Kør det blokkerende kubernetes SDK kald i en thread pool
+            loop = asyncio.get_running_loop()
+            affected = await loop.run_in_executor(None, self._scale_strategies_to_zero)
+            log.critical(
+                "kill_switch.tripped",
+                reason=reason,
+                deployments_scaled=affected,
+            )
+        else:
             log.warning(
-                "kill_switch.disabled_skipping",
+                "kill_switch.scaling_disabled",
                 reason=reason,
             )
-            return []
 
-        # Kør det blokkerende kubernetes SDK kald i en thread pool
-        loop = asyncio.get_running_loop()
-        affected = await loop.run_in_executor(None, self._scale_strategies_to_zero)
-
-        log.critical(
-            "kill_switch.tripped",
-            reason=reason,
-            deployments_scaled=affected,
-        )
-
-        # Publicér HALT event på NATS så alle komponenter ved det
+        # Publicér HALT event på NATS så risk-gateway og api ved det
         if nats_bridge is not None:
             import json
             import datetime
