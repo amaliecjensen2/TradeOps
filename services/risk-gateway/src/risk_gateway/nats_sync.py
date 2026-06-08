@@ -71,12 +71,15 @@ class NATSStateSync:
             symbol = data.get("symbol", "")
             position = float(data.get("position", 0))
             # subject: positions.<account>.<symbol>, ingen strategiinfo her.
-            # Vi gemmer globalt; per strategi tracking kræver strategi tags.
-            account = data.get("account", "global")
-            key = f"_account_{account}"
-            if key not in self._engine.strategy_positions:
-                self._engine.strategy_positions[key] = {}
-            self._engine.strategy_positions[key][symbol] = position
+            # Vi antager én IBKR-konto pr. risk-gateway deployment og spejler
+            # snapshottet ind under hver konfigureret strategi, så
+            # _check_position_limit faktisk slår op på strategi-navn (req.strategy)
+            # og rent faktisk håndhæver maxPosition. Uden dette var lookupet
+            # altid 0.0 og position-grænsen var en no-op.
+            for strategy in self._engine.strategy_limits:
+                positions = self._engine.strategy_positions.setdefault(
+                    strategy, {})
+                positions[symbol] = position
         except Exception as exc:
             log.warning("nats_state_sync.position_error", error=str(exc))
 

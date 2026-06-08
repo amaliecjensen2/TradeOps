@@ -41,7 +41,7 @@ class RiskRejection(Exception):
 class CheckEngine:
     def __init__(self, settings: Settings) -> None:
         self._cfg = settings
-        self._strategy_limits = settings.strategy_limits
+        self.strategy_limits = settings.strategy_limits
         self._restricted = settings.restricted_symbols_set
 
         # State holdt i hukommelsen (tilstrækkelig for single replica eller sticky sessions)
@@ -103,7 +103,7 @@ class CheckEngine:
             )
 
     def _check_order_notional(self, req: OrderRequest) -> None:
-        limits = self._strategy_limits.get(req.strategy, {})
+        limits = self.strategy_limits.get(req.strategy, {})
         max_notional = limits.get("maxOrderNotional")
         if max_notional is None:
             return
@@ -116,7 +116,7 @@ class CheckEngine:
             )
 
     def _check_daily_loss(self, req: OrderRequest) -> None:
-        limits = self._strategy_limits.get(req.strategy, {})
+        limits = self.strategy_limits.get(req.strategy, {})
         max_daily_loss = limits.get("maxDailyLoss")
         if max_daily_loss is None:
             return
@@ -128,7 +128,7 @@ class CheckEngine:
             )
 
     def _check_position_limit(self, req: OrderRequest) -> None:
-        limits = self._strategy_limits.get(req.strategy, {})
+        limits = self.strategy_limits.get(req.strategy, {})
         max_position = limits.get("maxPosition")
         if max_position is None:
             return
@@ -143,7 +143,7 @@ class CheckEngine:
             )
 
     def _check_strategy_rate(self, req: OrderRequest) -> None:
-        limits = self._strategy_limits.get(req.strategy, {})
+        limits = self.strategy_limits.get(req.strategy, {})
         max_rate = limits.get("maxOrdersPerSecond", 10)
         now = time.monotonic()
         window = self._strategy_order_times[req.strategy]
