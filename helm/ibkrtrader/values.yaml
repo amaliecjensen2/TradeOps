@@ -214,7 +214,7 @@ riskMonitor:
   # Risikogrænser, sendes til monitoren som env vars.
   # Overstyr i values.paper.yaml / values.live.yaml efter behov.
   thresholds:
-    maxDailyLoss: -500          # halt hvis daglig P&L falder under dette (USD)
+    maxDailyLoss: -5000          # halt hvis daglig P&L falder under dette (USD)
     maxDrawdownPct: 0.05        # halt ved 5% intra day drawdown fra HWM
     maxGrossExposure: 1000000   # halt hvis gross eksponering overstiger dette (USD)
     heartbeatTimeoutS: 60       # alarm (ingen halt) hvis adapteren er tavs > 60s
