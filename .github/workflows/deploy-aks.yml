@@ -182,6 +182,26 @@ jobs:
             }
           ' ./helm/ibkrtrader/values.yaml > /tmp/strategies-overrides.yaml
 
+      - name: Generate IBKR credentials values
+        shell: bash
+        env:
+          IBKR_USERNAME: ${{ secrets.IBKR_USERNAME }}
+          IBKR_PASSWORD: ${{ secrets.IBKR_PASSWORD }}
+        run: |
+          if [ -z "${IBKR_USERNAME}" ] || [ -z "${IBKR_PASSWORD}" ]; then
+            echo "::error::IBKR_USERNAME / IBKR_PASSWORD GitHub secrets mangler"
+            exit 1
+          fi
+          # yq skriver feltet med korrekt YAML escaping uanset specialtegn i
+          # passwordet, og holder værdien ude af shell history.
+          IBKR_USERNAME="${IBKR_USERNAME}" IBKR_PASSWORD="${IBKR_PASSWORD}" \
+            yq eval -n '
+              .ibkr.credentials.existingSecret = "" |
+              .ibkr.credentials.username = strenv(IBKR_USERNAME) |
+              .ibkr.credentials.password = strenv(IBKR_PASSWORD)
+            ' > /tmp/ibkr-credentials.yaml
+          chmod 600 /tmp/ibkr-credentials.yaml
+
       - name: Deploy with Helm
         run: |
           helm dependency update ./helm/ibkrtrader
@@ -191,7 +211,8 @@ jobs:
             -f ./helm/ibkrtrader/values.paper.yaml \
             -f ./helm/ibkrtrader/values.azure.yaml \
             -f /tmp/image-overrides.yaml \
-            -f /tmp/strategies-overrides.yaml
+            -f /tmp/strategies-overrides.yaml \
+            -f /tmp/ibkr-credentials.yaml
 
       - name: Verify rollout
         shell: bash

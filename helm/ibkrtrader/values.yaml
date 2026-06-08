@@ -78,11 +78,14 @@ ibkr:
       tolerations: []
       affinity: {}
 
-  # Credentials. I produktion erstattes med externalSecrets eller sealed secrets.
+  # Credentials. CI injicerer username/password fra GitHub Actions secrets
+  # (IBKR_USERNAME, IBKR_PASSWORD) via en tmp values fil, så chartet selv
+  # rendrer Secret'en. Lokal helm install kræver overstyring af felterne.
   credentials:
-    # Hvis existingSecret er sat, opretter chartet ikke en Secret.
-    # Forventede nøgler: TWS_USERID, TWS_PASSWORD.
-    existingSecret: "ibkrtrader-ibkr-credentials"  # kubectl apply f ibkr credentials.secret.yaml
+    # Sæt existingSecret hvis du i stedet vil bruge en pre eksisterende Secret
+    # (forventede nøgler: TWS_USERID, TWS_PASSWORD). Når den er tom opretter
+    # chartet selv en Secret fra username/password nedenfor.
+    existingSecret: ""
     username: ""
     password: ""
 
