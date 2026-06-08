@@ -168,12 +168,12 @@ class IBKRGateway:
                 # Abonner på PnL opdateringer
                 if self._cfg.ibkr_account:
                     self._ib.reqPnL(self._cfg.ibkr_account)
-                    # reqAccountUpdates trigger periodisk updatePortfolio +
-                    # updateAccountValue callbacks, som leverer marketValue pr
-                    # position og NetLiquidation på kontoniveau, dvs det
-                    # input risk-monitor skal bruge til gross exposure og
-                    # drawdown.
-                    self._ib.reqAccountUpdates(True, self._cfg.ibkr_account)
+                    # ib_insync auto-subscriber til account updates ved connect,
+                    # men vi filtrerer eksplicit til vores konto her så
+                    # updatePortfolio + updateAccountValue events kun kommer
+                    # for den ene konto vi følger. ib_insync's wrapper kalder
+                    # internt reqAccountUpdates(True, account) til TWS.
+                    self._ib.reqAccountUpdates(self._cfg.ibkr_account)
 
                 # Abonnér på realtime markedsdata for det konfigurerede univers
                 if self._cfg.universe_list:
