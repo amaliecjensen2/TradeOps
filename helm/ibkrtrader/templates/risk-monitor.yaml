@@ -1,9 +1,10 @@
 {{- if .Values.riskMonitor.enabled -}}
 {{- $name := printf "%s-risk-monitor" (include "ibkrtrader.fullname" .) -}}
 {{- $sa := printf "%s-risk-monitor" (include "ibkrtrader.fullname" .) -}}
+{{- $telegramSecret := default (printf "%s-telegram" (include "ibkrtrader.fullname" .)) .Values.riskMonitor.telegram.existingSecret -}}
 ---
-# Dedicated ServiceAccount — the monitor needs RBAC to scale strategy
-# Deployments to 0 (the kill switch). Other components don't.
+# Dedikeret ServiceAccount, monitoren skal bruge RBAC til at scalere strategi
+# Deployments til 0 (kill switchen). Andre komponenter behøver det ikke.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -23,19 +24,19 @@ metadata:
     {{- include "ibkrtrader.labels" . | nindent 4 }}
     app.kubernetes.io/component: risk-monitor
 rules:
-  # Scale strategy Deployments to 0 on breach.
+  # Scaler strategi Deployments til 0 ved overtrædelse.
   - apiGroups: ["apps"]
     resources: ["deployments", "deployments/scale"]
     verbs: ["get", "list", "watch", "patch", "update"]
-  # Leader election (the monitor runs replicas=2 with one leader).
+  # Leader election (monitoren kører replicas=2 med én leder).
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  # Read its own ConfigMap so config reload doesn't require a restart.
+  # Læs sin egen ConfigMap så config reload ikke kræver en genstart.
   - apiGroups: [""]
     resources: ["configmaps"]
     verbs: ["get", "list", "watch"]
-  # Emit Events visible in `kubectl describe`.
+  # Udsend Events synlige i `kubectl describe`.
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["create", "patch"]
@@ -96,9 +97,6 @@ spec:
             - name: health
               containerPort: 8080
               protocol: TCP
-            - name: metrics
-              containerPort: 9090
-              protocol: TCP
           env:
             - name: KILL_SWITCH_ENABLED
               value: {{ .Values.riskMonitor.killSwitchEnabled | quote }}
@@ -124,22 +122,19 @@ spec:
               value: {{ .Values.riskMonitor.thresholds.heartbeatTimeoutS | quote }}
             - name: TELEGRAM_ENABLED
               value: {{ .Values.riskMonitor.telegram.enabled | quote }}
-            {{- if .Values.riskMonitor.telegram.existingSecret }}
+            {{- if .Values.riskMonitor.telegram.enabled }}
+            # Altid via secretKeyRef så token/chatId aldrig havner i Deployment-specen.
+            # $telegramSecret = existingSecret hvis sat, ellers chart-renderet navn.
             - name: TELEGRAM_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.riskMonitor.telegram.existingSecret }}
+                  name: {{ $telegramSecret }}
                   key: TELEGRAM_TOKEN
             - name: TELEGRAM_CHAT_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.riskMonitor.telegram.existingSecret }}
+                  name: {{ $telegramSecret }}
                   key: TELEGRAM_CHAT_ID
-            {{- else }}
-            - name: TELEGRAM_TOKEN
-              value: {{ .Values.riskMonitor.telegram.token | quote }}
-            - name: TELEGRAM_CHAT_ID
-              value: {{ .Values.riskMonitor.telegram.chatId | quote }}
             {{- end }}
             {{- include "ibkrtrader.commonEnv" . | nindent 12 }}
           resources:

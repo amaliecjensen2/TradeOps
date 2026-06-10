@@ -1,14 +1,14 @@
-"""NATS subscriptions for the risk monitor.
+"""NATS abonnementer for risk monitoren.
 
-Subscribes to:
-  fills.>                   — execution reports → update realized PnL
-  pnl.>                     — PnL snapshots from adapter
-  positions.>               — position snapshots from adapter
-  risk.adapter.heartbeat    — liveness signal from ibkr-adapter
-  risk.adapter.disconnected — IBKR connection lost
-  risk.adapter.reconnected  — IBKR connection restored
+Abonnerer på:
+  fills.>                   eksekveringsrapporter, opdater realiseret PnL
+  pnl.>                     PnL snapshots fra adapter
+  positions.>               positionssnapshots fra adapter
+  risk.adapter.heartbeat    liveness signal fra ibkr adapter
+  risk.adapter.disconnected IBKR forbindelse tabt
+  risk.adapter.reconnected  IBKR forbindelse genoprettet
 
-All messages are decoded with pydantic and written into AccountState.
+Alle beskeder dekodes med pydantic og skrives ind i AccountState.
 """
 
 from __future__ import annotations
@@ -56,7 +56,7 @@ class NATSListener:
         log.info("nats_listener.subscribed_all")
 
     async def publish(self, subject: str, payload: bytes) -> None:
-        """Publish to NATS (used by kill switch to emit risk.halt)."""
+        """Publicér til NATS (bruges af kill switch til at udsende risk.halt)."""
         if self._js is None:
             return
         try:
@@ -69,9 +69,7 @@ class NATSListener:
         if self._nc:
             await self._nc.drain()
 
-    # ------------------------------------------------------------------ #
-    # Message handlers                                                     #
-    # ------------------------------------------------------------------ #
+    # Beskedhåndterere
 
     async def _on_fill(self, msg: nats.aio.client.Msg) -> None:
         try:
@@ -79,8 +77,8 @@ class NATSListener:
             account = data.get("account", self._cfg.ibkr_account)
             symbol = data.get("symbol", "")
             log.debug("nats_listener.fill", symbol=symbol, account=account)
-            # Fills themselves don't update position directly; PnL snapshots do.
-            # Log for audit trail purposes.
+            # Fills opdaterer ikke positionen direkte; PnL snapshots gør.
+            # Log for audit trail formål.
         except Exception as exc:
             log.warning("nats_listener.fill_decode_error", error=str(exc))
 

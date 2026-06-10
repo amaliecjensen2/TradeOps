@@ -70,3 +70,12 @@ class TestCheckEngine:
         engine.halt_reason = "test halt"
         with pytest.raises(RiskRejection, match="halted"):
             engine.check(make_order(idempotency_key="k6"))
+
+    def test_position_limit_breach(self, engine):
+        engine.strategy_positions["hello"] = {"AAPL": 10.0}
+        with pytest.raises(RiskRejection, match="exceeds limit"):
+            engine.check(make_order(quantity=1, idempotency_key="k7"))
+
+    def test_position_limit_allows_within_cap(self, engine):
+        engine.strategy_positions["hello"] = {"AAPL": 9.0}
+        engine.check(make_order(quantity=1, idempotency_key="k8"))

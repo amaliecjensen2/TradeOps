@@ -1,8 +1,8 @@
-"""NATS bridge - subscribes to order commands, publishes all events.
+"""NATS bro, abonnerer på ordrekommandoer og publicerer alle events.
 
-This module owns the NATS connection and routes:
-  - Inbound:  orders.> to IBKRGateway.place_order()
-  - Outbound: any subject to JetStream publish with core NATS fallback
+Dette modul ejer NATS forbindelsen og ruter:
+  Indkommende:  orders.> til IBKRGateway.place_order()
+  Udgående: et hvilket som helst subject til JetStream publish med core NATS fallback
 """
 
 from __future__ import annotations
@@ -14,16 +14,16 @@ import nats.js
 from nats.aio.client import Client as NATSClient
 from nats.js import JetStreamContext
 
-from ibkr_adapter import metrics, subjects
+from ibkr_adapter import subjects
 from ibkr_adapter.config import Settings
 from ibkr_adapter.logging_setup import get_logger
 from ibkr_adapter.models import OrderCommand
 
 log = get_logger(__name__)
 
-# Streams that must exist before the adapter can publish.
-# The chart's nats-streams.yaml (NACK CRDs) creates them in Kubernetes.
-# In dev you can run `nats stream add` manually.
+# Streams der skal eksistere før adapteren kan publicere.
+# Chartets nats streams.yaml (NACK CRDs) opretter dem i Kubernetes.
+# I dev kan du køre `nats stream add` manuelt.
 _JETSTREAM_SUBJECTS = {
     "ORDERS",
     "FILLS",
@@ -32,15 +32,15 @@ _JETSTREAM_SUBJECTS = {
 
 
 class NATSBridge:
-    """Manages the NATS connection and acts as the event bus for the adapter."""
+    """Håndterer NATS forbindelsen og fungerer som event bus for adapteren."""
 
     def __init__(self, settings: Settings) -> None:
         self._cfg = settings
         self._nc: NATSClient | None = None
         self._js: JetStreamContext | None = None
-        self._gateway = None  # set by Adapter.run() after construction
+        self._gateway = None  # sættes af Adapter.run() efter konstruktion
 
-    def set_gateway(self, gateway) -> None:  # avoids circular import
+    def set_gateway(self, gateway) -> None:  # undgår cirkulær import
         self._gateway = gateway
 
     async def connect(self) -> None:
@@ -48,7 +48,7 @@ class NATSBridge:
             self._cfg.nats_url,
             name="ibkr-adapter",
             reconnect_time_wait=2,
-            max_reconnect_attempts=-1,  # infinite
+            max_reconnect_attempts=-1,  # uendeligt
             error_cb=self._on_error,
             disconnected_cb=self._on_disconnected,
             reconnected_cb=self._on_reconnected,
@@ -57,16 +57,18 @@ class NATSBridge:
         log.info("nats_bridge.connected", url=self._cfg.nats_url)
 
     async def subscribe_orders(self) -> None:
-        """Subscribe to orders.> and forward to IBKR gateway."""
-        assert self._nc is not None, "call connect() first"
+        """Abonnér på orders.> og videresend til IBKR gateway."""
+        assert self._nc is not None, "kald connect() først"
+        # Adapterens indgående side: interne ordrekommandoer kommer ind via NATS.
         await self._nc.subscribe(subjects.ORDERS_INBOX, cb=self._handle_order_msg)
         log.info("nats_bridge.subscribed_orders", subject=subjects.ORDERS_INBOX)
 
     async def publish(self, subject: str, payload: bytes) -> None:
-        """Publish a raw payload. Falls back to core NATS if JS publish fails."""
+        """Publicér en rå payload. Falder tilbage til core NATS hvis JS publish fejler."""
         if self._js is None:
             return
         try:
+            # Adapterens udgående side: IBKR events publiceres tilbage på bussen.
             await self._js.publish(subject, payload)
         except (nats.js.errors.NoStreamResponseError, nats.errors.TimeoutError) as exc:
             log.warning(
@@ -81,23 +83,16 @@ class NATSBridge:
         if self._nc:
             await self._nc.drain()
 
-    # ------------------------------------------------------------------ #
-    # Internal callbacks
-    # ------------------------------------------------------------------ #
+    # Interne callbacks
 
     async def _handle_order_msg(self, msg: nats.aio.client.Msg) -> None:
-        """Decode an OrderCommand and forward to IBKR."""
+        """Afkod en OrderCommand og videresend til IBKR."""
         try:
             data = json.loads(msg.data)
             cmd = OrderCommand.model_validate(data)
         except Exception as exc:
             log.warning("nats_bridge.order_decode_error", error=str(exc))
-            metrics.ORDERS_REJECTED.labels(
-                strategy="unknown", reason="decode_error"
-            ).inc()
             return
-
-        metrics.ORDERS_RECEIVED.labels(strategy=cmd.strategy).inc()
 
         if self._gateway is None or not self._gateway.is_connected:
             log.warning(
@@ -105,18 +100,11 @@ class NATSBridge:
                 strategy=cmd.strategy,
                 symbol=cmd.symbol,
             )
-            metrics.ORDERS_REJECTED.labels(
-                strategy=cmd.strategy, reason="not_connected"
-            ).inc()
             return
 
-        import time
-
-        t0 = time.perf_counter()
         try:
+            # Broens kerneopgave: oversæt en intern ordrebesked til et gateway-kald mod IBKR.
             await self._gateway.place_order(cmd)
-            metrics.ORDERS_PLACED.labels(strategy=cmd.strategy).inc()
-            metrics.ORDER_LATENCY.observe(time.perf_counter() - t0)
         except Exception as exc:
             log.error(
                 "nats_bridge.place_order_failed",
@@ -124,9 +112,6 @@ class NATSBridge:
                 symbol=cmd.symbol,
                 error=str(exc),
             )
-            metrics.ORDERS_REJECTED.labels(
-                strategy=cmd.strategy, reason="tws_error"
-            ).inc()
 
     async def _on_error(self, exc: Exception) -> None:
         log.error("nats_bridge.error", error=str(exc))

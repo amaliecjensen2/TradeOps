@@ -1,4 +1,4 @@
-"""Entry point."""
+"""Indgangspunkt."""
 import asyncio
 import signal
 from strategy_hello.strategy import HelloStrategy

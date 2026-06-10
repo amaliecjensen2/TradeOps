@@ -1,6 +1,6 @@
 /**
- * Main dashboard page.
- * Refreshes all panels every 10 seconds via SWR.
+ * Hoved dashboard side.
+ * Opdaterer alle paneler hvert 10. sekund via SWR.
  */
 "use client";
 
@@ -29,10 +29,10 @@ export default function Dashboard() {
                 </span>
             </h1>
 
-            {/* System status banner */}
+            {/* Systemstatus banner */}
             <StatusBar status={status} />
 
-            {/* PnL summary cards */}
+            {/* PnL oversigtskort */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard label="Daily P&L" value={pnl?.daily_pnl} currency />
                 <StatCard label="Unrealized" value={pnl?.unrealized_pnl} currency />
@@ -40,13 +40,13 @@ export default function Dashboard() {
                 <StatCard label="Net Liquidation" value={pnl?.net_liquidation} currency />
             </div>
 
-            {/* PnL chart */}
+            {/* PnL graf */}
             <section className="bg-gray-900 rounded-xl p-4">
                 <h2 className="text-sm text-gray-400 mb-3">Daily P&L history</h2>
                 <PnLChart data={history ?? []} />
             </section>
 
-            {/* Positions + Fills side by side on large screens */}
+            {/* Positioner + Fills side om side på store skærme */}
             <div className="grid md:grid-cols-2 gap-6">
                 <section className="bg-gray-900 rounded-xl p-4">
                     <h2 className="text-sm text-gray-400 mb-3">Open positions</h2>

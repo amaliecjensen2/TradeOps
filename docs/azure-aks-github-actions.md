@@ -83,10 +83,10 @@ Repository variables:
 Workflow: `.github/workflows/deploy-aks.yml`
 
 Ved push til `main`:
-1. Bygger alle service-images
+1. Bygger alle service images
 2. Pusher til ACR
 3. Koerer Helm upgrade/install mod AKS
-4. Verificerer rollout 
+4. Verificerer rollout
 
 ## 6) Drift og fejlfinding
 
@@ -107,15 +107,15 @@ kubectl -n trading describe pod <pod-navn>
 Hvis GitHub Actions viser `The connection to the server localhost:8080 was refused`,
 betyder det normalt, at AKS context/kubeconfig ikke blev sat. Kig på trinnene lige
 før `Dump diagnostics on failure`, især Azure login, `AZURE_RESOURCE_GROUP`,
-`AKS_CLUSTER_NAME` og service principalens adgang til AKS-clusteret.
+`AKS_CLUSTER_NAME` og service principalens adgang til AKS clusteret.
 
 Hvis Azure login fejler med `Invalid client secret provided`, er problemet normalt
-selve GitHub-secreten og ikke Helm-chartet. Den hurtigste reparation er at oprette
+selve GitHub secreten og ikke Helm chartet. Den hurtigste reparation er at oprette
 en ny service principal secret eller køre `az ad sp create-for-rbac --sdk-auth`
-igen og opdatere `AZURE_CREDENTIALS` med det fulde JSON-output.
+igen og opdatere `AZURE_CREDENTIALS` med det fulde JSON output.
 
 ## 7) Vigtige noter
 
 - Chartet forventer to strategier i raekkefoelge: hello og nvidia.
-- Hvis du flytter eller tilfoejer strategier, skal deploy-kommandoens `strategies[0]` og `strategies[1]` opdateres i workflowet.
+- Hvis du flytter eller tilfoejer strategier, skal deploy kommandoens `strategies[0]` og `strategies[1]` opdateres i workflowet.
 - `values.azure.yaml` slukker imagePullSecrets, da AKS normalt kan hente fra tilkoblet ACR direkte.

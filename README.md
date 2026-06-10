@@ -6,22 +6,22 @@ Dette er et algoritmisk handelssystem jeg har bygget til at handle aktier automa
 Systemet forbinder til Interactive Brokers Gateway, henter markedsdata i realtid, og sender ordrer igennem automatisk baseret på de strategier jeg har defineret. Alt kører i containere og deployes med Helm.
 
 Der er lige nu to strategier:
-- **strategy-hello**
+- **strategy hello**
   En simpel moving average crossover strategi der handler AAPL
-- **strategy-nvidia**
-  Køber én NVDA-aktie og holder den
+- **strategy nvidia**
+  Køber én NVDA aktie og holder den
 
 ## Hvordan er det bygget?
 
 Systemet er delt op i en række microservices der taler sammen via NATS (en message bus):
 
-- **ibkr-adapter** — forbinder til IB Gateway og videresender markedsdata og ordrer
-- **risk-gateway** — tjekker alle ordrer inden de sendes, så man ikke handler for meget eller taber for mange penge
-- **risk-monitor** — holder øje med den samlede konto og kan slukke for strategierne hvis noget går galt
-- **api** — REST API til at se positioner, ordrer og PnL
-- **dashboard** — et Next.js dashboard man kan åbne i browseren
+- **ibkr adapter** forbinder til IB Gateway og videresender markedsdata og ordrer
+- **risk gateway** tjekker alle ordrer inden de sendes, så man ikke handler for meget eller taber for mange penge
+- **risk monitor** holder øje med den samlede konto og kan slukke for strategierne hvis noget går galt
+- **api** REST API til at se positioner, ordrer og PnL
+- **dashboard** et Next.js dashboard man kan åbne i browseren
 
-Data gemmes i TimescaleDB (en PostgreSQL-variant der er god til tidsseriedata).
+Data gemmes i TimescaleDB (en PostgreSQL variant der er god til tidsseriedata).
 
 ## Forudsætninger
 
@@ -33,10 +33,7 @@ Data gemmes i TimescaleDB (en PostgreSQL-variant der er god til tidsseriedata).
 ## Deploy
 
 ```powershell
-# Byg og push images
-.\build-and-push.ps1 -GithubUser <dit-github-brugernavn>
-
-# Deploy til paper trading
+# Deploy til paper trading (forudsætter at images allerede er pushet til et registry)
 helm install trader ./helm/ibkrtrader `
   -f helm/ibkrtrader/values.paper.yaml `
   -n trading
@@ -44,14 +41,13 @@ helm install trader ./helm/ibkrtrader `
 
 ## Azure AKS + GitHub Actions
 
-Repoet er nu klargjort til Azure-deploy med CI/CD:
+Repoet er nu klargjort til Azure deploy med CI/CD:
 
 - GitHub Actions workflow: `.github/workflows/deploy-aks.yml`
 - Azure override values: `helm/ibkrtrader/values.azure.yaml`
-- Lokal deploy helper: `deploy-aks.ps1`
-- Detaljeret step-by-step guide: `docs/azure-aks-github-actions.md`
+- Detaljeret step by step guide: `docs/azure-aks-github-actions.md`
 
-Workflowet bygger alle service-images, pusher dem til ACR og deployer chartet til AKS via Helm ved push til `main`.
+Workflowet bygger alle service images, pusher dem til ACR og deployer chartet til AKS via Helm ved push til `main`.
 
 ## For at tilføje en ny strategi
 

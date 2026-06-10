@@ -1,4 +1,4 @@
-"""Strategy configuration — loaded from env vars + ConfigMap mount."""
+"""Strategi konfiguration, indlæst fra env vars + ConfigMap mount."""
 
 from __future__ import annotations
 
@@ -9,26 +9,25 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="", case_sensitive=False)
 
-    # ------------------------------------------------------------------ Identity
+    # Identitet
     strategy_name: str = Field("nvidia", alias="STRATEGY_NAME")
     client_id: int = Field(12, alias="IBKR_CLIENT_ID")
     ibkr_account: str = Field("", alias="IBKR_ACCOUNT")
 
-    # ------------------------------------------------------------------ Connectivity
+    # Forbindelse
     nats_url: str = Field("nats://nats:4222", alias="NATS_URL")
     risk_gateway_url: str = Field(
         "http://ibkrtrader-risk-gateway:8080", alias="RISK_GATEWAY_URL")
 
-    # ------------------------------------------------------------------ Strategy params
+    # Strategi parametre
     universe: list[str] = Field(["NVDA"], alias="UNIVERSE")
-    trade_qty: float = Field(1.0, alias="TRADE_QTY")  # shares to buy
+    trade_qty: float = Field(1.0, alias="TRADE_QTY")  # shares at købe
 
-    # ------------------------------------------------------------------ Risk
+    # Risiko
     max_daily_loss: float = Field(-500.0, alias="MAX_DAILY_LOSS")
 
-    # ------------------------------------------------------------------ Health
+    # Health
     health_port: int = Field(8080, alias="HEALTH_PORT")
-    metrics_port: int = Field(9090, alias="METRICS_PORT")
     log_level: str = Field("INFO", alias="LOG_LEVEL")
     log_format: str = Field("json", alias="LOG_FORMAT")
 

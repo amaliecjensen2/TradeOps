@@ -1,1 +1,1 @@
-"""risk_gateway package."""
+"""risk_gateway pakke."""

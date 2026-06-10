@@ -1,7 +1,7 @@
-# Override file for paper-trading deployments.
-# helm install trader-paper ./helm/ibkrtrader \
-#   -f values.paper.yaml \
-#   -f values.paper.local.yaml    ← create this locally with real credentials (gitignored)
+# Override fil for paper trading deployments.
+# helm install trader paper ./helm/ibkrtrader \
+#   f values.paper.yaml \
+#   f values.paper.local.yaml    opret denne lokalt med rigtige credentials (gitignored)
 ibkr:
   mode: paper
   gateways:
@@ -11,20 +11,11 @@ ibkr:
       enabled: false
 
 riskMonitor:
-  killSwitchEnabled: false   # safer default in paper — enable once tested
+  killSwitchEnabled: true
 
-  # Telegram: off by default in paper.
-  # To enable, either:
-  #   Option A (production):
-  #     kubectl create secret generic telegram-credentials \
-  #       --from-literal=TELEGRAM_TOKEN=<token> \
-  #       --from-literal=TELEGRAM_CHAT_ID=<chat-id>
-  #     then set existingSecret: telegram-credentials
-  #
-  #   Option B (quick dev test):
-  #     Set token + chatId directly here (never commit real values).
+  # Telegram: slået fra som standard i paper.
+  # CI tænder automatisk for det hvis TELEGRAM_TOKEN/TELEGRAM_CHAT_ID GitHub
+  # secrets er sat (se .github/workflows/deploy-aks.yml). Til lokal dev kan
+  # du sætte enabled=true + token + chatId direkte her (commit ikke værdierne).
   telegram:
     enabled: false
-    existingSecret: ""
-    token: ""
-    chatId: ""

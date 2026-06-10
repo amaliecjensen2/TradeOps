@@ -1,1 +1,1 @@
-"""strategy_nvidia package."""
+"""strategy_nvidia pakke."""

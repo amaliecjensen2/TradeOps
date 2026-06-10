@@ -1,4 +1,4 @@
-"""Unit tests for IBKRGateway subject helpers and model validation."""
+"""Unit tests for IBKRGateway subject hjælpere og model validering."""
 
 import pytest
 
@@ -20,6 +20,9 @@ class TestSubjects:
         assert subjects.marketdata(
             "realtime", "SPY") == "marketdata.realtime.SPY"
 
+    def test_snapshot_complete_subject(self):
+        assert subjects.SNAPSHOT_COMPLETE == "risk.adapter.snapshot_complete"
+
 
 class TestOrderCommand:
     def test_valid_order(self):
@@ -27,7 +30,7 @@ class TestOrderCommand:
             strategy="hello",
             client_id=11,
             idempotency_key="abc-123",
-            symbol="aapl",  # should be uppercased
+            symbol="aapl",  # skal gøres til store bogstaver
             side=Side.BUY,
             quantity=1.0,
         )
@@ -54,7 +57,7 @@ class TestOrderCommand:
                 idempotency_key="x",
                 symbol="AAPL",
                 side=Side.BUY,
-                quantity=0,  # must be > 0
+                quantity=0,  # skal være > 0
             )
 
     def test_invalid_client_id(self):

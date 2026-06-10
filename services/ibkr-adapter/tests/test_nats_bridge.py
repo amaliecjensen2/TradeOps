@@ -1,4 +1,4 @@
-"""Tests for NATSBridge order message handling."""
+"""Tests for NATSBridge ordrebeskedhåndtering."""
 
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -52,7 +52,7 @@ class TestNATSBridgeOrderHandling:
         msg = MagicMock()
         msg.data = b"not-json"
 
-        # Should not raise, just log and count
+        # Skal ikke kaste, bare logge og tælle
         await bridge._handle_order_msg(msg)
         mock_gateway.place_order.assert_not_called()
 

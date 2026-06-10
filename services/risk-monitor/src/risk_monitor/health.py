@@ -1,4 +1,4 @@
-"""Health-check HTTP server for Kubernetes probes."""
+"""Health check HTTP server til Kubernetes probes."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ class HealthServer:
         app = web.Application()
         app.router.add_get("/healthz", self._healthz)
         app.router.add_get("/readyz", self._readyz)
-        runner = web.AppRunner(app)
+        runner = web.AppRunner(app, access_log=None)
         await runner.setup()
         site = web.TCPSite(runner, "0.0.0.0", self._port)
         await site.start()
@@ -33,7 +33,7 @@ class HealthServer:
         return web.Response(text="ok")
 
     async def _readyz(self, _: web.Request) -> web.Response:
-        # Ready when state has received at least one heartbeat OR we are follower
+        # Klar når state har modtaget mindst et heartbeat ELLER vi er follower
         if self._state is None:
             return web.Response(status=503, text="not_initialised")
         return web.Response(text="ready")

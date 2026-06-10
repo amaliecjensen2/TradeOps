@@ -1,10 +1,10 @@
-"""Buy-and-hold NVDA strategy.
+"""Buy and hold NVDA strategi.
 
-Signal logic:
-  - On the first bar received, buy trade_qty shares of NVDA (market order).
-  - Hold forever — never sells.
+Signal logik:
+  Ved den første bar der modtages, køb trade_qty shares af NVDA (markedsordre).
+  Hold for evigt, sælger aldrig.
 
-This is a simple example that always holds one NVDA position.
+Dette er et simpelt eksempel der altid holder én NVDA position.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ log = get_logger(__name__)
 class NvidiaStrategy(BaseStrategy):
     def __init__(self, settings) -> None:
         super().__init__(settings)
-        self._bought = False  # only buy once
+        self._bought = False  # kun køb én gang
 
     async def on_bar(self, bar: dict) -> None:
         if self._bought:

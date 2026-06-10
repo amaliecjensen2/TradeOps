@@ -1,13 +1,15 @@
-"""IBKR Gateway connection manager.
+"""IBKR Gateway forbindelsesmanager.
 
-Wraps ib_insync with:
-  - Async reconnect loop with exponential back-off
-  - Event callbacks that publish structured messages to a callback queue
-  - Heartbeat publishing on a configurable interval
+Indpakker ib_insync med:
+  Asynkront reconnect loop med eksponentiel back off
+  Event callbacks der publicerer strukturerede beskeder til en callback kø
+  Heartbeat publicering på et konfigurerbart interval
 
-The gateway emits events by calling the `on_event` callable passed at
-construction time.  IBKRGateway is intentionally free of NATS imports so
-it can be unit-tested with a mock callback.
+Gatewayen udsender events ved at kalde det `on_event` callable der er givet ved
+konstruktion. IBKRGateway er bevidst fri for NATS imports, så den kan unit testes
+med en mock callback.
+
+dette er broen mellem interactive brokers og resten af systemet
 """
 
 from __future__ import annotations
@@ -18,7 +20,7 @@ from typing import Awaitable, Callable
 
 import ib_insync as ibi
 
-from ibkr_adapter import metrics, subjects
+from ibkr_adapter import subjects
 from ibkr_adapter.config import Settings
 from ibkr_adapter.logging_setup import get_logger
 from ibkr_adapter.models import (
@@ -30,12 +32,13 @@ from ibkr_adapter.models import (
     PositionSnapshot,
     SecType,
     Side,
+    SnapshotComplete,
     Tick,
 )
 
 log = get_logger(__name__)
 
-# Type alias for the callback the adapter uses to route events back to NATS.
+# Type alias for det callback adapteren bruger til at rute events tilbage til NATS.
 EventCallback = Callable[[str, bytes], Awaitable[None]]
 
 _IB_SIDE_MAP = {"BOT": Side.BUY, "SLD": Side.SELL}
@@ -54,9 +57,14 @@ def _clean(value) -> float | None:
 
 
 class IBKRGateway:
-    """Manages a single TWS connection and translates TWS events → events."""
+    """Håndterer en enkelt TWS forbindelse og oversætter TWS events til events."""
 
     HEARTBEAT_INTERVAL_S = 15
+    # Hvor længe vi venter på det første streaming pnl event efter
+    # reqAccountUpdatesAsync er færdig, før vi syntetiserer et nul-snapshot
+    # og frigiver risk-gateway. TWS leverer normalt pnl inden for et sekund;
+    # 5s er rigeligt og holder også cold-start latency lav.
+    SNAPSHOT_PNL_TIMEOUT_S = 5.0
 
     def __init__(self, settings: Settings, on_event: EventCallback) -> None:
         self._cfg = settings
@@ -65,20 +73,29 @@ class IBKRGateway:
         self._connected = False
         self._heartbeat_task: asyncio.Task | None = None
         self._reconnect_task: asyncio.Task | None = None
+        # Seneste NetLiquidation set fra accountValueEvent. Cachet så vi kan
+        # rige PnLSnapshot med kontoens nettoværdi (risk-monitor bruger den
+        # til HWM/drawdown beregning).
+        self._latest_net_liquidation: float | None = None
+        # Sættes ved første pnlEvent efter (re)connect. Bruges af snapshot
+        # flowet til at vide hvornår initial state er komplet.
+        self._pnl_received: asyncio.Event = asyncio.Event()
 
-        # Wire TWS callbacks
+        # Tilkobl TWS callbacks
         self._ib.disconnectedEvent += self._handle_disconnected
         self._ib.execDetailsEvent += self._handle_exec_details
         self._ib.pnlEvent += self._handle_pnl
-        self._ib.positionEvent += self._handle_position
+        # updatePortfolioEvent giver marketPrice/marketValue pr position.
+        # positionEvent (uden market data) bruges ikke længere; reqAccountUpdates
+        # leverer PortfolioItem snapshots der dækker samme felter plus mere.
+        self._ib.updatePortfolioEvent += self._handle_portfolio_item
+        self._ib.accountValueEvent += self._handle_account_value
         self._ib.pendingTickersEvent += self._handle_pending_tickers
 
-    # ------------------------------------------------------------------ #
-    # Public API                                                           #
-    # ------------------------------------------------------------------ #
+    # Offentligt API
 
     async def start(self) -> None:
-        """Connect and start the heartbeat loop. Runs forever."""
+        """Forbind og start heartbeat loopet. Kører for evigt."""
         await self._connect_with_retry()
 
     async def stop(self) -> None:
@@ -91,19 +108,20 @@ class IBKRGateway:
         log.info("ibkr_gateway.stopped")
 
     async def subscribe_marketdata(self, symbols: list[str]) -> None:
-        # Falls back to delayed data if the account has no live subscription.
+        # Falder tilbage til forsinkede data hvis kontoen ikke har en live abonnement.
         self._ib.reqMarketDataType(3)
         for symbol in symbols:
             contract = ibi.Stock(symbol, "SMART", "USD")
             qualified = await self._ib.qualifyContractsAsync(contract)
             if not qualified:
-                log.warning("ibkr_gateway.marketdata_qualify_failed", symbol=symbol)
+                log.warning(
+                    "ibkr_gateway.marketdata_qualify_failed", symbol=symbol)
                 continue
             self._ib.reqMktData(qualified[0], "", False, False)
             log.info("ibkr_gateway.marketdata_subscribed", symbol=symbol)
 
     async def place_order(self, cmd: OrderCommand) -> int:
-        """Submit an order to TWS. Returns the TWS orderId."""
+        """Indsend en ordre til TWS. Returnerer TWS orderId."""
         contract = self._build_contract(cmd)
         order = self._build_order(cmd)
         trade = self._ib.placeOrder(contract, order)
@@ -121,13 +139,11 @@ class IBKRGateway:
     def is_connected(self) -> bool:
         return self._connected
 
-    # ------------------------------------------------------------------ #
-    # Connection management                                                #
-    # ------------------------------------------------------------------ #
+    # Forbindelseshåndtering
 
     async def _connect_with_retry(self) -> None:
         attempt = 0
-        max_attempts = self._cfg.max_reconnect_attempts  # 0 = infinite
+        max_attempts = self._cfg.max_reconnect_attempts  # 0 = uendeligt
 
         while True:
             attempt += 1
@@ -145,7 +161,6 @@ class IBKRGateway:
                     timeout=20,
                 )
                 self._connected = True
-                metrics.CONNECTED.set(1)
                 log.info("ibkr_gateway.connected")
 
                 await self._on_event(
@@ -158,9 +173,27 @@ class IBKRGateway:
                     ).model_dump_json().encode(),
                 )
 
-                # Subscribe to PnL updates
+                # Abonner på PnL opdateringer
+                self._pnl_received.clear()
                 if self._cfg.ibkr_account:
                     self._ib.reqPnL(self._cfg.ibkr_account)
+                    # ib_insync auto-subscriber til account updates ved connect,
+                    # men vi filtrerer eksplicit til vores konto her så
+                    # updatePortfolio + updateAccountValue events kun kommer
+                    # for den ene konto vi følger. Synkrone reqAccountUpdates
+                    # forsøger run_until_complete på den allerede kørende
+                    # event loop, brug Async-varianten fra async kontekst.
+                    await self._ib.reqAccountUpdatesAsync(self._cfg.ibkr_account)
+
+                # Markér at initial pnl + positions snapshot er publiceret
+                # så risk-gateway kan åbne for ordrer. Kører bevidst FØR
+                # marketdata subscribe så cold-start latency ikke afhænger
+                # af antal symboler i universet.
+                await self._emit_snapshot_complete()
+
+                # Abonnér på realtime markedsdata for det konfigurerede univers
+                if self._cfg.universe_list:
+                    await self.subscribe_marketdata(self._cfg.universe_list)
 
                 # Subscribe to realtime market data for the configured universe
                 if self._cfg.universe_list:
@@ -169,14 +202,13 @@ class IBKRGateway:
                 self._heartbeat_task = asyncio.create_task(
                     self._heartbeat_loop())
 
-                # eventkit.Event is not an asyncio.Event; keep the task alive
-                # until ib_insync reports that the socket has disconnected.
+                # eventkit.Event er ikke en asyncio.Event; hold tasken i live
+                # indtil ib_insync rapporterer at socket er afbrudt.
                 while self._ib.isConnected():
                     await asyncio.sleep(1)
 
             except (ConnectionRefusedError, asyncio.TimeoutError, OSError) as exc:
                 self._connected = False
-                metrics.CONNECTED.set(0)
                 log.warning(
                     "ibkr_gateway.connect_failed",
                     error=str(exc),
@@ -194,11 +226,10 @@ class IBKRGateway:
 
     async def _handle_disconnected(self) -> None:
         self._connected = False
-        metrics.CONNECTED.set(0)
         if self._heartbeat_task:
             self._heartbeat_task.cancel()
         log.warning("ibkr_gateway.disconnected")
-        await self._emit_disconnected("TWS reported disconnection")
+        await self._emit_disconnected("TWS rapporterede afbrydelse")
 
     async def _emit_disconnected(self, reason: str) -> None:
         await self._on_event(
@@ -210,16 +241,14 @@ class IBKRGateway:
             ).model_dump_json().encode(),
         )
 
-    # ------------------------------------------------------------------ #
-    # TWS event handlers → publish to NATS via callback                   #
-    # ------------------------------------------------------------------ #
+    # TWS event handlere, publicerer til NATS via callback
 
     async def _handle_exec_details(
         self, trade: ibi.Trade, fill: ibi.Fill
     ) -> None:
         account = fill.execution.acctNumber
         symbol = fill.contract.symbol
-        side_raw = fill.execution.side  # "BOT" or "SLD"
+        side_raw = fill.execution.side  # "BOT" eller "SLD"
 
         msg = Fill(
             account=account,
@@ -235,7 +264,6 @@ class IBKRGateway:
             order_ref=fill.execution.orderRef or "",
         )
         await self._on_event(subjects.fills(account, symbol), msg.model_dump_json().encode())
-        metrics.FILLS_PUBLISHED.labels(account=account).inc()
         log.info("ibkr_gateway.fill", symbol=symbol,
                  side=msg.side, qty=msg.quantity, price=msg.price)
 
@@ -246,9 +274,59 @@ class IBKRGateway:
             daily_pnl=pnl.dailyPnL or 0.0,
             unrealized_pnl=pnl.unrealizedPnL or 0.0,
             realized_pnl=pnl.realizedPnL or 0.0,
+            net_liquidation=self._latest_net_liquidation,
         )
         await self._on_event(subjects.pnl(account), msg.model_dump_json().encode())
-        metrics.PNL_DAILY.labels(account=account).set(pnl.dailyPnL or 0.0)
+        self._pnl_received.set()
+
+    async def _emit_snapshot_complete(self) -> None:
+        """Vent kort på første streaming pnl, syntetisér ellers et nul-snapshot,
+        og publicér så SNAPSHOT_COMPLETE.
+
+        Risk-gateway gater /orders indtil denne besked ses, så pre-trade checks
+        (daily loss, position limit) aldrig kører mod tom state efter cold start
+        eller adapter reconnect.
+        """
+        account = self._cfg.ibkr_account or ""
+        if account:
+            try:
+                await asyncio.wait_for(
+                    self._pnl_received.wait(),
+                    timeout=self.SNAPSHOT_PNL_TIMEOUT_S,
+                )
+            except asyncio.TimeoutError:
+                # TWS leverede ikke pnl i tide. Publicér et syntetisk nul-snapshot
+                # så downstream konsumere kan initialisere; den næste rigtige
+                # pnlEvent overskriver det.
+                log.warning(
+                    "ibkr_gateway.snapshot_pnl_timeout",
+                    account=account,
+                    timeout_s=self.SNAPSHOT_PNL_TIMEOUT_S,
+                )
+                synthetic = PnLSnapshot(
+                    account=account,
+                    daily_pnl=0.0,
+                    unrealized_pnl=0.0,
+                    realized_pnl=0.0,
+                    net_liquidation=self._latest_net_liquidation,
+                )
+                await self._on_event(
+                    subjects.pnl(account),
+                    synthetic.model_dump_json().encode(),
+                )
+
+        positions_count = (
+            len(self._ib.portfolio(account)) if account else 0
+        )
+        msg = SnapshotComplete(account=account, positions_count=positions_count)
+        await self._on_event(
+            subjects.SNAPSHOT_COMPLETE, msg.model_dump_json().encode()
+        )
+        log.info(
+            "ibkr_gateway.snapshot_complete",
+            account=account,
+            positions=positions_count,
+        )
 
     async def _handle_pending_tickers(self, tickers: set[ibi.Ticker]) -> None:
         for t in tickers:
@@ -266,17 +344,39 @@ class IBKRGateway:
                 msg.model_dump_json().encode(),
             )
 
-    async def _handle_position(self, position: ibi.Position) -> None:
-        account = position.account
-        symbol = position.contract.symbol
+    async def _handle_portfolio_item(self, item: ibi.PortfolioItem) -> None:
+        # PortfolioItem leverer både position og market data i samme event,
+        # så risk-monitor kan beregne gross exposure korrekt. Kun konto vi har
+        # konfigureret accepteres, ib_insync videresender også events for
+        # andre konti hvis forbindelsen abonnerer på flere.
+        account = item.account
+        if self._cfg.ibkr_account and account != self._cfg.ibkr_account:
+            return
+        symbol = item.contract.symbol
         msg = PositionSnapshot(
             account=account,
             symbol=symbol,
-            sec_type=position.contract.secType,
-            avg_cost=position.avgCost,
-            position=position.position,
+            sec_type=item.contract.secType,
+            avg_cost=item.averageCost,
+            position=item.position,
+            market_price=_clean(item.marketPrice),
+            market_value=_clean(item.marketValue),
         )
         await self._on_event(subjects.positions(account, symbol), msg.model_dump_json().encode())
+
+    async def _handle_account_value(self, value: ibi.AccountValue) -> None:
+        # NetLiquidation rapporteres pr currency; tag den i kontoens base
+        # currency (BASE) eller den eneste tilgængelige. Værdien cachet og
+        # tilføjes næste PnLSnapshot, så risk-monitor får HWM input uden at
+        # ændre on the wire subject layout.
+        if value.tag != "NetLiquidation":
+            return
+        if self._cfg.ibkr_account and value.account != self._cfg.ibkr_account:
+            return
+        nl = _clean(value.value)
+        if nl is None:
+            return
+        self._latest_net_liquidation = nl
 
     async def _heartbeat_loop(self) -> None:
         while True:
@@ -291,9 +391,7 @@ class IBKRGateway:
             )
             await self._on_event(subjects.HEARTBEAT, msg.model_dump_json().encode())
 
-    # ------------------------------------------------------------------ #
-    # Helpers                                                              #
-    # ------------------------------------------------------------------ #
+    # Hjælpere
 
     @staticmethod
     def _build_contract(cmd: OrderCommand) -> ibi.Contract:

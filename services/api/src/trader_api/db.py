@@ -1,7 +1,8 @@
-"""Database access layer — asyncpg against TimescaleDB.
+"""Database adgangslag, asyncpg mod TimescaleDB.
 
-All queries use parameterised statements ($1, $2, ...) — never string
-interpolation — to prevent SQL injection.
+Alle queries bruger parameteriserede statements ($1, $2, ...) aldrig strenginterpolation for at forhindre SQL injection.
+
+denne klasse samler logik for at hforbinde til DB
 """
 
 from __future__ import annotations
@@ -27,9 +28,7 @@ class Database:
         if self._pool:
             await self._pool.close()
 
-    # ------------------------------------------------------------------ #
-    # Positions                                                            #
-    # ------------------------------------------------------------------ #
+    # Positioner
 
     async def get_positions(self, account: str) -> list[dict]:
         assert self._pool
@@ -46,9 +45,7 @@ class Database:
         )
         return [dict(r) for r in rows]
 
-    # ------------------------------------------------------------------ #
-    # PnL                                                                  #
-    # ------------------------------------------------------------------ #
+    # PnL
 
     async def get_pnl_history(self, account: str, limit: int = 200) -> list[dict]:
         assert self._pool
@@ -79,9 +76,7 @@ class Database:
         )
         return dict(row) if row else None
 
-    # ------------------------------------------------------------------ #
-    # Orders / fills                                                       #
-    # ------------------------------------------------------------------ #
+    # Ordrer / fills
 
     async def get_fills(self, account: str, limit: int = 100) -> list[dict]:
         assert self._pool

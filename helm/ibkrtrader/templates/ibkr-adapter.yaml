@@ -10,21 +10,21 @@ metadata:
     {{- include "ibkrtrader.labels" . | nindent 4 }}
     app.kubernetes.io/component: ibkr-adapter
 spec:
-  # Exactly one replica: the adapter owns a single IBKR clientId and must
-  # not have two instances placing orders simultaneously.
+  # Præcis én replica: adapteren ejer en enkelt IBKR clientId og må
+  # ikke have to instanser der placerer ordrer samtidigt.
   replicas: 1
   selector:
     matchLabels:
       {{- include "ibkrtrader.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: ibkr-adapter
   strategy:
-    # Recreate avoids a brief overlap where two pods share a clientId,
-    # which TWS would reject with error 326.
+    # Recreate undgår et kort overlap hvor to pods deler en clientId,
+    # hvilket TWS ville afvise med fejl 326.
     type: Recreate
   template:
     metadata:
       annotations:
-        # Restart the adapter when shared config changes
+        # Genstart adapteren når delt config ændres
         checksum/values: {{ include "ibkrtrader.commonEnv" . | sha256sum }}
       labels:
         {{- include "ibkrtrader.selectorLabels" . | nindent 8 }}
@@ -51,16 +51,11 @@ spec:
             - name: health
               containerPort: 8080
               protocol: TCP
-            - name: metrics
-              containerPort: 9090
-              protocol: TCP
           env:
             - name: IBKR_CLIENT_ID
               value: {{ .Values.ibkrAdapter.clientId | quote }}
             - name: HEALTH_PORT
               value: "8080"
-            - name: METRICS_PORT
-              value: "9090"
             - name: LOG_LEVEL
               value: {{ .Values.ibkrAdapter.logLevel | default "INFO" | quote }}
             - name: LOG_FORMAT
@@ -72,15 +67,15 @@ spec:
             {{- include "ibkrtrader.commonEnv" . | nindent 12 }}
           resources:
             {{- toYaml .Values.ibkrAdapter.resources | nindent 12 }}
-          # Give the gateway a generous window to accept the connection
-          # before the pod is declared not-ready.
+          # Giv gatewayen et generøst vindue til at acceptere forbindelsen
+          # før podden erklæres ikke klar.
           startupProbe:
             httpGet:
               path: /healthz
               port: health
             initialDelaySeconds: 10
             periodSeconds: 5
-            failureThreshold: 24       # 2 min total
+            failureThreshold: 24       # 2 min i alt
           readinessProbe:
             httpGet:
               path: /readyz
@@ -111,9 +106,5 @@ spec:
     - name: health
       port: 8080
       targetPort: health
-      protocol: TCP
-    - name: metrics
-      port: 9090
-      targetPort: metrics
       protocol: TCP
 {{- end }}

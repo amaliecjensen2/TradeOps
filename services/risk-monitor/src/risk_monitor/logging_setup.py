@@ -1,4 +1,4 @@
-"""Structured logging — identical pattern to ibkr-adapter."""
+"""Struktureret logging, identisk mønster som ibkr adapter."""
 
 import logging
 import sys

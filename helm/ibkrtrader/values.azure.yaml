@@ -1,15 +1,15 @@
 # Azure AKS override values.
-# Use with: -f helm/ibkrtrader/values.azure.yaml
+# Brug med: f helm/ibkrtrader/values.azure.yaml
 
 global:
-  # AKS can pull from ACR when the cluster is attached to the registry.
+  # AKS kan hente fra ACR når clusteret er attached til registry.
   imagePullSecrets: []
 
-# On AKS, install the CloudNativePG operator separately before this chart.
+# På AKS installeres CloudNativePG operatoren separat før dette chart.
 cloudnative-pg:
   enabled: false
 
-# Enable ingress only when you have an ingress controller + DNS ready.
+# Aktivér ingress kun når du har en ingress controller + DNS klar.
 dashboard:
   ingress:
     enabled: true

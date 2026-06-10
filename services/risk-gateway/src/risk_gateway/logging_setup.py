@@ -1,4 +1,4 @@
-"""Structured logging — same pattern as other services."""
+"""Struktureret logging, samme mønster som andre services"""
 
 import logging
 import sys

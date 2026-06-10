@@ -1,13 +1,13 @@
-"""Entry point for risk-monitor.
+"""Indgangspunkt for risk monitor.
 
-Start order:
-  1. Configure logging + metrics
-  2. Connect to NATS
+Startrækkefølge:
+  1. Konfigurer logging
+  2. Forbind til NATS
   3. Start health server
   4. Start leader election
-  5. Run reconcile loop (only leader acts on breaches)
+  5. Kør reconcile loopet (kun lederen agerer på overtrædelser)
 
-The reconcile loop runs forever. On SIGTERM it drains NATS and exits.
+Reconcile loopet kører for evigt. Ved SIGTERM drainer den NATS og afslutter.
 """
 
 from __future__ import annotations
@@ -15,7 +15,6 @@ from __future__ import annotations
 import asyncio
 import signal
 
-from risk_monitor import metrics as m
 from risk_monitor.alerts import AlertSender
 from risk_monitor.circuit_breaker import CircuitBreaker
 from risk_monitor.config import get_settings
@@ -23,7 +22,6 @@ from risk_monitor.health import HealthServer
 from risk_monitor.kill_switch import KillSwitch
 from risk_monitor.leader import LeaderElector
 from risk_monitor.logging_setup import configure_logging, get_logger
-from risk_monitor.metrics import start_metrics_server
 from risk_monitor.nats_listener import NATSListener
 from risk_monitor.state import AccountState
 
@@ -41,20 +39,17 @@ async def _main() -> None:
         kill_switch=settings.kill_switch_enabled,
     )
 
-    # Metrics
-    start_metrics_server(settings.metrics_port)
-
-    # Shared state
+    # Delt state
     state = AccountState(account=settings.ibkr_account)
 
-    # Components
+    # Komponenter
     nats_listener = NATSListener(settings, state)
     alerts = AlertSender(settings)
     circuit_breaker = CircuitBreaker(settings)
     kill_switch = KillSwitch(settings)
     health = HealthServer(settings.health_port)
 
-    # Connect to NATS
+    # Forbind til NATS
     await nats_listener.connect()
     await nats_listener.subscribe_all()
 
@@ -63,7 +58,7 @@ async def _main() -> None:
         state, lambda: elector.is_leader if 'elector' in dir() else False)
     await health.start()
 
-    # Graceful shutdown flag
+    # Graceful nedlukningsflag
     _shutdown = asyncio.Event()
 
     def _handle_signal():
@@ -84,45 +79,28 @@ async def _main() -> None:
         while not _shutdown.is_set():
             await asyncio.sleep(settings.reconcile_interval_s)
 
-            # Update Prometheus gauges every cycle (both leader and follower)
-            m.IS_LEADER.set(1 if elector.is_leader else 0)
-            if state.account:
-                m.DAILY_PNL.labels(account=state.account).set(state.daily_pnl)
-                m.DRAWDOWN_PCT.labels(account=state.account).set(
-                    state.drawdown_pct)
-                m.GROSS_EXPOSURE.labels(account=state.account).set(
-                    state.gross_exposure)
-            m.ADAPTER_CONNECTED.set(1 if state.adapter_connected else 0)
-            m.HALTED.set(1 if state.halted else 0)
-
-            # Only the leader acts
+            # Kun lederen agerer
             if not elector.is_leader:
                 continue
-
-            m.EVALUATIONS_TOTAL.inc()
 
             result = circuit_breaker.evaluate(state)
 
             if result.alert_only:
-                # Heartbeat timeout — alert but don't halt
+                # Heartbeat timeout, alarm men halt ikke
                 log.warning("risk_monitor.alert_only", reason=result.reason)
                 secs = state.seconds_since_heartbeat or 0
                 await alerts.heartbeat_timeout(secs)
-                m.ALERTS_SENT_TOTAL.labels(
-                    alert_type="heartbeat_timeout").inc()
 
             elif result.should_halt:
-                # Circuit breaker tripped
+                # Circuit breaker udløst
                 log.critical("risk_monitor.halting", reason=result.reason)
                 state.halted = True
                 state.halt_reason = result.reason
 
-                # 1. Send Telegram alert
+                # 1. Send Telegram alarm
                 await alerts.halt(result.reason)
-                m.ALERTS_SENT_TOTAL.labels(alert_type="halt").inc()
-                m.BREACHES_TOTAL.labels(reason_type="halt").inc()
 
-                # 2. Scale all strategy pods to 0
+                # 2. Scaler alle strategi pods til 0
                 affected = await kill_switch.trip(result.reason, nats_bridge=nats_listener)
                 log.critical(
                     "risk_monitor.kill_switch_executed",

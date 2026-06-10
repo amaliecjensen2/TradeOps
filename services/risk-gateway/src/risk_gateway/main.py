@@ -1,4 +1,4 @@
-"""Entry point for risk-gateway."""
+"""Indgangspunkt for risk gateway."""
 
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ async def _main() -> None:
         app,
         host="0.0.0.0",
         port=settings.port,
-        log_config=None,    # structlog handles logging
+        log_config=None,    # structlog håndterer logging
         access_log=False,
     )
     server = uvicorn.Server(config)

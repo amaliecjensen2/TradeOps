@@ -134,9 +134,6 @@
         "jetstreamStreams": {
             "type": "object"
         },
-        "serviceMonitors": {
-            "type": "object"
-        },
         "rbac": {
             "type": "object"
         },

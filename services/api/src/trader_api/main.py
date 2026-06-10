@@ -1,4 +1,4 @@
-"""Entry point for trader-api."""
+"""starter process og binder filerne sammen"""
 from __future__ import annotations
 import asyncio
 import signal
