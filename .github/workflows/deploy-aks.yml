@@ -19,8 +19,8 @@ jobs:
     name: Build and push images
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
-      matrix:
+      fail-fast: false #lad alle service build køre færdigt
+      matrix: #kør det samme job flere gange med forskellige inputværdier
         service:
           - ibkr-adapter
           - risk-monitor
