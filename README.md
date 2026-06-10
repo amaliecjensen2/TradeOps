@@ -5,15 +5,15 @@ Dette er et algoritmisk handelssystem jeg har bygget til at handle aktier automa
 
 Systemet forbinder til Interactive Brokers Gateway, henter markedsdata i realtid, og sender ordrer igennem automatisk baseret på de strategier jeg har defineret. Alt kører i containere og deployes med Helm.
 
-Der er lige nu to strategier:
+To strategier:
 - **strategy hello**
   En simpel moving average crossover strategi der handler AAPL
 - **strategy nvidia**
-  Køber én NVDA aktie og holder den
+  Køber en NVDA aktie og holder den
 
 ## Hvordan er det bygget?
 
-Systemet er delt op i en række microservices der taler sammen via NATS (en message bus):
+Systemet er delt op i en række microservices der taler sammen via NATS:
 
 - **ibkr adapter** forbinder til IB Gateway og videresender markedsdata og ordrer
 - **risk gateway** tjekker alle ordrer inden de sendes, så man ikke handler for meget eller taber for mange penge
@@ -21,34 +21,3 @@ Systemet er delt op i en række microservices der taler sammen via NATS (en mess
 - **api** REST API til at se positioner, ordrer og PnL
 - **dashboard** et Next.js dashboard man kan åbne i browseren
 
-Data gemmes i TimescaleDB (en PostgreSQL variant der er god til tidsseriedata).
-
-## Forudsætninger
-
-- Docker Desktop
-- kubectl + Helm
-- En Interactive Brokers konto med IB Gateway
-- Et Kubernetes cluster (f.eks. lokal med kind eller k3s)
-
-## Deploy
-
-```powershell
-# Deploy til paper trading (forudsætter at images allerede er pushet til et registry)
-helm install trader ./helm/ibkrtrader `
-  -f helm/ibkrtrader/values.paper.yaml `
-  -n trading
-```
-
-## Azure AKS + GitHub Actions
-
-Repoet er nu klargjort til Azure deploy med CI/CD:
-
-- GitHub Actions workflow: `.github/workflows/deploy-aks.yml`
-- Azure override values: `helm/ibkrtrader/values.azure.yaml`
-- Detaljeret step by step guide: `docs/azure-aks-github-actions.md`
-
-Workflowet bygger alle service images, pusher dem til ACR og deployer chartet til AKS via Helm ved push til `main`.
-
-## For at tilføje en ny strategi
-
-Kopier `services/strategy-hello/` til en ny mappe, ret logikken i `strategy.py`, og tilføj en ny entry i `helm/ibkrtrader/values.yaml` under `strategies:`. Husk at give den et unikt `clientId`.
