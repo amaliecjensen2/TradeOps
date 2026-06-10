@@ -61,8 +61,7 @@ class NATSBridge:
         assert self._nc is not None, "kald connect() først"
         # Adapterens indgående side: interne ordrekommandoer kommer ind via NATS.
         await self._nc.subscribe(subjects.ORDERS_INBOX, cb=self._handle_order_msg)
-        log.info("nats_bridge.subscribed_orders",
-                 subject=subjects.ORDERS_INBOX)
+        log.info("nats_bridge.subscribed_orders", subject=subjects.ORDERS_INBOX)
 
     async def publish(self, subject: str, payload: bytes) -> None:
         """Publicér en rå payload. Falder tilbage til core NATS hvis JS publish fejler."""
