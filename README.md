@@ -5,7 +5,7 @@ Dette er et algoritmisk handelssystem jeg har bygget til at handle aktier automa
 
 Systemet forbinder til Interactive Brokers Gateway, henter markedsdata i realtid, og sender ordrer igennem automatisk baseret på de strategier jeg har defineret. Alt kører i containere og deployes med Helm.
 
-To strategie
+To strategier
 - **strategy hello**
   En simpel moving average crossover strategi der handler AAPL
 - **strategy nvidia**
