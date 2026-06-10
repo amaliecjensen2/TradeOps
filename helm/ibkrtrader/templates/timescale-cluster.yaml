@@ -32,5 +32,5 @@ spec:
     storageClass: {{ default .Values.global.storageClass .Values.timescale.cluster.storage.storageClass | quote }}
     {{- end }}
   monitoring:
-    enablePodMonitor: {{ .Values.serviceMonitors.enabled }}
+    enablePodMonitor: false
 {{- end }}

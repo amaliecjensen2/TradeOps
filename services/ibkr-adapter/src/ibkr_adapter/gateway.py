@@ -20,7 +20,7 @@ from typing import Awaitable, Callable
 
 import ib_insync as ibi
 
-from ibkr_adapter import metrics, subjects
+from ibkr_adapter import subjects
 from ibkr_adapter.config import Settings
 from ibkr_adapter.logging_setup import get_logger
 from ibkr_adapter.models import (
@@ -161,7 +161,6 @@ class IBKRGateway:
                     timeout=20,
                 )
                 self._connected = True
-                metrics.CONNECTED.set(1)
                 log.info("ibkr_gateway.connected")
 
                 await self._on_event(
@@ -206,7 +205,6 @@ class IBKRGateway:
 
             except (ConnectionRefusedError, asyncio.TimeoutError, OSError) as exc:
                 self._connected = False
-                metrics.CONNECTED.set(0)
                 log.warning(
                     "ibkr_gateway.connect_failed",
                     error=str(exc),
@@ -224,7 +222,6 @@ class IBKRGateway:
 
     async def _handle_disconnected(self) -> None:
         self._connected = False
-        metrics.CONNECTED.set(0)
         if self._heartbeat_task:
             self._heartbeat_task.cancel()
         log.warning("ibkr_gateway.disconnected")
@@ -263,7 +260,6 @@ class IBKRGateway:
             order_ref=fill.execution.orderRef or "",
         )
         await self._on_event(subjects.fills(account, symbol), msg.model_dump_json().encode())
-        metrics.FILLS_PUBLISHED.labels(account=account).inc()
         log.info("ibkr_gateway.fill", symbol=symbol,
                  side=msg.side, qty=msg.quantity, price=msg.price)
 
@@ -277,7 +273,6 @@ class IBKRGateway:
             net_liquidation=self._latest_net_liquidation,
         )
         await self._on_event(subjects.pnl(account), msg.model_dump_json().encode())
-        metrics.PNL_DAILY.labels(account=account).set(pnl.dailyPnL or 0.0)
         self._pnl_received.set()
 
     async def _emit_snapshot_complete(self) -> None:
@@ -378,7 +373,6 @@ class IBKRGateway:
         if nl is None:
             return
         self._latest_net_liquidation = nl
-        metrics.NET_LIQUIDATION.labels(account=value.account).set(nl)
 
     async def _heartbeat_loop(self) -> None:
         while True:

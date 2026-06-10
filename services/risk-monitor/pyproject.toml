@@ -14,7 +14,6 @@ dependencies = [
     "kubernetes>=30.1",           # kill switch: scale strategy Deployments to 0
     "httpx>=0.27",                # Telegram Bot API (no heavy SDK needed)
     "structlog>=24.1",
-    "prometheus-client>=0.20",
     "aiohttp>=3.9",               # health-check HTTP server
 ]
 

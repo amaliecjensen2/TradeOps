@@ -2,10 +2,9 @@
 
 Startrækkefølge:
   1. Konfigurer logging
-  2. Start Prometheus metrics serveren
-  3. Forbind til NATS
-  4. Start health check HTTP serveren
-  5. Forbind til IBKR Gateway (blokerer i reconnect loopet)
+  2. Forbind til NATS
+  3. Start health check HTTP serveren
+  4. Forbind til IBKR Gateway (blokerer i reconnect loopet)
 """
 
 from __future__ import annotations
@@ -17,7 +16,6 @@ from ibkr_adapter.config import get_settings
 from ibkr_adapter.gateway import IBKRGateway
 from ibkr_adapter.health import HealthServer
 from ibkr_adapter.logging_setup import configure_logging, get_logger
-from ibkr_adapter.metrics import start_metrics_server
 from ibkr_adapter.nats_bridge import NATSBridge
 
 log = get_logger(__name__)
@@ -29,10 +27,6 @@ async def _main() -> None:
     configure_logging()
     log.info("ibkr_adapter.starting",
              mode="paper" if settings.ibgw_port == 4002 else "live")
-
-    # Metrics
-    start_metrics_server(settings.metrics_port)
-    log.info("ibkr_adapter.metrics_started", port=settings.metrics_port)
 
     # NATS
     nats_bridge = NATSBridge(settings)

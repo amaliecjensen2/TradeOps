@@ -15,7 +15,6 @@ dependencies = [
     "asyncpg>=0.29",
     "nats-py>=2.9.0",
     "structlog>=24.1",
-    "prometheus-client>=0.20",
 ]
 
 [project.scripts]

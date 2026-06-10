@@ -39,7 +39,6 @@ class Settings(BaseSettings):
 
     # Health
     health_port: int = Field(8080, alias="HEALTH_PORT")
-    metrics_port: int = Field(9090, alias="METRICS_PORT")
     log_level: str = Field("INFO", alias="LOG_LEVEL")
     log_format: str = Field("json", alias="LOG_FORMAT")
 
