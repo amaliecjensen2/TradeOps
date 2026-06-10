@@ -65,6 +65,13 @@ class IBKRGateway:
     # og frigiver risk-gateway. TWS leverer normalt pnl inden for et sekund;
     # 5s er rigeligt og holder også cold-start latency lav.
     SNAPSHOT_PNL_TIMEOUT_S = 5.0
+    # Loft for hvor længe reqAccountUpdatesAsync må blokere. Efter en daily
+    # restart kan IB Gateway acceptere API forbindelsen men hænge i flere
+    # minutter før den sender accountDownloadEnd. Uden timeout bliver hele
+    # adapteren stuck efter "ibkr_gateway.connected" og når aldrig til
+    # subscribe_marketdata, så strategierne får ingen bars. Ved timeout
+    # disconnecter vi eksplicit så det ydre reconnect loop kan retry'e.
+    ACCOUNT_UPDATES_TIMEOUT_S = 10.0
 
     def __init__(self, settings: Settings, on_event: EventCallback) -> None:
         self._cfg = settings
@@ -183,7 +190,23 @@ class IBKRGateway:
                     # for den ene konto vi følger. Synkrone reqAccountUpdates
                     # forsøger run_until_complete på den allerede kørende
                     # event loop, brug Async-varianten fra async kontekst.
-                    await self._ib.reqAccountUpdatesAsync(self._cfg.ibkr_account)
+                    try:
+                        await asyncio.wait_for(
+                            self._ib.reqAccountUpdatesAsync(
+                                self._cfg.ibkr_account),
+                            timeout=self.ACCOUNT_UPDATES_TIMEOUT_S,
+                        )
+                    except asyncio.TimeoutError:
+                        log.warning(
+                            "ibkr_gateway.account_updates_timeout",
+                            account=self._cfg.ibkr_account,
+                            timeout_s=self.ACCOUNT_UPDATES_TIMEOUT_S,
+                        )
+                        # Tving en frisk forbindelse: uden disconnect ville
+                        # samme clientId stadig være "i brug" hos TWS og
+                        # næste connectAsync blive afvist med fejl 326.
+                        self._ib.disconnect()
+                        raise
 
                 # Markér at initial pnl + positions snapshot er publiceret
                 # så risk-gateway kan åbne for ordrer. Kører bevidst FØR
