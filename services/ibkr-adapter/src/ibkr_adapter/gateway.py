@@ -195,6 +195,10 @@ class IBKRGateway:
                 if self._cfg.universe_list:
                     await self.subscribe_marketdata(self._cfg.universe_list)
 
+                # Subscribe to realtime market data for the configured universe
+                if self._cfg.universe_list:
+                    await self.subscribe_marketdata(self._cfg.universe_list)
+
                 self._heartbeat_task = asyncio.create_task(
                     self._heartbeat_loop())
 
