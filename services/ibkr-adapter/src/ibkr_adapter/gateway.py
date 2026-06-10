@@ -183,6 +183,12 @@ class IBKRGateway:
                 # Abonner på PnL opdateringer
                 self._pnl_received.clear()
                 if self._cfg.ibkr_account:
+                    # ib_insync rydder ikke wrapper.pnlKey2ReqId ved disconnect,
+                    # så på en reconnect ville reqPnL asserte på den dangling
+                    # entry fra forrige cycle. Pop den eksplicit; TWS-side
+                    # subscriptionen er væk i kraft af socket lukningen.
+                    self._ib.wrapper.pnlKey2ReqId.pop(
+                        (self._cfg.ibkr_account, ""), None)
                     self._ib.reqPnL(self._cfg.ibkr_account)
                     # ib_insync auto-subscriber til account updates ved connect,
                     # men vi filtrerer eksplicit til vores konto her så
