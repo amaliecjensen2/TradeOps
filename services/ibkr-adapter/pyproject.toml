@@ -15,7 +15,6 @@ dependencies = [
     "asyncpg>=0.29",
     "aiohttp>=3.9",            # health-check HTTP server
     "structlog>=24.1",
-    "prometheus-client>=0.20",
 ]
 
 [project.scripts]

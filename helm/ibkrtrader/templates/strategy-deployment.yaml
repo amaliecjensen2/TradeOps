@@ -70,8 +70,8 @@ spec:
           image: "{{ $strategy.image.repository }}:{{ $strategy.image.tag }}"
           imagePullPolicy: {{ $strategy.image.pullPolicy | default "IfNotPresent" }}
           ports:
-            - name: metrics
-              containerPort: 9090
+            - name: health
+              containerPort: 8080
               protocol: TCP
           env:
             - name: STRATEGY_NAME
@@ -90,13 +90,13 @@ spec:
           readinessProbe:
             httpGet:
               path: /healthz
-              port: metrics
+              port: health
             periodSeconds: 10
             failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /healthz
-              port: metrics
+              port: health
             periodSeconds: 30
             failureThreshold: 3
       volumes:
@@ -120,9 +120,9 @@ spec:
     app.kubernetes.io/component: strategy
     ibkrtrader.io/strategy: {{ $strategy.name }}
   ports:
-    - name: metrics
-      port: 9090
-      targetPort: metrics
+    - name: health
+      port: 8080
+      targetPort: health
       protocol: TCP
 {{ end }}
 {{ end }}

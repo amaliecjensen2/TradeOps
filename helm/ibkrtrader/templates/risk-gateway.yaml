@@ -57,9 +57,6 @@ spec:
             - name: http
               containerPort: {{ .Values.riskGateway.port }}
               protocol: TCP
-            - name: metrics
-              containerPort: 9090
-              protocol: TCP
           env:
             - name: PORT
               value: {{ .Values.riskGateway.port | quote }}
@@ -123,9 +120,5 @@ spec:
     - name: http
       port: {{ .Values.riskGateway.port }}
       targetPort: http
-      protocol: TCP
-    - name: metrics
-      port: 9090
-      targetPort: metrics
       protocol: TCP
 {{- end }}

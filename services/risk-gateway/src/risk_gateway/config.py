@@ -37,9 +37,6 @@ class Settings(BaseSettings):
     port: int = Field(8080, alias="PORT")
     workers: int = Field(1, alias="WORKERS")
 
-    # Metrics
-    metrics_port: int = Field(9090, alias="METRICS_PORT")
-
     # Logging
     log_level: str = Field("INFO", alias="LOG_LEVEL")
     log_format: str = Field("json", alias="LOG_FORMAT")

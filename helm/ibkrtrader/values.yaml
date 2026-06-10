@@ -94,7 +94,7 @@ ibkr:
 #
 # Hver entry producerer:
 #   én Deployment (image, resources, env, configmap mount)
-#   én Service (til /metrics scraping)
+#   én Service (til health probes)
 #   én ConfigMap (strategi specifik config renderet som YAML)
 #
 # clientId SKAL være unikt på tværs af alle strategier, _helpers.tpl validerer dette
@@ -316,15 +316,6 @@ jetstreamStreams:
   bootstrapJob:
     enabled: true
     image: natsio/nats-box:0.16.0
-
-# ----------------------------------------------------------------------------
-# Observability
-# ----------------------------------------------------------------------------
-serviceMonitors:
-  # Kræver Prometheus Operator CRDer (kube prometheus stack).
-  enabled: false
-  interval: 30s
-  labels: {}
 
 # ----------------------------------------------------------------------------
 # RBAC

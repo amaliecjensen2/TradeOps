@@ -14,7 +14,7 @@ import nats.js
 from nats.aio.client import Client as NATSClient
 from nats.js import JetStreamContext
 
-from ibkr_adapter import metrics, subjects
+from ibkr_adapter import subjects
 from ibkr_adapter.config import Settings
 from ibkr_adapter.logging_setup import get_logger
 from ibkr_adapter.models import OrderCommand
@@ -61,8 +61,7 @@ class NATSBridge:
         assert self._nc is not None, "kald connect() først"
         # Adapterens indgående side: interne ordrekommandoer kommer ind via NATS.
         await self._nc.subscribe(subjects.ORDERS_INBOX, cb=self._handle_order_msg)
-        log.info("nats_bridge.subscribed_orders",
-                 subject=subjects.ORDERS_INBOX)
+        log.info("nats_bridge.subscribed_orders", subject=subjects.ORDERS_INBOX)
 
     async def publish(self, subject: str, payload: bytes) -> None:
         """Publicér en rå payload. Falder tilbage til core NATS hvis JS publish fejler."""
@@ -93,12 +92,7 @@ class NATSBridge:
             cmd = OrderCommand.model_validate(data)
         except Exception as exc:
             log.warning("nats_bridge.order_decode_error", error=str(exc))
-            metrics.ORDERS_REJECTED.labels(
-                strategy="unknown", reason="decode_error"
-            ).inc()
             return
-
-        metrics.ORDERS_RECEIVED.labels(strategy=cmd.strategy).inc()
 
         if self._gateway is None or not self._gateway.is_connected:
             log.warning(
@@ -106,19 +100,11 @@ class NATSBridge:
                 strategy=cmd.strategy,
                 symbol=cmd.symbol,
             )
-            metrics.ORDERS_REJECTED.labels(
-                strategy=cmd.strategy, reason="not_connected"
-            ).inc()
             return
 
-        import time
-
-        t0 = time.perf_counter()
         try:
             # Broens kerneopgave: oversæt en intern ordrebesked til et gateway-kald mod IBKR.
             await self._gateway.place_order(cmd)
-            metrics.ORDERS_PLACED.labels(strategy=cmd.strategy).inc()
-            metrics.ORDER_LATENCY.observe(time.perf_counter() - t0)
         except Exception as exc:
             log.error(
                 "nats_bridge.place_order_failed",
@@ -126,9 +112,6 @@ class NATSBridge:
                 symbol=cmd.symbol,
                 error=str(exc),
             )
-            metrics.ORDERS_REJECTED.labels(
-                strategy=cmd.strategy, reason="tws_error"
-            ).inc()
 
     async def _on_error(self, exc: Exception) -> None:
         log.error("nats_bridge.error", error=str(exc))

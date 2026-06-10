@@ -97,9 +97,6 @@ spec:
             - name: health
               containerPort: 8080
               protocol: TCP
-            - name: metrics
-              containerPort: 9090
-              protocol: TCP
           env:
             - name: KILL_SWITCH_ENABLED
               value: {{ .Values.riskMonitor.killSwitchEnabled | quote }}
