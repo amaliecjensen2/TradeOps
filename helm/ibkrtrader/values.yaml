@@ -188,7 +188,6 @@ riskGateway:
     limits:   { cpu: 500m, memory: 512Mi }
 
   # Konto dækkende pre trade grænser. Håndhæves i tillæg til pr strategi
-  # grænser i `.Values.strategies[].risk`.
   global:
     maxAccountDrawdownPct: 0.05
     maxGrossExposure: 1000000
