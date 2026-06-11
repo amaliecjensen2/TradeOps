@@ -118,7 +118,7 @@ strategies:
     risk:
       maxOrderNotional: 1000
       maxPosition: 10
-      maxDailyLoss: 100
+      maxDailyLoss: -100000
       maxOrdersPerSecond: 1
 
   - name: nvidia
@@ -137,11 +137,11 @@ strategies:
       trade_qty: 1
     risk:
       maxOrderNotional: 5000
-      maxPosition: 4
-      maxDailyLoss: 500
+      maxPosition: 35
+      maxDailyLoss: -10000
       maxOrdersPerSecond: 1
 
-# ----------------------------------------------------------------------------
+
 # IBKR Adapter
 #
 # Adapteren ejer den eneste TWS forbindelse (clientId=1 er reserveret til den).
@@ -188,7 +188,6 @@ riskGateway:
     limits:   { cpu: 500m, memory: 512Mi }
 
   # Konto dækkende pre trade grænser. Håndhæves i tillæg til pr strategi
-  # grænser i `.Values.strategies[].risk`.
   global:
     maxAccountDrawdownPct: 0.05
     maxGrossExposure: 1000000
@@ -205,32 +204,25 @@ riskMonitor:
   resources:
     requests: { cpu: 100m, memory: 128Mi }
     limits:   { cpu: 500m, memory: 512Mi }
-  # Drift / breach evaluerings kadence
+  # Drift / breach 
   reconcileIntervalSeconds: 10
   # Om monitoren får lov til at scalere strategi Deployments til 0.
-  # Deaktiver i dev for at undgå utilsigtet kill.
-  killSwitchEnabled: true
+  killSwitchEnabled: false
 
   # Risikogrænser, sendes til monitoren som env vars.
-  # Overstyr i values.paper.yaml / values.live.yaml efter behov.
   thresholds:
-    maxDailyLoss: -5000          # halt hvis daglig P&L falder under dette (USD)
-    maxDrawdownPct: 0.05        # halt ved 5% intra day drawdown fra HWM
+    maxDailyLoss: -100000            
+    maxDrawdownPct: 0.5        # halt ved 5% intra day drawdown fra HWM
     maxGrossExposure: 1000000   # halt hvis gross eksponering overstiger dette (USD)
-    heartbeatTimeoutS: 60       # alarm (ingen halt) hvis adapteren er tavs > 60s
+    heartbeatTimeoutS: 60       # alarm hvis adapteren er tavs 60s
 
-  # Telegram alarmer.
-  # CI injicerer token/chatId fra GitHub Actions secrets (TELEGRAM_TOKEN,
-  # TELEGRAM_CHAT_ID) og chartet renderer selv en Secret. Hold existingSecret
-  # tom for at lade CI-flowet styre det. Sæt existingSecret hvis du selv
-  # har oprettet en Secret med nøglerne TELEGRAM_TOKEN, TELEGRAM_CHAT_ID.
   telegram:
-    enabled: false
+    enabled: true
     existingSecret: ""
     token: ""
     chatId: ""
 
-# ----------------------------------------------------------------------------
+
 # API + dashboard
 # ----------------------------------------------------------------------------
 api:
@@ -266,35 +258,6 @@ dashboard:
 # ----------------------------------------------------------------------------
 # Data plane
 # ----------------------------------------------------------------------------
-
-# CloudNativePG: operatoren installeres via chart dependency.
-# `timescale.cluster` konfigurerer pr release Cluster CRen.
-# Nøglens navn er "cloudnative-pg" fordi dependency aliaset blev fjernet.
-cloudnative-pg:
-  enabled: false
-  crds:
-    create: false
-
-timescale:
-  cluster:
-    enabled: true
-    instances: 1                       # bump til 3 for HA
-    image:
-      # CNPG kompatibelt Postgres image med TimescaleDB extension forindlæst.
-      repository: ghcr.io/clevyr/cloudnativepg-timescale
-      tag: "17.5-22"
-    storage:
-      size: 20Gi
-      storageClass: ""
-    postgresql:
-      parameters:
-        max_connections: "200"
-    bootstrap:
-      database: trader
-      owner: trader
-    # Tilslut S3 backups i v1.
-    backup:
-      enabled: false
 
 # NATS via subchart. Default config = JetStream aktiveret, file storage.
 nats:

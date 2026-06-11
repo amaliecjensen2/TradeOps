@@ -84,13 +84,6 @@ Intern NATS DNS (subchartens service).
 {{- end -}}
 
 {{/*
-Postgres host, CNPG Cluster's read write service.
-*/}}
-{{- define "ibkrtrader.pgHost" -}}
-{{- printf "%s-timescale-rw.%s.svc.cluster.local" (include "ibkrtrader.fullname" .) .Release.Namespace -}}
-{{- end -}}
-
-{{/*
 Validér at alle aktiverede strategier har unikke clientIds.
 Stopper template rendering med en tydelig fejl hvis dubletter findes.
 */}}
@@ -111,7 +104,7 @@ Stopper template rendering med en tydelig fejl hvis dubletter findes.
 {{- end -}}
 
 {{/*
-Standard env blok for enhver pod der skal nå IBGW + NATS + Postgres.
+Standard env blok for enhver pod der skal nå IBGW + NATS.
 */}}
 {{- define "ibkrtrader.commonEnv" -}}
 - name: IBGW_HOST
@@ -120,20 +113,6 @@ Standard env blok for enhver pod der skal nå IBGW + NATS + Postgres.
   value: {{ include "ibkrtrader.activeGatewayPort" . | quote }}
 - name: NATS_URL
   value: {{ printf "nats://%s:4222" (include "ibkrtrader.natsHost" .) | quote }}
-- name: PG_HOST
-  value: {{ include "ibkrtrader.pgHost" . | quote }}
-- name: PG_DATABASE
-  value: {{ .Values.timescale.cluster.bootstrap.database | quote }}
-- name: PG_USER
-  valueFrom:
-    secretKeyRef:
-      name: {{ printf "%s-timescale-app" (include "ibkrtrader.fullname" .) }}
-      key: username
-- name: PG_PASSWORD
-  valueFrom:
-    secretKeyRef:
-      name: {{ printf "%s-timescale-app" (include "ibkrtrader.fullname" .) }}
-      key: password
 - name: IBKR_ACCOUNT
   value: {{ .Values.ibkr.account | quote }}
 - name: IBKR_MODE

@@ -37,10 +37,11 @@ jobs:
       - name: Log in to ACR
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.ACR_LOGIN_SERVER }}
+          registry: ${{ env.ACR_LOGIN_SERVER }} #hentes fra GH
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
+      # bygger docker image for hver service og pusher det til ACR
       - name: Build and push ${{ matrix.service }}
         run: |
           IMAGE="${ACR_LOGIN_SERVER}/ibkrtrader/${{ matrix.service }}:${IMAGE_TAG}"
@@ -52,7 +53,7 @@ jobs:
 
   deploy:
     name: Helm deploy to AKS
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest #ubuntu runner hos GH actions
     needs: build-and-push
     env:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -68,6 +69,7 @@ jobs:
       - name: Validate Azure configuration
         shell: bash
         run: |
+          # tjekker om alle Azure credentials findes
           missing=0
 
           if [ -n "${AZURE_CREDENTIALS}" ]; then
@@ -126,23 +128,10 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
-      - name: Install CloudNativePG operator
-        shell: bash
-        run: |
-          helm repo add cnpg https://cloudnative-pg.github.io/charts
-          helm repo update
-          helm upgrade --install cnpg cnpg/cloudnative-pg \
-            --namespace cnpg-system \
-            --create-namespace \
-            --set crds.create=true
-          kubectl wait --for=condition=Established crd/clusters.postgresql.cnpg.io --timeout=300s
-          kubectl wait --namespace cnpg-system \
-            --for=condition=Available deployment/cnpg-cloudnative-pg \
-            --timeout=300s
-
       - name: Generate image override values
         shell: bash
         run: |
+          # opretter midlertidig values-fil med nye image tags paa runneren
           cat > /tmp/image-overrides.yaml <<EOF
           ibkrAdapter:
             image:
@@ -165,12 +154,7 @@ jobs:
               repository: ${ACR_LOGIN_SERVER}/ibkrtrader/dashboard
               tag: ${IMAGE_TAG}
           EOF
-
-          # Helm erstatter lister i deres helhed under merge, så en delvis strategies
-          # override i image overrides.yaml ville fjerne risk/config/replicas
-          # fra values.yaml. I stedet genbygges strategi listen fra
-          # values.yaml og kun image felterne omskrives, alt andet
-          # (risikogrænser, pr strategi config, ressourcer) bevares.
+          #laver en ny midlertidig Helm values-fil kun for strategierne, så hver strategi får det rigtige Docker-image og tag ved deploy.
           yq eval '
             {
               "strategies": (
@@ -182,6 +166,7 @@ jobs:
             }
           ' ./helm/ibkrtrader/values.yaml > /tmp/strategies-overrides.yaml
 
+      #laver en midlertidig Helm values-fil med dine IBKR-loginoplysninger, så de kan bruges under deploy.
       - name: Generate IBKR credentials values
         shell: bash
         env:
@@ -229,7 +214,7 @@ jobs:
               .riskMonitor.telegram.chatId = strenv(TELEGRAM_CHAT_ID)
             ' > /tmp/telegram-credentials.yaml
           chmod 600 /tmp/telegram-credentials.yaml
-
+      #Denne blok samler alle konfigurationerne og deployer hele applikationen til AKS med Helm.
       - name: Deploy with Helm
         run: |
           helm dependency update ./helm/ibkrtrader
@@ -243,6 +228,7 @@ jobs:
             -f /tmp/ibkr-credentials.yaml \
             -f /tmp/telegram-credentials.yaml
 
+      # tjekker om de vigtigste workloads bliver klar efter deploy
       - name: Verify rollout
         shell: bash
         run: |
@@ -253,13 +239,7 @@ jobs:
           kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-ibkr-adapter --timeout=5m || echo "::warning::IBKR adapter is not ready yet because it waits for both NATS and IB Gateway."
           kubectl -n "${AKS_NAMESPACE}" rollout status deployment/${RELEASE_NAME}-ibkrtrader-risk-monitor --timeout=5m || echo "::warning::Risk monitor is not ready yet; inspect pod logs once NATS and the adapter are online."
 
-      - name: Post-deploy guidance
-        shell: bash
-        run: |
-          echo "Dashboard port-forward: kubectl -n ${AKS_NAMESPACE} port-forward svc/${RELEASE_NAME}-ibkrtrader-dashboard 3000:3000"
-          echo "Gateway VNC port-forward: kubectl -n ${AKS_NAMESPACE} port-forward sts/${RELEASE_NAME}-ibkrtrader-ibgw-paper 5900:5900"
-          echo "Gateway logs: kubectl -n ${AKS_NAMESPACE} logs sts/${RELEASE_NAME}-ibkrtrader-ibgw-paper -f"
-
+      # samler nyttige kubectl-data hvis deployet fejler
       - name: Dump diagnostics on failure
         if: failure() && steps.aks-context.outcome == 'success'
         shell: bash
@@ -270,6 +250,7 @@ jobs:
           kubectl -n "${AKS_NAMESPACE}" describe deployment ${RELEASE_NAME}-ibkrtrader-ibkr-adapter || true
           kubectl -n "${AKS_NAMESPACE}" logs deploy/${RELEASE_NAME}-ibkrtrader-ibkr-adapter --tail=200 || true
 
+      # forklarer hvorfor der ikke kunne hentes cluster-diagnoser i gh ac loggen
       - name: Explain missing AKS context
         if: failure() && steps.aks-context.outcome != 'success'
         shell: bash
