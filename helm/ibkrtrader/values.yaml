@@ -137,7 +137,7 @@ strategies:
       trade_qty: 1
     risk:
       maxOrderNotional: 5000
-      maxPosition: 30
+      maxPosition: 31
       maxDailyLoss: -10000
       maxOrdersPerSecond: 1
 
