@@ -21,6 +21,6 @@ RUN pip install --no-cache-dir --no-index --find-links=/wheels risk-monitor \
 
 USER trader
 
-EXPOSE 8080 9090
+EXPOSE 8080
 
 ENTRYPOINT ["risk-monitor"]

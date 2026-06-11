@@ -29,7 +29,7 @@ RUN pip install --no-cache-dir --no-index --find-links=/wheels ibkr-adapter \
 
 USER trader
 
-# Health + metrics ports
-EXPOSE 8080 9090
+# Health port
+EXPOSE 8080
 
 ENTRYPOINT ["ibkr-adapter"]

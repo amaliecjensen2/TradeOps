@@ -15,5 +15,5 @@ COPY --from=builder /wheels /wheels
 RUN pip install --no-cache-dir --no-index --find-links=/wheels trader-api \
     && rm -rf /wheels
 USER trader
-EXPOSE 8000 9090
+EXPOSE 8000
 ENTRYPOINT ["trader-api"]
