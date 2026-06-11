@@ -137,11 +137,11 @@ strategies:
       trade_qty: 1
     risk:
       maxOrderNotional: 5000
-      maxPosition: 100
+      maxPosition: 22
       maxDailyLoss: 10000
       maxOrdersPerSecond: 1
 
-# ----------------------------------------------------------------------------
+
 # IBKR Adapter
 #
 # Adapteren ejer den eneste TWS forbindelse (clientId=1 er reserveret til den).
