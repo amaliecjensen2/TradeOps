@@ -118,7 +118,7 @@ strategies:
     risk:
       maxOrderNotional: 1000
       maxPosition: 10
-      maxDailyLoss: 100
+      maxDailyLoss: -100000
       maxOrdersPerSecond: 1
 
   - name: nvidia
@@ -138,7 +138,7 @@ strategies:
     risk:
       maxOrderNotional: 5000
       maxPosition: 25
-      maxDailyLoss: 10000
+      maxDailyLoss: -10000
       maxOrdersPerSecond: 1
 
 
