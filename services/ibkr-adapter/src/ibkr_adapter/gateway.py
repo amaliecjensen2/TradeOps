@@ -65,6 +65,11 @@ class IBKRGateway:
     # og frigiver risk-gateway. TWS leverer normalt pnl inden for et sekund;
     # 5s er rigeligt og holder også cold-start latency lav.
     SNAPSHOT_PNL_TIMEOUT_S = 5.0
+    # Republish af SNAPSHOT_COMPLETE så risk-gateway pods der starter efter
+    # adapter connect (typisk under helm rollout) får primet sig selv inden
+    # for ét interval. NATS core retainer ikke beskeder, så uden republish
+    # ville sene subscribers hænge permanent på /readyz.
+    SNAPSHOT_REPUBLISH_INTERVAL_S = 30
 
     def __init__(self, settings: Settings, on_event: EventCallback) -> None:
         self._cfg = settings
@@ -72,6 +77,7 @@ class IBKRGateway:
         self._ib = ibi.IB()
         self._connected = False
         self._heartbeat_task: asyncio.Task | None = None
+        self._snapshot_task: asyncio.Task | None = None
         self._reconnect_task: asyncio.Task | None = None
         # Seneste NetLiquidation set fra accountValueEvent. Cachet så vi kan
         # rige PnLSnapshot med kontoens nettoværdi (risk-monitor bruger den
@@ -101,6 +107,8 @@ class IBKRGateway:
     async def stop(self) -> None:
         if self._heartbeat_task:
             self._heartbeat_task.cancel()
+        if self._snapshot_task:
+            self._snapshot_task.cancel()
         if self._reconnect_task:
             self._reconnect_task.cancel()
         if self._ib.isConnected():
@@ -207,6 +215,8 @@ class IBKRGateway:
 
                 self._heartbeat_task = asyncio.create_task(
                     self._heartbeat_loop())
+                self._snapshot_task = asyncio.create_task(
+                    self._snapshot_republish_loop())
 
                 # eventkit.Event er ikke en asyncio.Event; hold tasken i live
                 # indtil ib_insync rapporterer at socket er afbrudt.
@@ -234,6 +244,8 @@ class IBKRGateway:
         self._connected = False
         if self._heartbeat_task:
             self._heartbeat_task.cancel()
+        if self._snapshot_task:
+            self._snapshot_task.cancel()
         log.warning("ibkr_gateway.disconnected")
         await self._emit_disconnected("TWS rapporterede afbrydelse")
 
@@ -321,6 +333,10 @@ class IBKRGateway:
                     synthetic.model_dump_json().encode(),
                 )
 
+        await self._publish_snapshot_complete()
+
+    async def _publish_snapshot_complete(self) -> None:
+        account = self._cfg.ibkr_account or ""
         positions_count = (
             len(self._ib.portfolio(account)) if account else 0
         )
@@ -333,6 +349,16 @@ class IBKRGateway:
             account=account,
             positions=positions_count,
         )
+
+    async def _snapshot_republish_loop(self) -> None:
+        while True:
+            await asyncio.sleep(self.SNAPSHOT_REPUBLISH_INTERVAL_S)
+            if not self._ib.isConnected():
+                break
+            try:
+                await self._publish_snapshot_complete()
+            except Exception as exc:
+                log.warning("ibkr_gateway.snapshot_republish_failed", error=str(exc))
 
     async def _handle_pending_tickers(self, tickers: set[ibi.Ticker]) -> None:
         for t in tickers:
