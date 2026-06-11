@@ -143,7 +143,6 @@ strategies:
 
 
 # IBKR Adapter
-#
 # Adapteren ejer den eneste TWS forbindelse (clientId=1 er reserveret til den).
 # Den binder IBKR til NATS:
 #   orders.>        (NATS indkommende) til TWS placeOrder()
