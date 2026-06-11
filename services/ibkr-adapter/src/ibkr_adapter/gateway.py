@@ -173,17 +173,23 @@ class IBKRGateway:
                     ).model_dump_json().encode(),
                 )
 
-                # Abonner på PnL opdateringer
+                # Abonner på PnL opdateringer.
+                # connectAsync har allerede kaldt reqAccountUpdatesAsync med
+                # vores account (når der kun er én managed account, dvs.
+                # vores paper case), så updatePortfolio + accountValue events
+                # flyder allerede. En anden eksplicit reqAccountUpdatesAsync
+                # ville oprette et nyt 'accountValues' future under
+                # wrapper.startReq der aldrig resolves, fordi
+                # accountDownloadEnd kun fires én gang per subscribe.
                 self._pnl_received.clear()
                 if self._cfg.ibkr_account:
+                    # ib_insync rydder ikke wrapper.pnlKey2ReqId ved disconnect,
+                    # så på en reconnect ville reqPnL asserte på den dangling
+                    # entry fra forrige cycle. Pop den eksplicit; TWS-side
+                    # subscriptionen er væk i kraft af socket lukningen.
+                    self._ib.wrapper.pnlKey2ReqId.pop(
+                        (self._cfg.ibkr_account, ""), None)
                     self._ib.reqPnL(self._cfg.ibkr_account)
-                    # ib_insync auto-subscriber til account updates ved connect,
-                    # men vi filtrerer eksplicit til vores konto her så
-                    # updatePortfolio + updateAccountValue events kun kommer
-                    # for den ene konto vi følger. Synkrone reqAccountUpdates
-                    # forsøger run_until_complete på den allerede kørende
-                    # event loop, brug Async-varianten fra async kontekst.
-                    await self._ib.reqAccountUpdatesAsync(self._cfg.ibkr_account)
 
                 # Markér at initial pnl + positions snapshot er publiceret
                 # så risk-gateway kan åbne for ordrer. Kører bevidst FØR

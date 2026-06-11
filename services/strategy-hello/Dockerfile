@@ -15,5 +15,5 @@ COPY --from=builder /wheels /wheels
 RUN pip install --no-cache-dir --no-index --find-links=/wheels strategy-hello \
     && rm -rf /wheels
 USER trader
-EXPOSE 8080 9090
+EXPOSE 8080
 ENTRYPOINT ["strategy-hello"]
