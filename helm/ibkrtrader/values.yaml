@@ -212,13 +212,13 @@ riskMonitor:
 
   # Risikogrænser, sendes til monitoren som env vars.
   thresholds:
-    maxDailyLoss: -300           # demo: halt hvis daglig P&L falder under dette (USD)
+    maxDailyLoss: 500            # demo: aktuel daily P&L 403.95 er under denne, så halt trigger
     maxDrawdownPct: 0.05        # halt ved 5% intra day drawdown fra HWM
     maxGrossExposure: 1000000   # halt hvis gross eksponering overstiger dette (USD)
     heartbeatTimeoutS: 60       # alarm (ingen halt) hvis adapteren er tavs > 60s
 
   telegram:
-    enabled: false
+    enabled: true
     existingSecret: ""
     token: ""
     chatId: ""
