@@ -137,7 +137,7 @@ strategies:
       trade_qty: 1
     risk:
       maxOrderNotional: 5000
-      maxPosition: 22
+      maxPosition: 25
       maxDailyLoss: 10000
       maxOrdersPerSecond: 1
 
@@ -207,11 +207,11 @@ riskMonitor:
   # Drift / breach 
   reconcileIntervalSeconds: 10
   # Om monitoren får lov til at scalere strategi Deployments til 0.
-  killSwitchEnabled: true
+  killSwitchEnabled: false
 
   # Risikogrænser, sendes til monitoren som env vars.
   thresholds:
-    maxDailyLoss: 500            
+    maxDailyLoss: 5000            
     maxDrawdownPct: 0.05        # halt ved 5% intra day drawdown fra HWM
     maxGrossExposure: 1000000   # halt hvis gross eksponering overstiger dette (USD)
     heartbeatTimeoutS: 60       # alarm hvis adapteren er tavs 60s
