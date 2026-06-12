@@ -122,12 +122,6 @@
         "dashboard": {
             "type": "object"
         },
-        "cloudnative-pg": {
-            "type": "object"
-        },
-        "timescale": {
-            "type": "object"
-        },
         "nats": {
             "type": "object"
         },

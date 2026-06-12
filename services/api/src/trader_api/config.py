@@ -1,5 +1,5 @@
 """Config foil for trader api.
-samler nats, postgres, logging
+samler nats, logging
 """
 
 from pydantic import Field
@@ -11,11 +11,6 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="", case_sensitive=False)
 
     nats_url: str = Field("nats://nats:4222", alias="NATS_URL")
-    pg_host: str = Field("localhost", alias="PG_HOST")
-    pg_port: int = Field(5432, alias="PG_PORT")
-    pg_database: str = Field("trader", alias="PG_DATABASE")
-    pg_user: str = Field("trader", alias="PG_USER")
-    pg_password: str = Field("", alias="PG_PASSWORD")
 
     ibkr_account: str = Field("", alias="IBKR_ACCOUNT")
     ibkr_mode: str = Field("paper", alias="IBKR_MODE")
@@ -23,13 +18,6 @@ class Settings(BaseSettings):
     port: int = Field(8000, alias="PORT")
     log_level: str = Field("INFO", alias="LOG_LEVEL")
     log_format: str = Field("json", alias="LOG_FORMAT")
-
-    @property
-    def pg_dsn(self) -> str:
-        return (
-            f"postgresql://{self.pg_user}:{self.pg_password}"
-            f"@{self.pg_host}:{self.pg_port}/{self.pg_database}"
-        )
 
 
 # singleton, setting bliver kun oprettet en gang, sikrer hele appen bruger samme config

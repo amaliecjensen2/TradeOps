@@ -5,10 +5,6 @@ global:
   # AKS kan hente fra ACR når clusteret er attached til registry.
   imagePullSecrets: []
 
-# På AKS installeres CloudNativePG operatoren separat før dette chart.
-cloudnative-pg:
-  enabled: false
-
 # Aktivér ingress kun når du har en ingress controller + DNS klar.
 dashboard:
   ingress:

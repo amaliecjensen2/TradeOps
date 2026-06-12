@@ -259,35 +259,6 @@ dashboard:
 # Data plane
 # ----------------------------------------------------------------------------
 
-# CloudNativePG: operatoren installeres via chart dependency.
-# `timescale.cluster` konfigurerer pr release Cluster CRen.
-# Nøglens navn er "cloudnative-pg" fordi dependency aliaset blev fjernet.
-cloudnative-pg:
-  enabled: false
-  crds:
-    create: false
-
-timescale:
-  cluster:
-    enabled: true
-    instances: 1                       # bump til 3 for HA
-    image:
-      # CNPG kompatibelt Postgres image med TimescaleDB extension forindlæst.
-      repository: ghcr.io/clevyr/cloudnativepg-timescale
-      tag: "17.5-22"
-    storage:
-      size: 20Gi
-      storageClass: ""
-    postgresql:
-      parameters:
-        max_connections: "200"
-    bootstrap:
-      database: trader
-      owner: trader
-    # Tilslut S3 backups i v1.
-    backup:
-      enabled: false
-
 # NATS via subchart. Default config = JetStream aktiveret, file storage.
 nats:
   enabled: true
