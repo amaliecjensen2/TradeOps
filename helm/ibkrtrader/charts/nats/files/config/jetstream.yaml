@@ -1,23 +1,6 @@
-{{- with .Values.config.jetstream }}
-{{- with .memoryStore }}
-{{- if .enabled }}
-{{- with .maxSize }}
-max_memory_store: << {{ . }} >>
-{{- end }}
-{{- else }}
-max_memory_store: 0
-{{- end }}
-{{- end }}
-{{- with .fileStore }}
-{{- if .enabled }}
+{{- with .Values.config.jetstream.fileStore }}
+# Mappe hvor JetStream gemmer persistente data på disken.
 store_dir: {{ .dir }}
-{{- if .maxSize }}
-max_file_store: << {{ .maxSize }} >>
-{{- else if .pvc.enabled }}
+# Brug PVC-størrelsen som øvre grænse for diskforbrug i det nuværende setup.
 max_file_store: << {{ .pvc.size }} >>
-{{- end }}
-{{- else }}
-max_file_store: 0
-{{- end }}
-{{- end }}
 {{- end }}

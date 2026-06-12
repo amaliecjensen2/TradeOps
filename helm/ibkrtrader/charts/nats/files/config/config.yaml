@@ -1,27 +1,22 @@
 {{- with .Values.config }}
 
+# SERVER_NAME kommer fra pod-navnet, hver NATS-instans får en stabil identitet.
 server_name: << $SERVER_NAME >>
+#vent 10 sek før du lukker klientforbindelser
 lame_duck_grace_period: 10s
+#efterfølgende nedlukning foregår i 30 sek 
 lame_duck_duration: 30s
+#nats skriver sit procesid til denne fil, bruges af andre til at finde nats
 pid_file: /var/run/nats/nats.pid
 
-########################################
-# NATS
-########################################
+# i values fil gå ind i nats og sæt port
 {{- with .nats }}
 port: {{ .port }}
-
-{{- with .tls }}
-{{- if .enabled }}
-tls:
-  {{- include "nats.loadMergePatch" (merge (dict "file" "config/tls.yaml" "ctx" (merge (dict "tls" .) $)) .) | nindent 2 }}
-{{- end }}
-{{- end }}
 {{- end }}
 
-########################################
-# monitor
-########################################
+#Hvis monitor er aktiveret, genererer den monitor-porten som https_port når monitor-TLS er slået til, 
+#ellers som http_port, så NATS eksponerer sit health/metrics-endpoint 
+#med korrekt protokol på den angivne port.
 {{- with .monitor }}
 {{- if .enabled }}
 {{- if .tls.enabled }}
@@ -32,18 +27,7 @@ http_port: {{ .port }}
 {{- end }}
 {{- end }}
 
-########################################
-# profiling
-########################################
-{{- with .profiling }}
-{{- if .enabled }}
-prof_port: {{ .port }}
-{{- end }}
-{{- end }}
-
-########################################
-# jetstream
-########################################
+# hvis jetstream er true inkorperer den
 {{- with $.Values.config.jetstream -}}
 {{- if .enabled }}
 jetstream:
@@ -51,7 +35,4 @@ jetstream:
 {{- end }}
 {{- end }}
 
-########################################
-# resolver
-########################################
 {{- end }}
