@@ -1,11 +1,6 @@
 name: nats-box
 {{ include "nats.image" (merge (pick $.Values "global") .Values.natsBox.container.image) }}
 
-{{- with .Values.natsBox.container.env }}
-env:
-{{- include "nats.env" . }}
-{{- end }}
-
 command:
 - sh
 - -ec
@@ -32,15 +27,3 @@ volumeMounts:
 # contexts secret
 - name: contexts
   mountPath: /etc/nats-contexts
-# contents secret
-{{- if .hasContentsSecret }}
-- name: contents
-  mountPath: /etc/nats-contents
-{{- end }}
-# tlsCA
-{{- include "nats.tlsCAVolumeMount" $ }}
-# secrets
-{{- range (include "natsBox.secretNames" $ | fromJson).secretNames }}
-- name: {{ .name | quote }}
-  mountPath: {{ .dir | quote }}
-{{- end }}
