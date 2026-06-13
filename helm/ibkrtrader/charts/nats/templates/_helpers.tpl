@@ -72,19 +72,14 @@ Set default values.
   {{- $values := get (include "tplYaml" (dict "doc" .Values "ctx" $) | fromJson) "doc" }}
   {{- $_ := set . "Values" $values }}
 
-  {{- $hasContentsSecret := false }}
   {{- range $ctxKey, $ctxVal := .Values.natsBox.contexts }}
     {{- range $secretKey, $secretVal := dict "creds" "nats-creds" "nkey" "nats-nkeys" "tls" "nats-certs" }}
       {{- $secret := get $ctxVal $secretKey }}
       {{- if $secret }}
         {{- $_ := set $secret "dir" ($secret.dir | default (printf "/etc/%s/%s" $secretVal $ctxKey)) }}
-        {{- if and (ne $secretKey "tls") $secret.contents }}
-          {{- $hasContentsSecret = true }}
-        {{- end }}
       {{- end }}
     {{- end }}
   {{- end }}
-  {{- $_ := set $ "hasContentsSecret" $hasContentsSecret }}
 
   {{- with .Values.config }}
   {{- $config := include "nats.loadMergePatch" (merge (dict "file" "config/config.yaml" "ctx" $) .) | fromYaml }}
