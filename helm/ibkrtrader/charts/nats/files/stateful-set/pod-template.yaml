@@ -1,35 +1,33 @@
 metadata:
   labels:
+    # Sæt standard labels på hver pod, så selectors og metrics matcher korrekt.
     {{- include "nats.labels" $ | nindent 4 }}
   annotations:
     {{- if .Values.podTemplate.configChecksumAnnotation }}
+    # Når config ændrer sig, ændres denne checksum også og tvinger et rollout.
     {{- $configMap := include "nats.loadMergePatch" (merge (dict "file" "config-map.yaml" "ctx" $) $.Values.configMap) }}
     checksum/config: {{ sha256sum $configMap }}
     {{- end }}
 spec:
   containers:
-  # nats
+  # Hovedcontaineren med selve NATS-serveren.
   {{- $nats := dict }}
   {{- with .Values.container }}
   {{- $nats = include "nats.loadMergePatch" (merge (dict "file" "stateful-set/nats-container.yaml" "ctx" $) .) | fromYaml }}
   - {{ toYaml $nats | nindent 4 }}
   {{- end }}
-  # reloader
+  # Valgfri sidecar der kan reagere på konfigurationsændringer.
   {{- with .Values.reloader }}
   {{- if .enabled }}
   - {{ include "nats.loadMergePatch" (merge (dict "file" "stateful-set/reloader-container.yaml" "ctx" (merge (dict "natsVolumeMounts" $nats.volumeMounts) $)) .) | nindent 4 }}
   {{- end }}
   {{- end }}
-  {{- with .Values.promExporter }}
-  {{- if .enabled }}
-  - {{ include "nats.loadMergePatch" (merge (dict "file" "stateful-set/prom-exporter-container.yaml" "ctx" $) .) | nindent 4 }}
-  {{- end }}
-  {{- end }}
 
-  # service discovery uses DNS; don't need service env vars
+  # Undgå automatiske service-env-vars; DNS bruges i stedet.
   enableServiceLinks: false
   
   {{- with .Values.global.image.pullSecretNames }}
+  # Brug disse secrets, hvis container-images skal hentes fra private registre.
   imagePullSecrets:
   {{- range . }}
   - name: {{ . | quote }}
@@ -38,25 +36,27 @@ spec:
 
   {{- with .Values.serviceAccount }}
   {{- if .enabled }}
+  # Knyt podden til service accounten, hvis den er aktiveret.
   serviceAccountName: {{ .name | quote }}
   {{- end }}
   {{- end }}
 
   {{- if .Values.reloader.enabled }}
+  # Sidecars kan dele proces-namespace, så reloaderen kan signalere NATS-processen.
   shareProcessNamespace: true
   {{- end }}
 
   volumes:
-  # nats config
+  # Mount ConfigMap med den renderede NATS-konfiguration.
   - name: config
     configMap:
       name: {{ .Values.configMap.name }}
-  # PID volume
+  # Midlertidigt skriveområde til PID-fil og lokal runtime-tilstand.
   - name: pid
     emptyDir: {}
-  # tlsCA
+  # Mount fælles CA-certifikater, hvis TLS CA er sat op.
   {{- include "nats.tlsCAVolume" $ | nindent 2 }}
-  # secrets
+  # Mount alle nødvendige secrets, fx credentials og certifikater.
   {{- range (include "nats.secretNames" $ | fromJson).secretNames }}
   - name: {{ .name | quote }}
     secret:
@@ -64,6 +64,7 @@ spec:
   {{- end }}
 
   {{- with .Values.podTemplate.topologySpreadConstraints }}
+  # Fordel pods på tværs af noder eller zoner, hvis constraints er angivet.
   topologySpreadConstraints:
   {{- range $k, $v := . }}
   - {{ merge (dict "topologyKey" $k "labelSelector" (dict "matchLabels" (include "nats.selectorLabels" $ | fromYaml))) $v | toYaml | nindent 4 }}

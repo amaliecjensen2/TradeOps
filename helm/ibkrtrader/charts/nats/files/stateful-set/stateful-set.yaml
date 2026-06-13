@@ -1,37 +1,35 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
+  # Sæt namespace, hvis chartet er konfigureret til et specifikt namespace.
   {{- include "nats.metadataNamespace" $ | nindent 2 }}
+  # StatefulSet-navnet kommer fra Helm-values/default helpers.
   name: {{ .Values.statefulSet.name }}
   labels:
+    # Fælles labels bruges til selectors, drift og genkendelse af ressourcer.
     {{- include "nats.labels" $ | nindent 4 }}
 spec:
   selector:
     matchLabels:
+      # Disse labels skal matche pod-template labels, så StatefulSet'et ejer de rigtige pods.
       {{- include "nats.selectorLabels" $ | nindent 6 }}
-  {{- if .Values.config.cluster.enabled }}
-  replicas: {{ .Values.config.cluster.replicas }}
-  {{- else }}
+  # Kør kun én pod, når clustering er slået fra.
   replicas: 1
-  {{- end }}
+  # Headless service giver stabile DNS-navne til hver pod i StatefulSet'et.
   serviceName: {{ .Values.headlessService.name }}
+  # Pods må oprettes parallelt i stedet for strengt sekventielt.
   podManagementPolicy: Parallel
   template:
     {{- with .Values.podTemplate }}
+    # Indsæt pod-skabelonen med containere, volumes, service account osv.
     {{ include "nats.loadMergePatch" (merge (dict "file" "stateful-set/pod-template.yaml" "ctx" $) .) | nindent 4 }}
     {{- end }}
   volumeClaimTemplates:
   {{- with .Values.config.jetstream }}
   {{- if and .enabled .fileStore.enabled .fileStore.pvc.enabled }}
   {{- with .fileStore.pvc }}
+  # Opret en PVC pr. pod til JetStream, når filbaseret persistence er aktiveret.
   - {{ include "nats.loadMergePatch" (merge (dict "file" "stateful-set/jetstream-pvc.yaml" "ctx" $) .) | nindent 4 }}
-  {{- end }}
-  {{- end }}
-    {{- end }}
-  {{- with .Values.config.resolver }}
-  {{- if and .enabled .pvc.enabled }}
-  {{- with .pvc }}
-  - {{ include "nats.loadMergePatch" (merge (dict "file" "stateful-set/resolver-pvc.yaml" "ctx" $) .) | nindent 4 }}
   {{- end }}
   {{- end }}
   {{- end }}

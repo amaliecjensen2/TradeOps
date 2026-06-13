@@ -1,13 +1,19 @@
 {{- with .Values.config.jetstream.fileStore.pvc }}
+# Denne skabelon udfylder et element i StatefulSet'ets volumeClaimTemplates.
+# Den opretter den PersistentVolumeClaim, som JetStream bruger til filbaseret lagring.
 metadata:
+  # Navnet bliver brugt af StatefulSet'et, når PVC'en oprettes pr. pod.
   name: {{ .name }}
 spec:
   accessModes:
+  # ReadWriteOnce betyder, at volumen kan monteres læse/skrive af en node ad gangen.
   - ReadWriteOnce
   resources:
     requests:
+      # Den ønskede diskstørrelse kommer fra Helm values.
       storage: {{ .size | quote }}
   {{- with .storageClassName }}
+  # Hvis storageClassName er sat, vælges den konkrete storage class eksplicit.
   storageClassName: {{ . | quote }}
   {{- end }}
 {{- end }}

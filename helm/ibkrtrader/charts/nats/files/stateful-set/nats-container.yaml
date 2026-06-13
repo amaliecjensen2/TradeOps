@@ -1,7 +1,9 @@
 name: nats
+# Byg container image-felterne ud fra chartets image-values.
 {{ include "nats.image" (merge (pick $.Values "global") .Values.container.image) }}
 
 ports:
+# Opret kun containerporte for de protokoller/features, som er slået til.
 {{- range $protocol := list "nats" "leafnodes" "websocket" "mqtt" "cluster" "gateway" "monitor" "profiling" }}
 {{- $configProtocol := get $.Values.config $protocol }}
 {{- $containerPort := get $.Values.container.ports $protocol }}
@@ -11,10 +13,12 @@ ports:
 {{- end }}
 
 args:
+# Start NATS med den rendrerede config-fil fra ConfigMap-mountet.
 - --config
 - /etc/nats-config/nats.conf
 
 env:
+# Kubernetes indsætter pod-navnet, så hver NATS-instans kan få et unikt servernavn.
 - name: POD_NAME
   valueFrom:
     fieldRef:
@@ -28,13 +32,14 @@ env:
 lifecycle:
   preStop:
     exec:
-      # send the lame duck shutdown signal to trigger a graceful shutdown
+      # Bed NATS om at lukke pænt ned, så forbindelser og trafik kan tømmes.
       command:
       - nats-server
       - -sl=ldm=/var/run/nats/nats.pid
 
 {{- with .Values.config.monitor }}
 {{- if .enabled }}
+# Health probes aktiveres kun, hvis monitor-endpointet er slået til.
 startupProbe:
   httpGet:
     path: /healthz
@@ -75,13 +80,13 @@ livenessProbe:
 {{- end }}
 
 volumeMounts:
-# nats config
+# Mount den genererede NATS-konfiguration.
 - name: config
   mountPath: /etc/nats-config
-# PID volume
+# Mount et lille skriveområde til PID-fil og shutdown-signal.
 - name: pid
   mountPath: /var/run/nats
-# JetStream PVC
+# Mount JetStream-disken, hvis filbaseret persistence er aktiveret.
 {{- with .Values.config.jetstream }}
 {{- if and .enabled .fileStore.enabled .fileStore.pvc.enabled }}
 {{- with .fileStore }}
@@ -90,16 +95,16 @@ volumeMounts:
 {{- end }}
 {{- end }}
 {{- end }}
-# resolver PVC
+# Mount resolver-lager, hvis resolver persistence er slået til.
 {{- with .Values.config.resolver }}
 {{- if and .enabled .pvc.enabled }}
 - name: {{ .pvc.name }}
   mountPath: {{ .dir | quote }}
 {{- end }}
 {{- end }}
-# tlsCA
+# Mount fælles CA-certifikater, hvis chartet er sat op til det.
 {{- include "nats.tlsCAVolumeMount" $ }}
-# secrets
+# Mount eventuelle secrets med credentials, certifikater eller nøgler.
 {{- range (include "nats.secretNames" $ | fromJson).secretNames }}
 - name: {{ .name | quote }}
   mountPath: {{ .dir | quote }}
