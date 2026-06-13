@@ -21,15 +21,6 @@ from ibkr_adapter.models import OrderCommand
 
 log = get_logger(__name__)
 
-# Streams der skal eksistere før adapteren kan publicere.
-# Chartets nats streams.yaml (NACK CRDs) opretter dem i Kubernetes.
-# I dev kan du køre `nats stream add` manuelt.
-_JETSTREAM_SUBJECTS = {
-    "ORDERS",
-    "FILLS",
-    "RISK",
-}
-
 
 class NATSBridge:
     """Håndterer NATS forbindelsen og fungerer som event bus for adapteren."""

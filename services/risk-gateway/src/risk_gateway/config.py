@@ -35,7 +35,6 @@ class Settings(BaseSettings):
 
     # Server
     port: int = Field(8080, alias="PORT")
-    workers: int = Field(1, alias="WORKERS")
 
     # Logging
     log_level: str = Field("INFO", alias="LOG_LEVEL")

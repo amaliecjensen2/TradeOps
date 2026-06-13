@@ -118,18 +118,6 @@ class PositionSnapshot(BaseModel):
 
 # Udgående: marketdata.<feed>.<symbol>
 
-class Bar(BaseModel):
-    feed: Literal["realtime", "historical"]
-    symbol: str
-    open: float
-    high: float
-    low: float
-    close: float
-    volume: int
-    bar_time: datetime
-    timestamp: datetime = Field(default_factory=_utcnow)
-
-
 class Tick(BaseModel):
     feed: Literal["top"] = "top"
     symbol: str

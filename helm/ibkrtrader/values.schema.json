@@ -87,9 +87,6 @@
                     "resources": {
                         "type": "object"
                     },
-                    "config": {
-                        "type": "object"
-                    },
                     "risk": {
                         "type": "object",
                         "properties": {

@@ -26,6 +26,6 @@ Next steps:
 
 REMINDERS:
   - IBKR positions aggregate at the account level. clientId only isolates
-    order modification rights, not positions. See docs/architecture.md.
+    order modification rights, not positions.
   - Sunday 01:00 ET requires a manual 2FA tap. Set a phone alarm.
   - Pre-trade kill switch is {{ if .Values.riskMonitor.killSwitchEnabled }}ENABLED{{ else }}DISABLED{{ end }}.

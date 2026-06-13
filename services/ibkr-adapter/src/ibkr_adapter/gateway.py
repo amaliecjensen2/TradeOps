@@ -30,7 +30,6 @@ from ibkr_adapter.models import (
     OrderCommand,
     PnLSnapshot,
     PositionSnapshot,
-    SecType,
     Side,
     SnapshotComplete,
     Tick,
