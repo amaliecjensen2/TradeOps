@@ -27,7 +27,7 @@ volumeMounts:
 {{- range $.Values.reloader.natsVolumeMountPrefixes }}
 {{- if and (not $found) (hasPrefix . $mnt.mountPath) }}
 {{- $found = true }}
-- {{/* Mount kun de NATS-volumes som reloaderen faktisk skal kunne læse fra. */}}
+# Mount kun de NATS-volumes som reloaderen faktisk skal kunne læse fra.
 - {{ toYaml $mnt | nindent 2}}
 {{- end }}
 {{- end }}
