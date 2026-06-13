@@ -6,15 +6,6 @@ Subklass denne og implementer on_bar(). Alt andet håndteres her:
   Idempotency nøgle generering
   Health server
   Graceful nedlukning
-
-Brug:
-    class MyStrategy(BaseStrategy):
-        async def on_bar(self, bar: dict) -> None:
-            if self.should_buy(bar):
-                await self.buy(bar["symbol"], quantity=1)
-
-    if __name__ == "__main__":
-        asyncio.run(MyStrategy.create_and_run())
 """
 
 from __future__ import annotations
@@ -40,13 +31,6 @@ class BaseStrategy(ABC):
         self._nc = None
         self._http: httpx.AsyncClient | None = None
         self._running = True
-
-    @classmethod
-    async def create_and_run(cls) -> None:
-        from strategy_hello.config import get_settings
-        settings = get_settings()
-        strategy = cls(settings)
-        await strategy.run()
 
     async def run(self) -> None:
         from strategy_hello.logging_setup import configure_logging

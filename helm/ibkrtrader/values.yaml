@@ -272,10 +272,8 @@ nats:
         pvc:
           size: 10Gi
 
-# JetStream streams deklareret i nats streams.yaml (NACK CRDer, anvendes
-# kun hvis NACK controlleren er installeret, deaktiveret som standard).
+# JetStream streams bootstrap (oprettes via Job efter install/upgrade).
 jetstreamStreams:
-  enabled: false
   bootstrapJob:
     enabled: true
     image: natsio/nats-box:0.16.0

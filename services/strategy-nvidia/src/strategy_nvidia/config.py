@@ -23,9 +23,6 @@ class Settings(BaseSettings):
     universe: list[str] = Field(["NVDA"], alias="UNIVERSE")
     trade_qty: float = Field(1.0, alias="TRADE_QTY")  # shares at købe
 
-    # Risiko
-    max_daily_loss: float = Field(-500.0, alias="MAX_DAILY_LOSS")
-
     # Health
     health_port: int = Field(8080, alias="HEALTH_PORT")
     log_level: str = Field("INFO", alias="LOG_LEVEL")

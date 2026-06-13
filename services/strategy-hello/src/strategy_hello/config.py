@@ -34,9 +34,6 @@ class Settings(BaseSettings):
     slow_period: int = Field(20, alias="SLOW_PERIOD")   # langt MA vindue (bars)
     trade_qty: float = Field(1.0, alias="TRADE_QTY")    # shares pr signal
 
-    # Risiko
-    max_daily_loss: float = Field(-200.0, alias="MAX_DAILY_LOSS")
-
     # Health
     health_port: int = Field(8080, alias="HEALTH_PORT")
     log_level: str = Field("INFO", alias="LOG_LEVEL")

@@ -15,7 +15,6 @@ from __future__ import annotations
 from collections import defaultdict, deque
 
 from strategy_hello.base import BaseStrategy
-from strategy_hello.config import get_settings
 from strategy_hello.logging_setup import get_logger
 
 log = get_logger(__name__)

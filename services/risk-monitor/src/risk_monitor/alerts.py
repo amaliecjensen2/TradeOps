@@ -63,22 +63,6 @@ class AlertSender:
             f"Manual intervention required to resume."
         )
 
-    async def adapter_disconnected(self, reason: str) -> None:
-        mode_tag = f"[{self._mode.upper()}]"
-        await self.send(
-            f"⚠️ <b>IBKR CONNECTION LOST {mode_tag}</b>\n\n"
-            f"<b>Details:</b> {reason}\n\n"
-            f"The adapter lost contact with IB Gateway.\n"
-            f"Strategies are paused until reconnected."
-        )
-
-    async def adapter_reconnected(self) -> None:
-        mode_tag = f"[{self._mode.upper()}]"
-        await self.send(
-            f"✅ <b>IBKR RECONNECTED {mode_tag}</b>\n\n"
-            f"Connection to IB Gateway restored."
-        )
-
     async def heartbeat_timeout(self, seconds_since: float) -> None:
         mode_tag = f"[{self._mode.upper()}]"
         await self.send(
