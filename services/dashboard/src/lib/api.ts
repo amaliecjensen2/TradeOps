@@ -14,12 +14,10 @@ export interface SystemStatus {
 
 export interface Position {
     symbol: string;
-    sec_type: string;
     position: number;
     avg_cost: number;
     market_value: number | null;
     market_price: number | null;
-    timestamp: string;
 }
 
 export interface PnLSnapshot {
@@ -27,7 +25,6 @@ export interface PnLSnapshot {
     unrealized_pnl: number;
     realized_pnl: number;
     net_liquidation: number | null;
-    timestamp: string;
 }
 
 async function get<T>(path: string): Promise<T> {

@@ -113,8 +113,6 @@ strategies:
     resources:
       requests: { cpu: 100m, memory: 128Mi }
       limits:   { cpu: 500m, memory: 512Mi }
-    config:
-      universe: ["AAPL"]
     risk:
       maxOrderNotional: 1000
       maxPosition: 10
@@ -132,9 +130,6 @@ strategies:
     resources:
       requests: { cpu: 100m, memory: 128Mi }
       limits:   { cpu: 500m, memory: 512Mi }
-    config:
-      universe: ["NVDA"]
-      trade_qty: 1
     risk:
       maxOrderNotional: 5000
       maxPosition: 35

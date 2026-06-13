@@ -1,9 +1,4 @@
-"""Strategi konfiguration, indlæst fra env vars + ConfigMap mount.
-
-Helm strategy deployment templaten mounter strategiens ConfigMap
-ved /config/strategy.yaml og sætter CONFIG_PATH til den sti.
-Værdier i YAMLen overstyrer env var defaults.
-"""
+"""Strategi konfiguration, indlæst fra env vars."""
 
 from __future__ import annotations
 

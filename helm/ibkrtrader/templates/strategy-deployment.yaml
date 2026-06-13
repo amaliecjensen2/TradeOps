@@ -10,24 +10,6 @@
 {{- if $strategy.enabled }}
 {{- $name := printf "%s-strategy-%s" (include "ibkrtrader.fullname" $root) $strategy.name -}}
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ $name }}
-  namespace: {{ $root.Release.Namespace }}
-  labels:
-    {{- include "ibkrtrader.labels" $root | nindent 4 }}
-    app.kubernetes.io/component: strategy
-    ibkrtrader.io/strategy: {{ $strategy.name }}
-data:
-  config.yaml: |
-    name: {{ $strategy.name }}
-    clientId: {{ $strategy.clientId }}
-    config:
-      {{- toYaml ($strategy.config | default dict) | nindent 6 }}
-    risk:
-      {{- toYaml ($strategy.risk | default dict) | nindent 6 }}
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -81,10 +63,6 @@ spec:
             - name: RISK_GATEWAY_URL
               value: {{ printf "http://%s-risk-gateway.%s.svc.cluster.local:%v" (include "ibkrtrader.fullname" $root) $root.Release.Namespace $root.Values.riskGateway.port | quote }}
             {{- include "ibkrtrader.commonEnv" $root | nindent 12 }}
-          volumeMounts:
-            - name: config
-              mountPath: /etc/strategy
-              readOnly: true
           resources:
             {{- toYaml $strategy.resources | nindent 12 }}
           readinessProbe:
@@ -99,10 +77,6 @@ spec:
               port: health
             periodSeconds: 30
             failureThreshold: 3
-      volumes:
-        - name: config
-          configMap:
-            name: {{ $name }}
 ---
 apiVersion: v1
 kind: Service

@@ -1,4 +1,4 @@
-"""Strategi konfiguration, indlæst fra env vars + ConfigMap mount."""
+"""Strategi konfiguration, indlæst fra env vars."""
 
 from __future__ import annotations
 
