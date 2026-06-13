@@ -615,15 +615,6 @@ natsBox:
     # defaults to "{{ include "nats.fullname" $ }}-box-contexts"
     name:
 
-  # contents secret
-  contentsSecret:
-    # merge or patch the contents secret
-    # https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#secret-v1-core
-    merge: {}
-    patch: []
-    # defaults to "{{ include "nats.fullname" $ }}-box-contents"
-    name:
-
 
 ################################################################################
 # Extra user-defined resources

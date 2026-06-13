@@ -58,7 +58,6 @@ Set default values.
     {{- $_ := set .config.websocket.ingress         "name" (.config.websocket.ingress.name         | default (printf "%s-ws" $name)) }}
     {{- $_ := set .configMap                        "name" (.configMap.name                        | default (printf "%s-config" $name)) }}
     {{- $_ := set .headlessService                  "name" (.headlessService.name                  | default (printf "%s-headless" $name)) }}
-    {{- $_ := set .natsBox.contentsSecret           "name" (.natsBox.contentsSecret.name           | default (printf "%s-box-contents" $name)) }}
     {{- $_ := set .natsBox.contextsSecret           "name" (.natsBox.contextsSecret.name           | default (printf "%s-box-contexts" $name)) }}
     {{- $_ := set .natsBox.deployment               "name" (.natsBox.deployment.name               | default (printf "%s-box" $name)) }}
     {{- $_ := set .podDisruptionBudget              "name" (.podDisruptionBudget.name              | default $name) }}
