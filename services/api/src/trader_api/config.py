@@ -1,10 +1,11 @@
-"""Config foil for trader api.
-samler nats, logging
+"""Konfiguration for trader-api.
+
+Læser indstillinger fra environment variables (Helm chartet sætter dem på podden).
+BaseSettings fra pydantic-settings mapper hver env var til et felt automatisk.
 """
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-# basesettings gør at værdier automatisk kan læses fra enviroment variables
 
 
 class Settings(BaseSettings):
@@ -20,7 +21,8 @@ class Settings(BaseSettings):
     log_format: str = Field("json", alias="LOG_FORMAT")
 
 
-# singleton, setting bliver kun oprettet en gang, sikrer hele appen bruger samme config
+# Singleton: Settings instantieres kun første gang og genbruges derefter,
+# så hele appen ser samme config (og vi undgår at læse env vars gentagne gange).
 _settings: Settings | None = None
 
 

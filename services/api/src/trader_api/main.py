@@ -1,4 +1,4 @@
-"""starter process og binder filerne sammen"""
+"""Entry point. Starter NATS cachen og uvicorn serveren."""
 from __future__ import annotations
 import asyncio
 import signal
@@ -16,16 +16,19 @@ async def _main() -> None:
     configure_logging()
     log.info("trader_api.starting", port=settings.port)
 
+    # Cachen skal være forbundet og have aktive subscriptions før serveren
+    # accepterer requests, ellers ville /positions og /pnl returnere tomt.
     cache = RealtimeCache(settings)
-
     await cache.connect()
     await cache.subscribe_all()
 
     app = create_app(cache, account=settings.ibkr_account)
 
+    # access_log=False fordi structlog allerede håndterer request logging.
     config = uvicorn.Config(
         app, host="0.0.0.0", port=settings.port, log_config=None, access_log=False)
     server = uvicorn.Server(config)
+    # Graceful shutdown ved SIGTERM (Kubernetes sender denne ved pod terminate).
     loop = asyncio.get_running_loop()
     loop.add_signal_handler(
         signal.SIGTERM, server.handle_exit, signal.SIGTERM, None)

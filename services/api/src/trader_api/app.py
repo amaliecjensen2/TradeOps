@@ -1,13 +1,13 @@
-"""FastAPI applikation for trader api.
+"""FastAPI applikation for trader-api.
 
-Alle endpoints er kun læs og leverer live state fra NATS-cachen.
+Alle endpoints er read-only og leverer live state fra NATS cachen.
 
 Ruter:
-  GET /healthz
-  GET /readyz
-  GET /status               systemstatus (connected, halted, mode)
-  GET /positions            åbne positioner
-  GET /pnl                  seneste PnL snapshot
+  GET /healthz    liveness probe (processen kører)
+  GET /readyz     readiness probe (NATS forbindelsen er oppe)
+  GET /status     systemstatus (adapter connected, halt state, mode)
+  GET /positions  åbne positioner
+  GET /pnl        seneste PnL snapshot
 """
 
 from __future__ import annotations
@@ -25,20 +25,23 @@ log = get_logger(__name__)
 def create_app(cache: RealtimeCache, account: str) -> FastAPI:
     app = FastAPI(title="trader-api", version="0.1.0", docs_url="/docs")
 
+    # CORS: dashboarden kører på et andet origin (sin egen pod / domæne) og
+    # skal kunne kalde API'en fra browseren. Kun GET er tilladt da alt er read-only.
     app.add_middleware(
-        CORSMiddleware,  # browseren må kalde api fra en anden orgin
-        allow_origins=["*"],  # Alle må kalde API
-        allow_methods=["GET"],  # kun get req er tilladt
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["GET"],
         allow_headers=["*"],
     )
 
     @app.get("/healthz")
-    async def healthz():  # tjek for at apis kan kaldes / lever processen?
+    async def healthz():
         return {"status": "ok"}
 
     @app.get("/readyz")
     async def readyz():
-        nc = getattr(cache, "_nc", None)  # prøver at hente nats fra cachen
+        # Cachen tæller først som klar når NATS forbindelsen er etableret.
+        nc = getattr(cache, "_nc", None)
         if nc is None or nc.is_closed:
             return JSONResponse(status_code=503, content={"status": "not_ready"})
         return {"status": "ready"}
@@ -52,11 +55,11 @@ def create_app(cache: RealtimeCache, account: str) -> FastAPI:
             "account": account,
         }
 
-    @app.get("/positions")  # retunerer aktuelle positioner
+    @app.get("/positions")
     async def positions():
         return list(cache.positions.values())
 
-    @app.get("/pnl")  # retunerer profit n loss
+    @app.get("/pnl")
     async def pnl_latest():
         return cache.pnl or {}
 
