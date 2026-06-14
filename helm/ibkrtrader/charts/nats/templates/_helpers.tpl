@@ -1,4 +1,10 @@
 {{/*
+Denne fil samler de centrale helper templates for NATS chartet.
+Formålet er at beregne standardnavne, labels, images, secrets og merge patch logik.
+Mange andre templates i chartet kalder funktioner herfra
+*/}}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "nats.name" -}}

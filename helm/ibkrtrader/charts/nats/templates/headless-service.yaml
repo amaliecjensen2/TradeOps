@@ -1,3 +1,7 @@
+{{/*
+Denne wrapper renderer den headless service fra files/headless-service.yaml.
+Den bruges af StatefulSet'et til stabile DNS-navne og intern service discovery.
+*/}}
 {{- include "nats.defaultValues" . }}
 {{- with .Values.headlessService }}
 {{- include "nats.loadMergePatch" (merge (dict "file" "headless-service.yaml" "ctx" $) .) }}

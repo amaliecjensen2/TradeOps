@@ -1,4 +1,9 @@
 {{- /*
+Denne fil laver helper logik til at formatere JSON på en læsbar måde uden escaped tegn som u003c.
+Formålet er at generere pæn rå JSON til blandt andet NATS Box context secret data.
+*/}}
+
+{{- /*
 toPrettyRawJson
 input: interface{} valid JSON document
 output: pretty raw JSON string

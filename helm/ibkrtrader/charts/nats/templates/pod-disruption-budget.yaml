@@ -1,3 +1,7 @@
+{{/*
+Denne wrapper renderer kun et PodDisruptionBudget, når
+Values.podDisruptionBudget.enabled er slaaet til.
+*/}}
 {{- include "nats.defaultValues" . }}
 {{- with .Values.podDisruptionBudget }}
 {{- if .enabled }}

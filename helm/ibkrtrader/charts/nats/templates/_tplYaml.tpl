@@ -1,4 +1,10 @@
 {{- /*
+Denne fil laver helper logik til at evaluere template udtryk inde i values og oversaette resultatet til YAML.
+Formålet er at lade chartet bruge tpl baserede values og sprede dem ind i maps og slices ved behov.
+Den er aktiv i brug fra default values helperen og arbejder sammen med jsonpatch helperen.
+*/}}
+
+{{- /*
 tplYaml
 input: map with 2 keys:
 - doc: interface{}
@@ -11,7 +17,7 @@ maps matching the following syntax will be templated and parsed as YAML
   $tplYaml: string
 }
 
-maps matching the follow syntax will be templated, parsed as YAML, and spread into the parent map/slice
+maps matching the follow syntax will be templated, parsed as YAML, and spread into the parent map or slice
 {
   $tplYamlSpread: string
 }

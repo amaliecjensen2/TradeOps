@@ -1,6 +1,9 @@
 {{- include "nats.defaultValues" . }}
 {{- with .Values.natsBox }}
 {{- if .enabled }}
+# Denne template wrapper renderer deployment til NATS Box.
+# Formålet er at oprette den pod som kan bruges til NATS CLI og fejlfinding.
+# Den egentlige resource bliver bygget i filen under files nats-box deployment.
 {{- with .deployment }}
 {{- include "nats.loadMergePatch" (merge (dict "file" "nats-box/deployment/deployment.yaml" "ctx" $) .) }}
 {{- end }}

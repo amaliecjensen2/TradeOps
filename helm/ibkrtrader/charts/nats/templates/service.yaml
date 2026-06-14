@@ -1,3 +1,7 @@
+{{/*
+Denne wrapper renderer den almindelige NATS Service, men kun hvis
+Values.service.enabled er sand. Den endelige service bygges i files/service.yaml.
+*/}}
 {{- include "nats.defaultValues" . }}
 {{- with .Values.service }}
 {{- if .enabled }}

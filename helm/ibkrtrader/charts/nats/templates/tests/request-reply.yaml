@@ -2,9 +2,13 @@
 {{- with .Values.natsBox | deepCopy }}
 {{- $natsBox := . }}
 {{- if .enabled -}}
+# Denne fil renderer en Helm test pod til at kontrollere request reply mod NATS.
+# Formålet er at starte en midlertidig pod som sender og modtager en simpel besked.
+# Testen genbruger NATS Box pod template men overskriver kommando og metadata til testbrug.
 apiVersion: v1
 kind: Pod
 {{- with .container }}
+{{- /* Erstat container args så podden kører en simpel request reply test via nats CLI. */}}
 {{- $_ := set . "merge" (dict
   "args" (list
     "sh"
@@ -15,6 +19,7 @@ kind: Pod
 {{- $_ := set . "patch" list }}
 {{- end }}
 {{- with .podTemplate }}
+{{- /* Sæt test specifikt navn, labels, Helm hook annotations og restart policy. */}}
 {{- $_ := set . "merge" (dict
   "metadata" (dict
     "name" (printf "%s-test-request-reply" $.Values.statefulSet.name)

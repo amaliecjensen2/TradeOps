@@ -1,3 +1,7 @@
+{{/*
+Denne template renderer ekstra Kubernetes-ressourcer, hvis de er angivet
+i Values.extraResources. Hvis listen er tom, kommer der intet output herfra.
+*/}}
 {{- include "nats.defaultValues" . }}
 {{- range .Values.extraResources }}
 ---

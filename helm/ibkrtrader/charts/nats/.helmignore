@@ -1,8 +1,8 @@
-# Patterns to ignore when building packages.
-# This supports shell glob matching, relative path matching, and
-# negation (prefixed with !). Only one pattern per line.
+# Ignorer disse filer ved `helm package`, så chart-arkivet kun indeholder det,
+# Helm faktisk skal bruge ved distribution og installation.
 .DS_Store
-# Common VCS dirs
+
+# Versionsstyringsmapper og tilhørende ignore-filer skal ikke med i et chart-arkiv.
 .git/
 .gitignore
 .bzr/
@@ -10,17 +10,19 @@
 .hg/
 .hgignore
 .svn/
-# Common backup files
+
+# Midlertidige backupfiler opstår lokalt under redigering og må ikke påvirke release-pakken.
 *.swp
 *.bak
 *.tmp
 *.orig
 *~
-# Various IDEs
+
+# IDE-projektfiler er udviklermaskine-specifikke og skal ikke distribueres med chartet.
 .project
 .idea/
 *.tmproj
 .vscode/
 
-# template tests
+# Testfiler til templates bruges under udvikling, men de skal ikke med i den publicerede chart-pakke.
 /test

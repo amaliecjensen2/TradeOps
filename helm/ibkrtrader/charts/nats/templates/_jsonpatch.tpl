@@ -1,4 +1,10 @@
 {{- /*
+Denne fil implementerer JSON patch helper logik til chartet.
+Formålet er at anvende add remove replace move copy og test operationer på data under rendering.
+Den bliver brugt indirekte af merge patch og tplYaml helperne
+*/}}
+
+{{- /*
 jsonpatch
 input: map with 2 keys:
 - doc: interface{} valid JSON document

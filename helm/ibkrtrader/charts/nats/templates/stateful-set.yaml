@@ -1,3 +1,8 @@
+{{/*
+Denne wrapper renderer StatefulSet-skabelonen fra
+files/stateful-set/stateful-set.yaml efter at standardværdier er sat.
+Det er den centrale template for selve NATS-poddene.
+*/}}
 {{- include "nats.defaultValues" . }}
 {{- with .Values.statefulSet }}
 {{- include "nats.loadMergePatch" (merge (dict "file" "stateful-set/stateful-set.yaml" "ctx" $) .) }}

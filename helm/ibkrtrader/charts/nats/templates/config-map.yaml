@@ -1,3 +1,7 @@
+{{/*
+Denne template-wrapper initialiserer standardværdier for NATS-chartet
+og renderer derefter ConfigMap-skabelonen fra files/config-map.yaml.
+*/}}
 {{- include "nats.defaultValues" . }}
 {{- with .Values.configMap }}
 {{- include "nats.loadMergePatch" (merge (dict "file" "config-map.yaml" "ctx" $) .) }}
