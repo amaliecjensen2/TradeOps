@@ -1,3 +1,8 @@
+{{- /*
+  NOTES.txt vises automatisk af Helm efter install/upgrade.
+  Indhold er bevidst på engelsk fordi det er det første brugeren ser i terminalen
+  og kommandoerne (kubectl, port forward) er sproguafhængige.
+*/ -}}
 ibkrtrader v{{ .Chart.AppVersion }} installed.
 
 Mode: {{ .Values.ibkr.mode }}

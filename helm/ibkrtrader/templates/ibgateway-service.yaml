@@ -1,3 +1,10 @@
+{{/*
+  Én Service pr aktiveret gateway mode (paper/live). Selector matcher den
+  tilsvarende StatefulSet på label ibkrtrader.io/mode, så paper og live er
+  fuldt isolerede på DNS niveau:
+    <fullname>-ibgw-paper.<ns>.svc.cluster.local
+    <fullname>-ibgw-live.<ns>.svc.cluster.local
+*/}}
 {{- range $mode, $gw := .Values.ibkr.gateways }}
 {{- if $gw.enabled }}
 {{- $name := printf "%s-ibgw-%s" (include "ibkrtrader.fullname" $) $mode -}}
@@ -15,6 +22,8 @@ spec:
   # Headless så DNS resolver direkte til podden (vi vil aldrig have en LB
   # foran et stateful trading socket).
   clusterIP: None
+  # publishNotReadyAddresses sikrer at adapteren kan retry mod gateway podden
+  # mens den stadig booter, i stedet for at DNS opslaget returnerer tomt.
   publishNotReadyAddresses: true
   selector:
     {{- include "ibkrtrader.selectorLabels" $ | nindent 4 }}

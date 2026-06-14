@@ -1,5 +1,12 @@
+{{/*
+  Next.js dashboard. Proxyer alle /api/trader/* kald videre til intern API service
+  ved hjælp af API_URL env varen (server side) og viser samme værdi som
+  NEXT_PUBLIC_API_URL til klient bundlen.
+  Ingress er som default slået fra, brug port forward eller LB efter behov.
+*/}}
 {{- if .Values.dashboard.enabled -}}
 {{- $name := printf "%s-dashboard" (include "ibkrtrader.fullname" .) -}}
+{{- /* Beregn intern URL til API service én gang, så samme værdi bruges både server og klient side. */ -}}
 {{- $apiUrl := printf "http://%s-api.%s.svc.cluster.local:%v" (include "ibkrtrader.fullname" .) .Release.Namespace .Values.api.port -}}
 ---
 apiVersion: apps/v1
@@ -38,8 +45,10 @@ spec:
           env:
             - name: PORT
               value: {{ .Values.dashboard.port | quote }}
+            # Next.js standalone serveren binder kun til loopback hvis HOSTNAME ikke sættes.
             - name: HOSTNAME
               value: "0.0.0.0"
+            # NEXT_PUBLIC_* eksponeres til klient bundlen; API_URL er kun server side.
             - name: NEXT_PUBLIC_API_URL
               value: {{ $apiUrl | quote }}
             - name: API_URL
@@ -79,6 +88,8 @@ spec:
       protocol: TCP
 {{- if .Values.dashboard.ingress.enabled }}
 ---
+# Valgfri Ingress, kun renderet når dashboard.ingress.enabled=true.
+# Bruges når dashboarden skal eksponeres ud af clusteret uden port forward.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

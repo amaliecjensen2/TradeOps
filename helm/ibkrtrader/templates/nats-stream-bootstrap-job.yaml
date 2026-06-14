@@ -1,3 +1,10 @@
+{{/*
+  Engangs Job der opretter de fire JetStream streams (ORDERS, FILLS, MARKETDATA,
+  RISK) lige efter helm install/upgrade. Idempotent: hver stream tjekkes med
+  "stream info" og oprettes kun hvis den ikke findes.
+  Helm hooken sørger for at jobbet kører efter NATS sub charten er rullet ud
+  og slettes igen næste gang så vi ikke samler op på gamle Job objekter.
+*/}}
 {{- if and .Values.nats.enabled .Values.jetstreamStreams.bootstrapJob.enabled -}}
 ---
 apiVersion: batch/v1
@@ -9,9 +16,12 @@ metadata:
     {{- include "ibkrtrader.labels" . | nindent 4 }}
     app.kubernetes.io/component: nats-stream-bootstrap
   annotations:
+    # Kør efter install/upgrade så NATS allerede er oppe.
     "helm.sh/hook": post-install,post-upgrade
+    # Slet det gamle Job objekt før vi laver et nyt; behold ikke på succes.
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
+  # Op til 6 retries hvis NATS endnu ikke svarer eller streams provisioneres parallelt.
   backoffLimit: 6
   template:
     metadata:
@@ -27,18 +37,24 @@ spec:
             - sh
             - -ec
             - |
+              # Alias så vi ikke gentager server flag på hver kommando.
               nats="nats --server nats://{{ include "ibkrtrader.natsHost" . }}:4222"
+              # Vent på at NATS accepterer forbindelser før vi prøver at oprette streams.
               until ${nats} server check connection >/dev/null 2>&1; do
                 echo "Waiting for NATS..."
                 sleep 2
               done
 
+              # ORDERS: indkommende ordrer fra strategier (7 dages historik).
               ${nats} stream info ORDERS >/dev/null 2>&1 || \
                 ${nats} stream add ORDERS --subjects "orders.>" --storage file --retention limits --max-age 168h --defaults
+              # FILLS: udførte handler fra TWS, ingen alderssletning (audit log).
               ${nats} stream info FILLS >/dev/null 2>&1 || \
                 ${nats} stream add FILLS --subjects "fills.>" --storage file --retention limits --max-age 0 --defaults
+              # MARKETDATA: realtime ticks, korte 1 time TTL for at undgå at disk vokser.
               ${nats} stream info MARKETDATA >/dev/null 2>&1 || \
                 ${nats} stream add MARKETDATA --subjects "marketdata.>" --storage file --retention limits --max-age 1h --defaults
+              # RISK: risk events, PnL og positions; 30 dage så monitoren har historik.
               ${nats} stream info RISK >/dev/null 2>&1 || \
                 ${nats} stream add RISK --subjects "risk.>,pnl.>,positions.>" --storage file --retention limits --max-age 720h --defaults
 {{- end }}

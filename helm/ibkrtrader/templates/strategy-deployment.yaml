@@ -1,8 +1,10 @@
 {{/*
-  Én Deployment + Service + ConfigMap pr aktiveret strategi i
-  .Values.strategies. clientId unikhed valideres på forhånd; et
-  ugyldigt input fejler installationen med en tydelig fejl i stedet for
-  stille at producere to pods der konkurrerer om det samme IBKR client slot.
+  Én Deployment + headless Service pr aktiveret strategi i .Values.strategies.
+  clientId unikhed valideres på forhånd via validateClientIds; et ugyldigt input
+  fejler installationen med en tydelig fejl i stedet for stille at producere to
+  pods der konkurrerer om det samme IBKR client slot.
+  Strategi specifik konfiguration sendes som env vars (ingen ConfigMap, da
+  config fladen er lille nok til at passe i en miljøvariabel).
 */}}
 {{- include "ibkrtrader.validateClientIds" . -}}
 {{- $root := . -}}

@@ -1,3 +1,9 @@
+{{/*
+  Pre trade risk validator. Strategier POST'er deres ordrer mod denne service
+  før de når NATS / TWS. Gatewayen håndhæver både globale konto grænser og
+  pr strategi grænser (STRATEGY_LIMITS_JSON bygges nedenfor fra strategies listen).
+  Fail closed: hvis readyz fejler returnerer den 503 og strategier stopper.
+*/}}
 {{- if .Values.riskGateway.enabled -}}
 {{- $name := printf "%s-risk-gateway" (include "ibkrtrader.fullname" .) -}}
 ---
@@ -21,6 +27,8 @@ spec:
         {{- include "ibkrtrader.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: risk-gateway
       annotations:
+        # Tving rolling restart når enten gateway config eller en strategi limit ændres,
+        # så STRATEGY_LIMITS_JSON aldrig bliver stale i en kørende pod.
         checksum/config: {{ printf "%s-%s" (toYaml .Values.riskGateway) (toYaml .Values.strategies) | sha256sum }}
     spec:
       serviceAccountName: {{ include "ibkrtrader.serviceAccountName" . }}
@@ -47,7 +55,9 @@ spec:
               value: {{ .Values.riskGateway.global.maxOrdersPerSecond | quote }}
             - name: RESTRICTED_SYMBOLS
               value: {{ join "," .Values.riskGateway.global.restrictedSymbols | quote }}
-            {{- /* Byg per strategi limits JSON fra strategies listen */ -}}
+            {{- /* Byg per strategi limits JSON fra strategies listen.
+                   Resultatet er map: {strategi navn -> risk objekt}, og deserialiseres
+                   af gatewayen ved opstart. Kun aktiverede strategier inkluderes. */ -}}
             {{- $limits := dict -}}
             {{- range $s := .Values.strategies -}}
               {{- if $s.enabled -}}
@@ -74,6 +84,7 @@ spec:
             periodSeconds: 30
             failureThreshold: 3
 ---
+# ClusterIP service som strategierne POST'er ordrer mod (RISK_GATEWAY_URL env varen).
 apiVersion: v1
 kind: Service
 metadata:

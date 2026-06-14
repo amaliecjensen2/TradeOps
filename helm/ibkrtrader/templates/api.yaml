@@ -1,3 +1,8 @@
+{{/*
+  Read only API der eksponerer trader state (positions, PnL, adapter heartbeat)
+  via HTTP. Dashboarden læser herfra; ingen ordrer placeres via dette endpoint.
+  Datakilden er NATS, podden er stateless og kan skaleres frit.
+*/}}
 {{- if .Values.api.enabled -}}
 {{- $name := printf "%s-api" (include "ibkrtrader.fullname" .) -}}
 ---
@@ -10,6 +15,7 @@ metadata:
     {{- include "ibkrtrader.labels" . | nindent 4 }}
     app.kubernetes.io/component: api
 spec:
+  # Antal replicas styres fra values.yaml. Stateless cache => sikkert at skalere.
   replicas: {{ .Values.api.replicas }}
   selector:
     matchLabels:
@@ -37,9 +43,11 @@ spec:
           env:
             - name: PORT
               value: {{ .Values.api.port | quote }}
+            # commonEnv injicerer IBGW_HOST/PORT, NATS_URL, IBKR_ACCOUNT, IBKR_MODE.
             {{- include "ibkrtrader.commonEnv" . | nindent 12 }}
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}
+          # /readyz fortæller om NATS forbindelsen er etableret; /healthz er ren liveness.
           readinessProbe:
             httpGet:
               path: /readyz
@@ -53,6 +61,7 @@ spec:
             periodSeconds: 30
             failureThreshold: 3
 ---
+# Intern ClusterIP service. Dashboardens server side route læser herfra.
 apiVersion: v1
 kind: Service
 metadata:
