@@ -1,10 +1,14 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  # Sæt namespace, hvis chartet er konfigureret til et bestemt namespace.
   {{- include "nats.metadataNamespace" $ | nindent 2 }}
+  # Navnet bruges senere, når ConfigMap'en mountes ind i NATS-podden.
   name: {{ .Values.configMap.name }}
   labels:
+    # Standard labels gør ressourcen let at finde og knytte til chartet.
     {{- include "nats.labels" $ | nindent 4 }}
 data:
+  # Generer NATS-konfigurationen som filen nats.conf inde i ConfigMap'en.
   nats.conf: |
     {{- include "nats.formatConfig" .config | nindent 4 }}

@@ -1,16 +1,25 @@
+# Denne fil renderer den headless service for NATS.
+# Servicen giver stabile DNS navne til pods i StatefulSet og bruges til intern service discovery.
 apiVersion: v1
 kind: Service
 metadata:
+  # Sæt namespace hvis chartet er konfigureret med et bestemt namespace.
   {{- include "nats.metadataNamespace" $ | nindent 2 }}
+  # Navnet bruges af StatefulSet og andre interne opslag i chartet.
   name: {{ .Values.headlessService.name }}
   labels:
+    # Standard labels knytter servicen til resten af chartet.
     {{- include "nats.labels" $ | nindent 4 }}
 spec:
   selector:
+    # Selectoren matcher de pods som hører til NATS StatefulSet.
     {{- include "nats.selectorLabels" $ | nindent 4 }}
+  # Headless betyder at Kubernetes ikke giver servicen en virtuel IP.
   clusterIP: None
+  # Publicer adresser tidligt så pods kan findes under opstart.
   publishNotReadyAddresses: true
   ports:
+  # Opret service porte for de protokoller som er aktive i konfigurationen.
   {{- range $protocol := list "nats" "leafnodes" "websocket" "mqtt" "cluster" "gateway" "monitor" "profiling" }}
   {{- $configProtocol := get $.Values.config $protocol }}
   {{- if or (eq $protocol "nats") $configProtocol.enabled }}
@@ -19,6 +28,7 @@ spec:
     {{- $tlsEnabled = $configProtocol.tls.enabled }}
   {{- end }}
   {{- $appProtocol := or (eq $protocol "websocket") (eq $protocol "monitor") | ternary ($tlsEnabled | ternary "https" "http") ($tlsEnabled | ternary "tls" "tcp") }}
+  # Hver port peger videre til en container port med samme navn.
   - {{ dict "name" $protocol "port" $configProtocol.port "targetPort" $protocol "appProtocol" $appProtocol | toYaml | nindent 4 }}
   {{- end }}
   {{- end }}

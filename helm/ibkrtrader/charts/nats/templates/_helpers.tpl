@@ -55,7 +55,6 @@ Set default values.
   {{- with .Values }}
     {{- $_ := set .config.jetstream.fileStore.pvc   "name" (.config.jetstream.fileStore.pvc.name   | default (printf "%s-js" $name)) }}
     {{- $_ := set .config.resolver.pvc              "name" (.config.resolver.pvc.name              | default (printf "%s-resolver" $name)) }}
-    {{- $_ := set .config.websocket.ingress         "name" (.config.websocket.ingress.name         | default (printf "%s-ws" $name)) }}
     {{- $_ := set .configMap                        "name" (.configMap.name                        | default (printf "%s-config" $name)) }}
     {{- $_ := set .headlessService                  "name" (.headlessService.name                  | default (printf "%s-headless" $name)) }}
     {{- $_ := set .natsBox.contextsSecret           "name" (.natsBox.contextsSecret.name           | default (printf "%s-box-contexts" $name)) }}
