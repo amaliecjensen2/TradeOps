@@ -1,12 +1,10 @@
-{{/*
-  Pre trade risk validator. Strategier POST'er deres ordrer mod denne service
-  før de når NATS / TWS. Gatewayen håndhæver både globale konto grænser og
-  pr strategi grænser (STRATEGY_LIMITS_JSON bygges nedenfor fra strategies listen).
-  Fail closed: hvis readyz fejler returnerer den 503 og strategier stopper.
-*/}}
 {{- if .Values.riskGateway.enabled -}}
 {{- $name := printf "%s-risk-gateway" (include "ibkrtrader.fullname" .) -}}
 ---
+# Pre trade risk validator. Strategier POST'er deres ordrer mod denne service
+# før de når NATS / TWS. Gatewayen håndhæver både globale konto grænser og
+# pr strategi grænser (STRATEGY_LIMITS_JSON bygges nedenfor fra strategies listen).
+# Fail closed: hvis readyz fejler returnerer den 503 og strategier stopper.
 apiVersion: apps/v1
 kind: Deployment
 metadata:

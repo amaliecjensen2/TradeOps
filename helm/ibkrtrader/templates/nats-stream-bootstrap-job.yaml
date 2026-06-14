@@ -1,12 +1,10 @@
-{{/*
-  Engangs Job der opretter de fire JetStream streams (ORDERS, FILLS, MARKETDATA,
-  RISK) lige efter helm install/upgrade. Idempotent: hver stream tjekkes med
-  "stream info" og oprettes kun hvis den ikke findes.
-  Helm hooken sørger for at jobbet kører efter NATS sub charten er rullet ud
-  og slettes igen næste gang så vi ikke samler op på gamle Job objekter.
-*/}}
 {{- if and .Values.nats.enabled .Values.jetstreamStreams.bootstrapJob.enabled -}}
 ---
+# Engangs Job der opretter de fire JetStream streams (ORDERS, FILLS, MARKETDATA,
+# RISK) lige efter helm install/upgrade. Idempotent: hver stream tjekkes med
+# "stream info" og oprettes kun hvis den ikke findes.
+# Helm hooken sørger for at jobbet kører efter NATS sub charten er rullet ud
+# og slettes igen næste gang så vi ikke samler op på gamle Job objekter.
 apiVersion: batch/v1
 kind: Job
 metadata:

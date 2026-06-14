@@ -1,11 +1,9 @@
-{{/*
-  Read only API der eksponerer trader state (positions, PnL, adapter heartbeat)
-  via HTTP. Dashboarden læser herfra; ingen ordrer placeres via dette endpoint.
-  Datakilden er NATS, podden er stateless og kan skaleres frit.
-*/}}
 {{- if .Values.api.enabled -}}
 {{- $name := printf "%s-api" (include "ibkrtrader.fullname" .) -}}
 ---
+# Read only API der eksponerer trader state (positions, PnL, adapter heartbeat)
+# via HTTP. Dashboarden læser herfra; ingen ordrer placeres via dette endpoint.
+# Datakilden er NATS, podden er stateless og kan skaleres frit.
 apiVersion: apps/v1
 kind: Deployment
 metadata:

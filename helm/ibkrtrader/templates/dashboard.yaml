@@ -1,14 +1,12 @@
-{{/*
-  Next.js dashboard. Proxyer alle /api/trader/* kald videre til intern API service
-  ved hjælp af API_URL env varen (server side) og viser samme værdi som
-  NEXT_PUBLIC_API_URL til klient bundlen.
-  Ingress er som default slået fra, brug port forward eller LB efter behov.
-*/}}
 {{- if .Values.dashboard.enabled -}}
 {{- $name := printf "%s-dashboard" (include "ibkrtrader.fullname" .) -}}
 {{- /* Beregn intern URL til API service én gang, så samme værdi bruges både server og klient side. */ -}}
 {{- $apiUrl := printf "http://%s-api.%s.svc.cluster.local:%v" (include "ibkrtrader.fullname" .) .Release.Namespace .Values.api.port -}}
 ---
+# Next.js dashboard. Proxyer alle /api/trader/* kald videre til intern API service
+# ved hjælp af API_URL env varen (server side) og viser samme værdi som
+# NEXT_PUBLIC_API_URL til klient bundlen.
+# Ingress er som default slået fra, brug port forward eller LB efter behov.
 apiVersion: apps/v1
 kind: Deployment
 metadata:

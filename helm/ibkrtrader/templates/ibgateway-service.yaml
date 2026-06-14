@@ -1,14 +1,12 @@
-{{/*
-  Én Service pr aktiveret gateway mode (paper/live). Selector matcher den
-  tilsvarende StatefulSet på label ibkrtrader.io/mode, så paper og live er
-  fuldt isolerede på DNS niveau:
-    <fullname>-ibgw-paper.<ns>.svc.cluster.local
-    <fullname>-ibgw-live.<ns>.svc.cluster.local
-*/}}
 {{- range $mode, $gw := .Values.ibkr.gateways }}
 {{- if $gw.enabled }}
 {{- $name := printf "%s-ibgw-%s" (include "ibkrtrader.fullname" $) $mode -}}
 ---
+# Én Service pr aktiveret gateway mode (paper/live). Selector matcher den
+# tilsvarende StatefulSet på label ibkrtrader.io/mode, så paper og live er
+# fuldt isolerede på DNS niveau:
+#   <fullname>-ibgw-paper.<ns>.svc.cluster.local
+#   <fullname>-ibgw-live.<ns>.svc.cluster.local
 apiVersion: v1
 kind: Service
 metadata:
