@@ -1,12 +1,20 @@
+ # Denne fil renderer et PodDisruptionBudget for NATS pods.
+ # Formålet er at begrænse hvor mange pods Kubernetes må forstyrre ad gangen.
+ # Det beskytter mod at for mange NATS pods bliver frivilligt nedtaget samtidigt.
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
+  # Sæt namespace hvis chartet bruger et bestemt namespace
   {{- include "nats.metadataNamespace" $ | nindent 2 }}
+  # Navnet bruges til den PodDisruptionBudget ressource som oprettes
   name: {{ .Values.podDisruptionBudget.name }}
   labels:
+    # Standard labels knytter ressourcen til chartet
     {{- include "nats.labels" $ | nindent 4 }}
 spec:
+  # Tillad højst at en pod er utilgængelig ad gangen ved frivillige forstyrrelser
   maxUnavailable: 1
   selector:
     matchLabels:
+      # Vælg de pods som hører til dette NATS StatefulSet
       {{- include "nats.selectorLabels" $ | nindent 6 }}

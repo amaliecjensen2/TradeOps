@@ -34,13 +34,6 @@ spec:
   {{- end }}
   {{- end }}
 
-  {{- with .Values.serviceAccount }}
-  {{- if .enabled }}
-  # Knyt podden til service accounten, hvis den er aktiveret.
-  serviceAccountName: {{ .name | quote }}
-  {{- end }}
-  {{- end }}
-
   {{- if .Values.reloader.enabled }}
   # Sidecars kan dele proces-namespace, så reloaderen kan signalere NATS-processen.
   shareProcessNamespace: true

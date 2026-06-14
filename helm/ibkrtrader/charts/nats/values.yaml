@@ -224,30 +224,6 @@ config:
     enabled: false
     port: 65432
 
-  resolver:
-    enabled: false
-    dir: /data/resolver
-
-    ############################################################
-    # stateful set -> volume claim templates -> resolver pvc
-    ############################################################
-    pvc:
-      enabled: true
-      size: 1Gi
-      storageClassName:
-
-      # merge or patch the pvc
-      # https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#persistentvolumeclaim-v1-core
-      merge: {}
-      patch: []
-      # defaults to "{{ include "nats.fullname" $ }}-resolver"
-      name:
-
-    # merge or patch the resolver
-    # https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/jwt/resolver
-    merge: {}
-    patch: []
-
   # adds a prefix to the server name, which defaults to the pod name
   # helpful for ensuring server name is unique in a super cluster
   serverNamePrefix: ""
@@ -360,37 +336,6 @@ reloader:
 # stateful set -> pod template -> prom-exporter container
 ############################################################
 # config.monitor must be enabled
-promExporter:
-  enabled: false
-  image:
-    repository: natsio/prometheus-nats-exporter
-    tag: 0.16.0
-    pullPolicy:
-    registry:
-    digest:
-    fullImageName:
-
-  port: 7777
-  # env var map, see nats.env for an example
-  env: {}
-
-  # merge or patch the container
-  # https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#container-v1-core
-  merge: {}
-  patch: []
-
-  ############################################################
-  # prometheus pod monitor
-  ############################################################
-  podMonitor:
-    enabled: false
-
-    # merge or patch the pod monitor
-    # https://prometheus-operator.dev/docs/operator/api/#monitoring.coreos.com/v1.PodMonitor
-    merge: {}
-    patch: []
-    # defaults to "{{ include "nats.fullname" $ }}"
-    name:
 
 
 ############################################################
@@ -488,17 +433,6 @@ podDisruptionBudget:
   patch: []
   # defaults to "{{ include "nats.fullname" $ }}"
   name:
-
-# service account
-serviceAccount:
-  enabled: false
-  # merge or patch the service account
-  # https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#serviceaccount-v1-core
-  merge: {}
-  patch: []
-  # defaults to "{{ include "nats.fullname" $ }}"
-  name:
-
 
 ############################################################
 # natsBox

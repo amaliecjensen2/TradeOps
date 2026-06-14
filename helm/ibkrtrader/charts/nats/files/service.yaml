@@ -1,14 +1,22 @@
+# Denne fil renderer den almindelige Kubernetes Service til NATS.
+# Formaalet er at eksponere de porte som klienter og interne komponenter skal bruge.
+# Filen bruges kun naar service er aktiveret i chartets values.
 apiVersion: v1
 kind: Service
 metadata:
+  # Saet namespace hvis chartet bruger et bestemt namespace.
   {{- include "nats.metadataNamespace" $ | nindent 2 }}
+  # Navnet bruges til den Service ressource som oprettes.
   name: {{ .Values.service.name }}
   labels:
+    # Standard labels knytter ressourcen til chartet.
     {{- include "nats.labels" $ | nindent 4 }}
 spec:
   selector:
+    # Send trafik til de pods som matcher NATS labels.
     {{- include "nats.selectorLabels" $ | nindent 4 }}
   ports:
+  # Gennemgaa alle kendte protokoller og opret kun de porte som baade er konfigureret og aktiveret.
   {{- range $protocol := list "nats" "leafnodes" "websocket" "mqtt" "cluster" "gateway" "monitor" "profiling" }}
   {{- $configProtocol := get $.Values.config $protocol }}
   {{- $servicePort := get $.Values.service.ports $protocol }}
@@ -17,6 +25,7 @@ spec:
   {{- if hasKey $configProtocol "tls" }}
     {{- $tlsEnabled = $configProtocol.tls.enabled }}
   {{- end }}
+  # appProtocol saettes ud fra protokoltype og om den tilhoerende TLS er slaaet til.
   {{- $appProtocol := or (eq $protocol "websocket") (eq $protocol "monitor") | ternary ($tlsEnabled | ternary "https" "http") ($tlsEnabled | ternary "tls" "tcp") }}
   - {{ merge (dict "name" $protocol "targetPort" $protocol "appProtocol" $appProtocol) (omit $servicePort "enabled") (dict "port" $configProtocol.port) | toYaml | nindent 4 }}
   {{- end }}

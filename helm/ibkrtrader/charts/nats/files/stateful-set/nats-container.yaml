@@ -95,13 +95,6 @@ volumeMounts:
 {{- end }}
 {{- end }}
 {{- end }}
-# Mount resolver-lager, hvis resolver persistence er slået til.
-{{- with .Values.config.resolver }}
-{{- if and .enabled .pvc.enabled }}
-- name: {{ .pvc.name }}
-  mountPath: {{ .dir | quote }}
-{{- end }}
-{{- end }}
 # Mount fælles CA-certifikater, hvis chartet er sat op til det.
 {{- include "nats.tlsCAVolumeMount" $ }}
 # Mount eventuelle secrets med credentials, certifikater eller nøgler.
