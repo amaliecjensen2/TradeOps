@@ -1,30 +1,24 @@
-# ============================================================================
+# ibkrtrader default values.
 #
-# ibkrtrader, default værdier
-#
-# Dette er v0 overfladen. De fleste komponenter refererer placeholder images
-# (registry.local/ibkrtrader/...) som du selv bygger. Chartet er
-# designet til at deploye en komplet topologi selv med placeholders så wiring
-# kan verificeres ende til ende.
-# ============================================================================
+# Chartet deployer hele topologien (gateway, adapter, risk plane, API, dashboard,
+# NATS, strategier) i én release så wiring kan verificeres ende til ende.
+# Overlay værdier ligger i values.paper.yaml, values.live.yaml og values.azure.yaml.
 
 global:
   # Default registry er Azure Container Registry. CI workflowet overstyrer
   # alligevel pr service image.repository, så denne værdi rammer kun ved
   # manuel helm upgrade uden image-overrides.yaml.
   imageRegistry: tradeops.azurecr.io
-  # AKS pull fra attached ACR går via kubelet managed identity,
-  # så ingen imagePullSecret kræves.
+  # AKS pull fra attached ACR går via kubelet managed identity, så ingen
+  # imagePullSecret kræves.
   imagePullSecrets: []
   storageClass: ""
 
-# ----------------------------------------------------------------------------
-# IBKR Gateway
-# ----------------------------------------------------------------------------
+# IBKR Gateway: TWS forbindelsen mod Interactive Brokers.
 ibkr:
-  # mode vælger hvilken gateway StatefulSet strategier peger på.
-  # Begge StatefulSets kan deployes samtidigt ved at aktivere begge
-  # gateways nedenfor; dette flag styrer kun default DNS resolution.
+  # mode passes som IBKR_MODE env var til alle services og indgår i
+  # activeGatewayHost helper'en, så strategier rammer paper eller live socket.
+  # Begge gateways kan køre samtidigt ved at sætte begge enabled=true.
   mode: paper          # paper | live
   account: "DUQ568769"  # IBKR konto ID
 
@@ -38,9 +32,9 @@ ibkr:
         pullPolicy: IfNotPresent
       apiPort: 4004
       vncPort: 5900
-      # IBC auto restart tidspunkt (Toronto), gatewayen genstarter inden for
-      # det eksisterende session vindue så daglig 2FA ikke promptes igen. Den
-      # ugentlige Sunday 01:00 ET reset kræver stadig et manuelt tap.
+      # IBC auto restart tidspunkt (Toronto). Gatewayen genstarter inden for
+      # det eksisterende session vindue så daglig 2FA ikke promptes igen.
+      # Den ugentlige Sunday 01:00 ET reset kræver stadig et manuelt tap.
       autoRestartTime: "11:55 PM"
       twoFaTimeoutAction: restart
       readOnlyApi: false
@@ -78,9 +72,9 @@ ibkr:
       tolerations: []
       affinity: {}
 
-  # Credentials. CI injicerer username/password fra GitHub Actions secrets
-  # (IBKR_USERNAME, IBKR_PASSWORD) via en tmp values fil, så chartet selv
-  # rendrer Secret'en. Lokal helm install kræver overstyring af felterne.
+  # TWS login credentials. CI injicerer username/password fra GitHub Actions
+  # secrets (IBKR_USERNAME, IBKR_PASSWORD) via en tmp values fil, så chartet
+  # selv renderer Secret'en. Lokal helm install kræver overstyring.
   credentials:
     # Sæt existingSecret hvis du i stedet vil bruge en pre eksisterende Secret
     # (forventede nøgler: TWS_USERID, TWS_PASSWORD). Når den er tom opretter
@@ -89,17 +83,10 @@ ibkr:
     username: ""
     password: ""
 
-# ----------------------------------------------------------------------------
-# Strategier
-#
-# Hver entry producerer:
-#   én Deployment (image, resources, env, configmap mount)
-#   én Service (til health probes)
-#   én ConfigMap (strategi specifik config renderet som YAML)
-#
-# clientId SKAL være unikt på tværs af alle strategier, _helpers.tpl validerer dette
-# på template render tidspunkt og fejler installationen ved kollisioner.
-# ----------------------------------------------------------------------------
+# Strategier: én Deployment + headless Service pr aktiveret entry.
+# clientId skal være unikt på tværs af alle aktiverede strategier;
+# _helpers.tpl validerer dette ved template render og fejler installationen
+# ved kollisioner. clientId=1 er reserveret til ibkr-adapter (sæt den ikke her).
 strategies:
   - name: hello
     enabled: true
@@ -113,6 +100,7 @@ strategies:
     resources:
       requests: { cpu: 100m, memory: 128Mi }
       limits:   { cpu: 500m, memory: 512Mi }
+    # Pr strategi pre trade grænser, sendes til risk-gateway via STRATEGY_LIMITS_JSON.
     risk:
       maxOrderNotional: 1000
       maxPosition: 10
@@ -136,15 +124,11 @@ strategies:
       maxDailyLoss: -10000
       maxOrdersPerSecond: 1
 
-
-# IBKR Adapter
-#
-# Adapteren ejer den eneste TWS forbindelse (clientId=1 er reserveret til den).
-# Den binder IBKR til NATS:
-#   orders.>        (NATS indkommende) til TWS placeOrder()
-#   fills/pnl/pos   (TWS callbacks) til NATS udgående
+# IBKR Adapter: ejer den eneste TWS forbindelse (clientId=1 reserveret).
+# Bro mellem IBKR og NATS:
+#   orders.>        (NATS indkommende) -> TWS placeOrder()
+#   fills/pnl/pos   (TWS callbacks)    -> NATS udgående
 #   risk.adapter.*  heartbeat + disconnection alarmer
-# ----------------------------------------------------------------------------
 ibkrAdapter:
   enabled: true
   image:
@@ -160,16 +144,14 @@ ibkrAdapter:
   logLevel: INFO
   logFormat: json      # json | console
   # Kommasepareret liste af tickers at streame realtime markedsdata for.
-  # Adapteren kalder IBKR reqMktData for hvert symbol og publicerer ticks til
-  # marketdata.realtime.<SYMBOL>. Skal dække alle symboler i et hvilket som helst aktiveret
-  # strategi univers; ellers modtager strategien ingen bars.
+  # Adapteren kalder IBKR reqMktData pr symbol og publicerer ticks til
+  # marketdata.realtime.<SYMBOL>. Skal dække alle symboler i et hvilket som
+  # helst aktiveret strategi univers; ellers modtager strategien ingen bars.
   universe: "NVDA,AAPL"
   nodeSelector: {}
   tolerations: []
 
-# ----------------------------------------------------------------------------
-# Risk plane
-# ----------------------------------------------------------------------------
+# Risk plane: pre trade gateway (synkron HTTP) + post trade monitor (NATS subscriber).
 riskGateway:
   enabled: true
   image:
@@ -182,7 +164,7 @@ riskGateway:
     requests: { cpu: 100m, memory: 128Mi }
     limits:   { cpu: 500m, memory: 512Mi }
 
-  # Konto dækkende pre trade grænser. Håndhæves i tillæg til pr strategi
+  # Konto dækkende pre trade grænser. Håndhæves i tillæg til pr strategi grænser.
   global:
     maxAccountDrawdownPct: 0.05
     maxGrossExposure: 1000000
@@ -195,31 +177,35 @@ riskMonitor:
     repository: tradeops.azurecr.io/ibkrtrader/risk-monitor
     tag: "0aeaad4f907ade67761487eb78cd4b092fa56499"
     pullPolicy: IfNotPresent
-  replicas: 2          # leader elected via Lease
+  replicas: 2          # leader elected via Lease, kun leder handler
   resources:
     requests: { cpu: 100m, memory: 128Mi }
     limits:   { cpu: 500m, memory: 512Mi }
-  # Drift / breach 
+  # Hvor ofte monitoren tjekker drift / breach mod thresholds.
   reconcileIntervalSeconds: 10
-  # Om monitoren får lov til at scalere strategi Deployments til 0.
+  # Tillader monitoren at scalere strategi Deployments til 0 ved breach.
+  # Slået fra som default; tændes typisk kun i live (values.live.yaml).
   killSwitchEnabled: false
 
   # Risikogrænser, sendes til monitoren som env vars.
   thresholds:
-    maxDailyLoss: -100000            
-    maxDrawdownPct: 0.5        # halt ved 5% intra day drawdown fra HWM
+    maxDailyLoss: -100000
+    maxDrawdownPct: 0.5         # halt ved 50% intra day drawdown fra HWM
     maxGrossExposure: 1000000   # halt hvis gross eksponering overstiger dette (USD)
     heartbeatTimeoutS: 60       # alarm hvis adapteren er tavs 60s
 
+  # Telegram alarmer ved breach / kill switch trigger.
+  # CI injicerer token + chatId fra GitHub secrets via tmp values fil.
+  # Sæt existingSecret hvis du selv vil levere en pre eksisterende Secret.
   telegram:
     enabled: true
     existingSecret: ""
     token: ""
     chatId: ""
 
-
-# API + dashboard
-# ----------------------------------------------------------------------------
+# Read only HTTP API + Next.js dashboard.
+# API'en eksponerer positions, PnL og adapter heartbeat (cached fra NATS).
+# Dashboarden proxyer alle /api/trader/* kald videre til API service.
 api:
   enabled: true
   image:
@@ -243,6 +229,7 @@ dashboard:
   resources:
     requests: { cpu: 100m, memory: 128Mi }
     limits:   { cpu: 500m, memory: 512Mi }
+  # Ingress er som default slået fra; aktiveres af values.azure.yaml til AKS.
   ingress:
     enabled: false
     className: ""
@@ -250,11 +237,9 @@ dashboard:
     annotations: {}
     tls: []
 
-# ----------------------------------------------------------------------------
-# Data plane
-# ----------------------------------------------------------------------------
-
-# NATS via subchart. Default config = JetStream aktiveret, file storage.
+# NATS broker (subchart) + JetStream stream bootstrap Job.
+# JetStream er aktiveret med file storage; cluster mode er fra for at spare
+# ressourcer (kan bumpes til 3 node ved behov for HA).
 nats:
   enabled: true
   config:
@@ -267,15 +252,16 @@ nats:
         pvc:
           size: 10Gi
 
-# JetStream streams bootstrap (oprettes via Job efter install/upgrade).
+# Engangs Job der opretter ORDERS, FILLS, MARKETDATA og RISK streams
+# efter helm install/upgrade. Idempotent.
 jetstreamStreams:
   bootstrapJob:
     enabled: true
     image: natsio/nats-box:0.16.0
 
-# ----------------------------------------------------------------------------
-# RBAC
-# ----------------------------------------------------------------------------
+# RBAC: kun risk-monitor har faktisk brug for det (scaler strategier ned ved
+# kill switch + leader election Lease). Andre pods bruger den fælles
+# serviceAccount uden ekstra rettigheder.
 rbac:
   create: true
 
