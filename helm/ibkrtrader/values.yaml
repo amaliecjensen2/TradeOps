@@ -187,26 +187,12 @@ riskMonitor:
   # Slået fra som default; tændes typisk kun i live (values.live.yaml).
   killSwitchEnabled: true
 
-
-
-
-
-
-
-
-
   # Risikogrænser, sendes til monitoren som env vars.
   thresholds:
-    maxDailyLoss: 1800          #Maksimalt dagligt tab
+    maxDailyLoss: -1800          #Maksimalt dagligt tab
     maxDrawdownPct: 0.5         # Maksimal drawdown i procent. 0.5 betyder 50% fald fra tidligere topværdi
     maxGrossExposure: 1000000   # halt hvis gross eksponering overstiger dette (USD)
     heartbeatTimeoutS: 60       # alarm hvis adapteren er tavs 60s
-
-
-
-
-
-
 
   # Telegram alarmer ved breach / kill switch trigger.
   # CI injicerer token + chatId fra GitHub secrets via tmp values fil.
