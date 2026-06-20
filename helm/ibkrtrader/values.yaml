@@ -120,7 +120,7 @@ strategies:
       limits:   { cpu: 500m, memory: 512Mi }
     risk:
       maxOrderNotional: 5000
-      maxPosition: 35
+      maxPosition: 38
       maxDailyLoss: -10000
       maxOrdersPerSecond: 1
 
