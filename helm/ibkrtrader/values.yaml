@@ -197,9 +197,8 @@ riskMonitor:
 
   # Risikogrænser, sendes til monitoren som env vars.
   thresholds:
-    maxDailyLoss: 1800
-    maxDrawdownPct: 0.5         # halt ved 50% intra day drawdown fra HWM
-    maxGrossExposure: 1000000   # halt hvis gross eksponering overstiger dette (USD)
+    maxDailyLoss: 1800          #Maksimalt dagligt tab
+    maxDrawdownPct: 0.5         # Maksimal drawdown i procent. 0.5 betyder 50% fald fra tidligere topværdi
     heartbeatTimeoutS: 60       # alarm hvis adapteren er tavs 60s
 
 
